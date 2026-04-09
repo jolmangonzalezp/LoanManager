@@ -17,27 +17,27 @@ Thumbs.db
 .nova/
 
 # ====================================================================
-# BACKEND (LoanManagerBackend)
+# BACKEND (Backend)
 # ====================================================================
-LoanManagerBackend/vendor/
-LoanManagerBackend/auth.json
-LoanManagerBackend/.phpunit.cache/
-LoanManagerBackend/.phpunit.result.cache
+Backend/vendor/
+Backend/auth.json
+Backend/.phpunit.cache/
+Backend/.phpunit.result.cache
 
 # Laravel Storage & Cache
-LoanManagerBackend/storage/logs/*
-LoanManagerBackend/storage/framework/cache/data/*
-LoanManagerBackend/storage/framework/sessions/*
-LoanManagerBackend/storage/framework/views/*
-LoanManagerBackend/storage/app/public/*
-LoanManagerBackend/storage/app/private/*
-LoanManagerBackend/storage/*.key
-LoanManagerBackend/bootstrap/cache/*
+Backend/storage/logs/*
+Backend/storage/framework/cache/data/*
+Backend/storage/framework/sessions/*
+Backend/storage/framework/views/*
+Backend/storage/app/public/*
+Backend/storage/app/private/*
+Backend/storage/*.key
+Backend/bootstrap/cache/*
 
 # Frontend Assets en Backend
-LoanManagerBackend/public/build/
-LoanManagerBackend/public/hot
-LoanManagerBackend/public/storage
+Backend/public/build/
+Backend/public/hot
+Backend/public/storage
 
 # ====================================================================
 # FRONTEND (LoanManagerFrontend - Preparación)
