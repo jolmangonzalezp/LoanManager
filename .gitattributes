@@ -1,0 +1,29 @@
+# 1. Normalización de finales de línea (Crucial para Linux/Unix)
+# Fuerza a que todo sea LF, evitando conflictos si usas diferentes editores
+* text=auto eol=lf
+
+# 2. Resaltado de sintaxis y Diff inteligente
+# Esto ayuda a que los "Code Reviews" o logs de Git sean legibles
+*.php diff=php
+*.blade.php diff=html
+*.css diff=css
+*.html diff=html
+*.md diff=markdown
+*.js diff=javascript
+*.json text
+
+# 3. Protección de Binarios
+# Evita que Git intente "corregir" saltos de línea en imágenes o fuentes
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff2 binary
+
+# 4. Limpieza en Exportación (Archivos que no van en un release)
+/.github export-ignore
+/tests export-ignore
+.styleci.yml export-ignore
+.editorconfig export-ignore
