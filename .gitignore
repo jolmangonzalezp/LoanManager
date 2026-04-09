@@ -1,0 +1,51 @@
+# ====================================================================
+# CONFIGURACIÓN GLOBAL (Seguridad y Entorno)
+# ====================================================================
+.env
+.env.*
+.DS_Store
+Thumbs.db
+*.log
+*.sqlite
+*.sqlite-journal
+
+# IDEs y Editores
+.idea/
+.vscode/
+.zed/
+.fleet/
+.nova/
+
+# ====================================================================
+# BACKEND (LoanManagerBackend)
+# ====================================================================
+LoanManagerBackend/vendor/
+LoanManagerBackend/auth.json
+LoanManagerBackend/.phpunit.cache/
+LoanManagerBackend/.phpunit.result.cache
+
+# Laravel Storage & Cache
+LoanManagerBackend/storage/logs/*
+LoanManagerBackend/storage/framework/cache/data/*
+LoanManagerBackend/storage/framework/sessions/*
+LoanManagerBackend/storage/framework/views/*
+LoanManagerBackend/storage/app/public/*
+LoanManagerBackend/storage/app/private/*
+LoanManagerBackend/storage/*.key
+LoanManagerBackend/bootstrap/cache/*
+
+# Frontend Assets en Backend
+LoanManagerBackend/public/build/
+LoanManagerBackend/public/hot
+LoanManagerBackend/public/storage
+
+# ====================================================================
+# FRONTEND (LoanManagerFrontend - Preparación)
+# ====================================================================
+LoanManagerFrontend/node_modules/
+LoanManagerFrontend/dist/
+LoanManagerFrontend/build/
+LoanManagerFrontend/.svelte-kit/
+LoanManagerFrontend/.next/
+LoanManagerFrontend/npm-debug.log*
+LoanManagerFrontend/yarn-error.log*
