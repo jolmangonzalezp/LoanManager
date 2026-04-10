@@ -15,6 +15,7 @@ use App\CustomerBC\Application\UseCases\UpdateCustomerUseCase;
 use App\CustomerBC\Presentation\Mappers\CreateCustomerRequestMapper;
 use App\CustomerBC\Presentation\Mappers\UpdateCustomerRequestMapper;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 final class CustomerController
 {
@@ -29,9 +30,9 @@ final class CustomerController
         private readonly GetCustomerReportUseCase $reportUseCase
     ) {}
 
-    public function store(array $data): JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        $command = $this->createMapper->fromRequest($data);
+        $command = $this->createMapper->fromRequest($request->all());
         $response = $this->createUseCase->execute($command);
 
         return response()->json($response->toArray(), 201);
@@ -71,8 +72,9 @@ final class CustomerController
         return response()->json($response->toArray());
     }
 
-    public function update(array $data, string $id): JsonResponse
+    public function update(Request $request, string $id): JsonResponse
     {
+        $data = $request->all();
         $data['id'] = $id;
         $command = $this->updateMapper->fromRequest($data);
         $response = $this->updateUseCase->execute($command);

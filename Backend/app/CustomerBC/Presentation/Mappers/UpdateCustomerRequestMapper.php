@@ -15,6 +15,8 @@ use App\SharedKernel\Domain\ValueObjects\PhoneVO;
 
 final class UpdateCustomerRequestMapper
 {
+    private const DEFAULT_COUNTRY_CODE = '+57';
+
     public function fromRequest(array $data): UpdateCustomerCommand
     {
         $name = NameVO::create(
@@ -31,7 +33,7 @@ final class UpdateCustomerRequestMapper
 
         $phone = PhoneVO::create(
             $data['phone_number'],
-            $data['phone_country_code']
+            $this->formatCountryCode($data['phone_country_code'] ?? '57')
         );
 
         $address = AddressVO::create($data['address']);
@@ -43,5 +45,12 @@ final class UpdateCustomerRequestMapper
         $personalData = PersonVO::create($name, $dni, $phone, $address, $email);
 
         return new UpdateCustomerCommand($data['id'], $personalData);
+    }
+
+    private function formatCountryCode(string $code): string
+    {
+        $code = trim($code);
+
+        return ! str_starts_with($code, '+') ? '+'.$code : $code;
     }
 }

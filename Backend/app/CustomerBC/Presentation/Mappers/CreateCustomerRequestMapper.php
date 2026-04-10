@@ -15,12 +15,14 @@ use App\SharedKernel\Domain\ValueObjects\PhoneVO;
 
 final class CreateCustomerRequestMapper
 {
+    private const DEFAULT_COUNTRY_CODE = '+57';
+
     public function fromRequest(array $data): CreateCustomerCommand
     {
         $name = NameVO::create(
             $data['first_name'],
             $data['last_name'],
-            $data['second_last_name'],
+            $data['second_last_name'] ?? '',
             $data['middle_name'] ?? null
         );
 
@@ -30,11 +32,13 @@ final class CreateCustomerRequestMapper
         );
 
         $phone = PhoneVO::create(
-            $data['phone_number'],
-            $data['phone_country_code']
+            $data['phone'] ?? $data['phone_number'] ?? '',
+            $this->formatCountryCode($data['phone_country_code'] ?? '57')
         );
 
-        $address = AddressVO::create($data['address']);
+        $address = isset($data['address'])
+            ? AddressVO::create($data['address'])
+            : null;
 
         $email = isset($data['email'])
             ? EmailVO::create($data['email'])
@@ -43,5 +47,12 @@ final class CreateCustomerRequestMapper
         $personalData = PersonVO::create($name, $dni, $phone, $address, $email);
 
         return new CreateCustomerCommand($personalData);
+    }
+
+    private function formatCountryCode(string $code): string
+    {
+        $code = trim($code);
+
+        return ! str_starts_with($code, '+') ? '+'.$code : $code;
     }
 }

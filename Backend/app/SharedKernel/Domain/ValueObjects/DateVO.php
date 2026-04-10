@@ -84,6 +84,24 @@ final class DateVO implements \Stringable
         return $sign * (int) $interval->format('%a');
     }
 
+    public function addMonths(int $months): self
+    {
+        $newDateStr = $this->date->format('Y-m-d');
+        $newDate = (new \DateTimeImmutable($newDateStr))->modify("+{$months} month");
+
+        return new self($newDate);
+    }
+
+    public function isFuture(): bool
+    {
+        return $this->date > new \DateTimeImmutable;
+    }
+
+    public function isPast(): bool
+    {
+        return $this->date < new \DateTimeImmutable;
+    }
+
     public function equals(self $other): bool
     {
         return $this->date->format('Y-m-d') === $other->date->format('Y-m-d');
