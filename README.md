@@ -2,11 +2,16 @@
 
 Sistema de gestión de préstamos con arquitectura DDD.
 
-## Estructura
+## Índice
 
-- **Backend**: Laravel API → [Backend/README.md](./Backend/README.md)
-- **Frontend**: Pendiente
-- **Database**: Schemas → Pendiente
+- [Backend](./docs/Backend/README.md) - API REST Laravel
+- [Bounded Contexts](./docs/bc)
+  - [CustomerBC](./docs/bc/CustomerBC/README.md) - Gestión de clientes
+  - [LoanBC](./docs/bc/LoanBC/README.md) - Préstamos e intereses
+  - [PaymentBC](./docs/bc/PaymentBC/README.md) - Procesamiento de pagos
+  - [ReportBC](./docs/bc/ReportBC/README.md) - Reportes
+  - [UserBC](./docs/bc/UserBC/README.md) - Autenticación
+- [SharedKernel](./docs/SharedKernel/README.md) - Componentes compartidos
 
 ## Quick Start
 
@@ -18,5 +23,3 @@ php artisan key:generate
 php artisan migrate:fresh --seed
 php artisan serve
 ```
-
-Ver [Backend](./Backend) para más detalles.
