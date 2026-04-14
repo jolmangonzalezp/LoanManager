@@ -6,9 +6,9 @@ namespace App\SharedKernel\Domain\Exceptions;
 
 class InvalidUuidException extends DomainException
 {
-    public function __construct(string $uuid)
+    public function __construct(string $message, \Throwable $previous = null)
     {
-        $message = "El identificador no es válido: {$uuid}";
-        parent::__construct($message);
+        parent::__construct($message, 0, $previous);
     }
 }
+ 

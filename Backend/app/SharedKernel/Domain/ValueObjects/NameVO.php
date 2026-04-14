@@ -6,18 +6,24 @@ namespace App\SharedKernel\Domain\ValueObjects;
 
 use App\SharedKernel\Domain\Exceptions\InvalidNameException;
 
-final class NameVO implements \Stringable
+final class NameVO
 {
-    private const NAME_PATTERN = '/^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+(?:\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*$/';
-
-    private const MIN_LENGTH = 2;
+    private readonly string $firstName;
+    private readonly ?string $middleName;
+    private readonly string $lastName;
+    private readonly string $secondLastName;
 
     private function __construct(
-        private readonly string $firstName,
-        private readonly string $lastName,
-        private readonly ?string $middleName,
-        private readonly string $secondLastName
-    ) {}
+        string $firstName,
+        ?string $middleName,
+        string $lastName,
+        string $secondLastName
+    ) {
+        $this->firstName = $firstName;
+        $this->middleName = $middleName;
+        $this->lastName = $lastName;
+        $this->secondLastName = $secondLastName;
+    }
 
     public static function create(
         string $firstName,
@@ -25,13 +31,16 @@ final class NameVO implements \Stringable
         string $secondLastName,
         ?string $middleName = null
     ): self {
+
         $firstName = self::sanitize($firstName);
         $lastName = self::sanitize($lastName);
         $secondLastName = self::sanitize($secondLastName);
         $middleName = $middleName !== null ? self::sanitize($middleName) : null;
 
-        self::validate($firstName, $lastName, $secondLastName, $middleName);
-
+        self::validate($firstName);
+        self::validate($lastName);
+        self::validate($secondLastName);
+        self::validate($middleName !== null ? $middleName : '', false);
         return new self($firstName, $lastName, $middleName, $secondLastName);
     }
 
@@ -40,31 +49,19 @@ final class NameVO implements \Stringable
         return trim(preg_replace('/\s+/', ' ', $value));
     }
 
-    private static function validateName(string $name): void
-    {
-        $validators = [
-            fn () => $name !== '' ?: throw new InvalidNameException('empty'),
-            fn () => strlen($name) >= self::MIN_LENGTH ?: throw new InvalidNameException('too_short'),
-            fn () => preg_match(self::NAME_PATTERN, $name) === 1 ?: throw new InvalidNameException('invalid_chars'),
-        ];
-
-        foreach ($validators as $validator) {
-            $validator();
-        }
-    }
-
     private static function validate(
-        string $firstName,
-        string $lastName,
-        string $secondLastName,
-        ?string $middleName
+        string $value,
+        bool $isRequired = true
     ): void {
-        self::validateName($firstName);
-        self::validateName($lastName);
-        self::validateName($secondLastName);
+        if ($isRequired && $value === '') {
+            throw new InvalidNameException('Nombre o apellido es requerido');
+        }
+        if (mb_strlen($value) < 3) {
+            throw new InvalidNameException('Nombre o apellido debe tener al menos 3 caracteres');
+        }
 
-        if ($middleName !== null) {
-            self::validateName($middleName);
+        if (!preg_match('/^[\p{L}]+(?:\s[\p{L}]+)*$/u', $value)) {
+            throw new InvalidNameException('Nombre o apellido contiene caracteres inválidos');
         }
     }
 
@@ -111,10 +108,5 @@ final class NameVO implements \Stringable
             && $this->lastName === $other->lastName
             && $this->middleName === $other->middleName
             && $this->secondLastName === $other->secondLastName;
-    }
-
-    public function __toString(): string
-    {
-        return $this->getFullName();
     }
 }

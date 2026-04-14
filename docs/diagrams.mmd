@@ -1,0 +1,474 @@
+# Diagramas Mermaid - Arquitectura LoanManager
+
+> Copia y pega estos diagramas en https://mermaid.live/ o en tu editor Markdown con extensión mermaid
+
+---
+
+## 1. Entidades Principales
+
+```mermaid
+classDiagram
+    class Loan {
+        <<entity>>
+        -id: LoanIdVO
+        -customerId: CustomerIdVO
+        -originalCapital: MoneyVO
+        -interestRate: InterestRateVO
+        -startDate: DateVO
+        -dueDate: DateVO
+        -createdAt: DateVO
+        -status: LoanStatus
+        -paidInterest: MoneyVO
+        -paidCapital: MoneyVO
+        -capital: MoneyVO
+        -remainingDebt: MoneyVO
+        -nextPaymentDate: DateVO
+        +create() Loan
+        +reconstitute() Loan
+        +makePayment() Loan
+        +isInDefault() bool
+        +calculateCurrentInterest() MoneyVO
+        +getId() LoanIdVO
+        +getCustomerId() CustomerIdVO
+        +getOriginalCapital() MoneyVO
+        +getCapital() MoneyVO
+        +getRemainingDebt() MoneyVO
+        +getInterestRate() InterestRateVO
+        +getStartDate() DateVO
+        +getDueDate() DateVO
+        +getCreatedAt() DateVO
+        +getStatus() LoanStatus
+        +getPaidInterest() MoneyVO
+        +getPaidCapital() MoneyVO
+        +getNextPaymentDate() DateVO
+    }
+
+    class Payment {
+        <<entity>>
+        -id: PaymentIdVO
+        -loanId: LoanIdVO
+        -amount: MoneyVO
+        -interestPortion: MoneyVO
+        -capitalPortion: MoneyVO
+        -paymentDate: DateVO
+        -status: PaymentStatus
+        +create() Payment
+        +reconstitute() Payment
+        +validate() void
+        +getId() PaymentIdVO
+        +getLoanId() LoanIdVO
+        +getAmount() MoneyVO
+        +getInterestPortion() MoneyVO
+        +getCapitalPortion() MoneyVO
+        +getPaymentDate() DateVO
+        +getStatus() PaymentStatus
+    }
+
+    class Customer {
+        <<entity>>
+        -id: CustomerIdVO
+        -name: NameVO
+        -dni: DniVO
+        -phone: PhoneVO
+        -email: EmailVO
+        -address: AddressVO
+        +create() Customer
+        +reconstitute() Customer
+        +updateName() Customer
+        +enable() void
+        +disable() void
+    }
+
+    Loan --> CustomerIdVO : uses
+    Payment --> LoanIdVO : uses
+    Payment --> MoneyVO : uses
+    Loan --> MoneyVO : uses
+```
+
+---
+
+## 2. Value Objects
+
+```mermaid
+classDiagram
+    class MoneyVO {
+        <<value object>>
+        -amount: int
+        -currency: Currency
+        +create(int, string) MoneyVO
+        +zero(string) MoneyVO
+        +getAmount() int
+        +getCurrency() Currency
+        +add(MoneyVO) MoneyVO
+        +subtract(MoneyVO) MoneyVO
+        +multiply(float) MoneyVO
+        +isZero() bool
+        +isPositive() bool
+    }
+
+    class DateVO {
+        <<value object>>
+        -date: DateTime
+        +create(string) DateVO
+        +now() DateVO
+        +addMonths(int) DateVO
+        +diffInMonths(DateVO) int
+        +getFormatted() string
+        +isFuture() bool
+        +isPast() bool
+    }
+
+    class InterestRateVO {
+        <<value object>>
+        -annualRate: float
+        -monthlyRate: float
+        +createAnnual(float) InterestRateVO
+        +createMonthly(float) InterestRateVO
+        +calculateInterest(MoneyVO) MoneyVO
+        +getAnnualRate() float
+        +getMonthlyRate() float
+    }
+
+    class NameVO {
+        <<value object>>
+        -firstName: string
+        -lastName: string
+        +create(string, string) NameVO
+        +getFirstName() string
+        +getLastName() string
+        +fullName() string
+    }
+
+    class DniVO {
+        <<value object>>
+        -type: DniType
+        -number: string
+        +create(string, string) DniVO
+        +getType() DniType
+        +getNumber() string
+        +formatted() string
+    }
+
+    class LoanStatus {
+        <<enum>>
+        +ACTIVE
+        +PAID
+        +DEFAULTED
+        +CANCELLED
+    }
+
+    class PaymentStatus {
+        <<enum>>
+        +PENDING
+        +VALIDATED
+        +APPLIED
+        +REJECTED
+    }
+```
+
+---
+
+## 3. Controladores y Use Cases
+
+```mermaid
+classDiagram
+    class LoanController {
+        +index() JSON
+        +show(string) JSON
+        +store(Request) JSON
+        +update(Request, string) JSON
+        +makePayment(Request, string) JSON
+        +report() JSON
+    }
+
+    class PaymentController {
+        +index() JSON
+        +store(Request) JSON
+    }
+
+    class CustomerController {
+        +index() JSON
+        +show(string) JSON
+        +store(Request) JSON
+        +update(Request, string) JSON
+        +summary() JSON
+    }
+
+    class CreateLoanUseCase {
+        -finder: LoanFinderByCustomerId
+        -creator: LoanCreator
+        +execute(CreateLoanCommand) LoanResponse
+    }
+
+    class ProcessPaymentUseCase {
+        -finder: PaymentFinderByLoanId
+        -loanFinder: LoanFinderById
+        -loanUpdater: LoanUpdater
+        -paymentCreator: PaymentCreator
+        +execute(ProcessPaymentCommand) PaymentResponse
+    }
+
+    class GetAllLoansUseCase {
+        -finder: LoanFinderAll
+        +execute() array
+    }
+
+    LoanController --> CreateLoanUseCase : uses
+    LoanController --> GetAllLoansUseCase : uses
+    PaymentController --> ProcessPaymentUseCase : uses
+```
+
+---
+
+## 4. Repositorios
+
+```mermaid
+classDiagram
+    class LoanFinderAll {
+        <<interface>>
+        +findAll() array
+    }
+
+    class LoanFinderById {
+        <<interface>>
+        +find(string) Loan
+    }
+
+    class LoanFinderByCustomerId {
+        <<interface>>
+        +findByCustomer(string) array
+    }
+
+    class LoanCreator {
+        <<interface>>
+        +create(Loan) void
+    }
+
+    class LoanUpdater {
+        <<interface>>
+        +update(Loan) void
+    }
+
+    class PaymentCreator {
+        <<interface>>
+        +create(Payment) void
+    }
+
+    class PaymentFinderByLoanId {
+        <<interface>>
+        +findByLoan(string) array
+    }
+
+    class EloquentLoanFinderAll {
+        -mapper: LoanMapper
+        +findAll() array
+    }
+
+    class EloquentLoanCreator {
+        -mapper: LoanMapper
+        +create(Loan) void
+    }
+
+    class EloquentLoanUpdater {
+        -mapper: LoanMapper
+        +update(Loan) void
+    }
+
+    class EloquentPaymentCreator {
+        -mapper: PaymentMapper
+        +create(Payment) void
+    }
+
+    LoanFinderAll <|.. EloquentLoanFinderAll : implements
+    LoanCreator <|.. EloquentLoanCreator : implements
+    LoanUpdater <|.. EloquentLoanUpdater : implements
+    PaymentCreator <|.. EloquentPaymentCreator : implements
+```
+
+---
+
+## 5. DTOs y Responses
+
+```mermaid
+classDiagram
+    class LoanResponse {
+        -id: string
+        -customerId: string
+        -capital: array
+        -remainingDebt: array
+        -interestRate: array
+        -startDate: string
+        -dueDate: string
+        -term: int
+        -nextPaymentDate: string
+        -status: string
+        -paidCapital: array
+        -paidInterest: array
+        -createdAt: string
+        -customerName: string
+        +fromEntity(Loan) self
+        +toArray() array
+    }
+
+    class PaymentResponse {
+        -id: string
+        -loanId: string
+        -amount: array
+        -interestPortion: array
+        -capitalPortion: array
+        -paymentDate: string
+        -status: string
+        -createdAt: string
+        +fromEntity(Payment) self
+        +toArray() array
+    }
+
+    class LoanReportResponse {
+        -totalLoans: int
+        -activeLoans: int
+        -paidLoans: int
+        -defaultedLoans: int
+        -totalCapital: int
+        -totalRemainingDebt: int
+        -totalPaidCapital: int
+        -totalPaidInterest: int
+        +toArray() array
+    }
+```
+
+---
+
+## 6. Arquitectura General por Capas
+
+```mermaid
+flowchart TB
+    subgraph PRESENTATION["Capa de Presentación"]
+        API["routes/api.php"]
+        LC["LoanController"]
+        PC["PaymentController"]
+        CC["CustomerController"]
+    end
+
+    subgraph APPLICATION["Capa de Aplicación"]
+        CLU["CreateLoanUseCase"]
+        PPU["ProcessPaymentUseCase"]
+        GLU["GetAllLoansUseCase"]
+    end
+
+    subgraph DOMAIN["Capa de Dominio"]
+        LOAN["Loan Entity"]
+        PAY["Payment Entity"]
+        MVO["MoneyVO"]
+        IRV["InterestRateVO"]
+    end
+
+    subgraph INFRA["Capa de Infraestructura"]
+        ELF["EloquentLoanFinderAll"]
+        ELC["EloquentLoanCreator"]
+        ELM["LoanModel"]
+    end
+
+    API --> LC
+    API --> PC
+    LC --> CLU
+    CLU --> LOAN
+    LOAN --> MVO
+    LOAN --> IRV
+    ELF --> ELM
+    CLU --> ELF
+```
+
+---
+
+## 7. Flujo de Creación de Préstamo
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant API as routes/api
+    participant LC as LoanController
+    participant CLU as CreateLoanUseCase
+    participant LCR as LoanCreator
+    participant LOAN as Loan Entity
+    participant ELM as LoanModel
+
+    C->>API: POST /loans {customer_id, capital, rate, dates}
+    API->>LC: store(request)
+    LC->>CLU: execute(command)
+    CLU->>LOAN: create()
+    LOAN-->>CLU: Loan entity
+    CLU->>LCR: create(loan)
+    LCR->>ELM: save()
+```
+
+---
+
+## 8. Flujo de Pago
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant API as routes/api
+    participant PC as PaymentController
+    participant PPU as ProcessPaymentUseCase
+    participant LF as LoanFinderById
+    participant LOAN as Loan Entity
+    participant PCR as PaymentCreator
+    participant PM as PaymentModel
+
+    C->>API: POST /payments {loan_id, amount, date}
+    API->>PC: store(request)
+    PC->>PPU: execute(command)
+    PPU->>LF: find(loan_id)
+    LF-->>PPU: Loan entity
+    PPU->>LOAN: makePayment(amount)
+    LOAN-->>PPU: Updated Loan
+    PPU->>PCR: create(payment)
+    PCR->>PM: save()
+```
+
+---
+
+## 9. Relaciones entre Entidades
+
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ LOAN : "solicita"
+    LOAN ||--o{ PAYMENT : "recibe"
+
+    CUSTOMER {
+        string id PK
+        string first_name
+        string last_name
+        string dni
+        string phone
+        string email
+        string address
+        boolean enabled
+    }
+
+    LOAN {
+        string id PK
+        string customer_id FK
+        int original_capital
+        int capital
+        int remaining_debt
+        float interest_rate
+        date start_date
+        date due_date
+        date next_payment_date
+        string status
+        int paid_capital
+        int paid_interest
+    }
+
+    PAYMENT {
+        string id PK
+        string loan_id FK
+        int amount
+        int interest_portion
+        int capital_portion
+        date payment_date
+        string status
+    }
+```

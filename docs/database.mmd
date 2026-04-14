@@ -1,0 +1,42 @@
+erDiagram
+    CUSTOMER ||--o{ LOAN : "solicita"
+    LOAN ||--o{ PAYMENT : "recibe"
+
+    CUSTOMER {
+        string id PK
+        string first_name
+        string last_name
+        string dni
+        string phone
+        string email
+        string address
+        boolean enabled
+        timestamp created_at
+    }
+
+    LOAN {
+        string id PK
+        string customer_id FK
+        int original_capital
+        int capital
+        int remaining_debt
+        float interest_rate
+        date start_date
+        date due_date
+        date next_payment_date
+        string status
+        int paid_capital
+        int paid_interest
+        timestamp created_at
+    }
+
+    PAYMENT {
+        string id PK
+        string loan_id FK
+        int amount
+        int interest_portion
+        int capital_portion
+        date payment_date
+        string status
+        timestamp created_at
+    }

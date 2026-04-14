@@ -18,6 +18,7 @@ use App\SharedKernel\Domain\ValueObjects\DateVO;
 use App\SharedKernel\Domain\ValueObjects\MoneyVO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 final class LoanController
 {
@@ -34,11 +35,17 @@ final class LoanController
         $data = $request->all();
         $amountCents = (int) (($data['capital'] ?? 0) * 100);
         $capital = MoneyVO::create($amountCents);
-        $interestRate = InterestRateVO::createAnnual(
-            (float) ($data['interest_rate'] ?? 0)
-        );
-        $startDate = DateVO::create($data['start_date'] ?? date('Y-m-d'));
-        $dueDate = DateVO::create($data['due_date']);
+        
+        $monthlyRate = (float) ($data['interest_rate'] ?? 0);
+        $interestRate = InterestRateVO::createMonthly($monthlyRate);
+        
+        $startDateStr = $data['start_date'] ?? date('Y-m-d');
+        $startDate = DateVO::create($startDateStr);
+        
+        $termMonths = $data['term'] ?? 24;
+        $dueDate = date('Y-m-d', strtotime($startDateStr . ' + ' . $termMonths . ' months'));
+        $dueDateVO = DateVO::create($dueDate);
+        
         $customerId = CustomerIdVO::fromString($data['customer_id']);
 
         $command = new CreateLoanCommand(
@@ -46,7 +53,7 @@ final class LoanController
             $capital,
             $interestRate,
             $startDate,
-            $dueDate
+            $dueDateVO
         );
 
         $response = $this->createLoanUseCase->execute($command);
@@ -63,12 +70,40 @@ final class LoanController
 
     public function index(): JsonResponse
     {
-        $responses = $this->getAllLoansUseCase->execute();
+        try {
+            $responses = $this->getAllLoansUseCase->execute();
+            
+            $responsesWithCustomer = array_map(function ($response) {
+                $customerId = $response->customerId;
+                $customerName = null;
+                
+                try {
+                    $customerData = \Illuminate\Support\Facades\DB::table('customers')
+                        ->where('id', $customerId)
+                        ->first();
+                        
+                    if ($customerData) {
+                        try {
+                            $firstName = $customerData->first_name ? \Illuminate\Support\Facades\Crypt::decryptString($customerData->first_name) : '';
+                            $lastName = $customerData->last_name ? \Illuminate\Support\Facades\Crypt::decryptString($customerData->last_name) : '';
+                            $customerName = trim($firstName . ' ' . $lastName);
+                        } catch (\Exception $e) {
+                            $customerName = null;
+                        }
+                    }
+                } catch (\Exception $e) {
+                }
+                
+                $arr = $response->toArray();
+                $arr['customer_name'] = $customerName;
+                return $arr;
+            }, $responses);
 
-        return response()->json(array_map(
-            fn ($response) => $response->toArray(),
-            $responses
-        ));
+            return response()->json($responsesWithCustomer);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('LoanController index error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function report(): JsonResponse

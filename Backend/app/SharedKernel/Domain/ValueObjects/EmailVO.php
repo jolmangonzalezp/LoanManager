@@ -6,68 +6,34 @@ namespace App\SharedKernel\Domain\ValueObjects;
 
 use App\SharedKernel\Domain\Exceptions\InvalidEmailException;
 
-final class EmailVO implements \Stringable
+final class EmailVO
 {
-    private const LOCAL_MAX_LENGTH = 64;
-
-    private const DOMAIN_MAX_LENGTH = 255;
-
-    private const LOCAL_PATTERN = '/^[a-zA-Z0-9.!#$%&\'*+\/=?^_`{|}~-]+$/';
-
-    private const DOMAIN_PATTERN = '/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/';
-
+    private readonly string $value;
     private function __construct(
-        private readonly string $value
-    ) {}
+        string $value
+    ) {
+        $this->value = $value;
+    }
 
     public static function create(string $email): self
     {
-        $email = strtolower(trim($email));
+        $value = strtolower(trim($email));
 
         self::validate($email);
 
-        return new self($email);
+        return new self($value);
     }
 
     private static function validate(string $email): void
     {
-        $atPosition = strpos($email, '@');
-
-        if ($atPosition === false || $atPosition === 0) {
-            throw new InvalidEmailException('missing_at');
+        if ($email === null || $email === '') {
+            throw new InvalidEmailException('El email es requerido.');
         }
 
-        $localPart = substr($email, 0, $atPosition);
-        $domainPart = substr($email, $atPosition + 1);
-
-        self::validateLocalPart($localPart);
-        self::validateDomainPart($domainPart);
-    }
-
-    private static function validateLocalPart(string $local): void
-    {
-        $validators = [
-            fn () => $local !== '' ?: throw new InvalidEmailException('empty_local'),
-            fn () => strlen($local) <= self::LOCAL_MAX_LENGTH ?: throw new InvalidEmailException('local_too_long'),
-            fn () => preg_match(self::LOCAL_PATTERN, $local) === 1 ?: throw new InvalidEmailException('invalid_local_chars'),
-        ];
-
-        foreach ($validators as $validator) {
-            $validator();
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidEmailException('El email proporcionado no es válido.');
         }
-    }
 
-    private static function validateDomainPart(string $domain): void
-    {
-        $validators = [
-            fn () => $domain !== '' ?: throw new InvalidEmailException('empty_domain'),
-            fn () => strlen($domain) <= self::DOMAIN_MAX_LENGTH ?: throw new InvalidEmailException('domain_too_long'),
-            fn () => preg_match(self::DOMAIN_PATTERN, $domain) === 1 ?: throw new InvalidEmailException('invalid_domain_format'),
-        ];
-
-        foreach ($validators as $validator) {
-            $validator();
-        }
     }
 
     public function getValue(): string
@@ -75,23 +41,8 @@ final class EmailVO implements \Stringable
         return $this->value;
     }
 
-    public function getLocalPart(): string
-    {
-        return explode('@', $this->value)[0];
-    }
-
-    public function getDomain(): string
-    {
-        return explode('@', $this->value)[1];
-    }
-
     public function equals(self $other): bool
     {
         return $this->value === $other->value;
-    }
-
-    public function __toString(): string
-    {
-        return $this->value;
     }
 }

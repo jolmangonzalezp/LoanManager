@@ -1,0 +1,66 @@
+classDiagram
+    class LoanFinderAll {
+        <<interface>>
+        +findAll() array
+    }
+
+    class LoanFinderById {
+        <<interface>>
+        +find(string) Loan
+    }
+
+    class LoanFinderByCustomerId {
+        <<interface>>
+        +findByCustomer(string) array
+    }
+
+    class LoanCreator {
+        <<interface>>
+        +create(Loan) void
+    }
+
+    class LoanUpdater {
+        <<interface>>
+        +update(Loan) void
+    }
+
+    class PaymentCreator {
+        <<interface>>
+        +create(Payment) void
+    }
+
+    class PaymentFinderByLoanId {
+        <<interface>>
+        +findByLoan(string) array
+    }
+
+    class EloquentLoanFinderAll {
+        -mapper: LoanMapper
+        +findAll() array
+    }
+
+    class EloquentLoanFinderById {
+        -mapper: LoanMapper
+        +find(string) Loan
+    }
+
+    class EloquentLoanCreator {
+        -mapper: LoanMapper
+        +create(Loan) void
+    }
+
+    class EloquentLoanUpdater {
+        -mapper: LoanMapper
+        +update(Loan) void
+    }
+
+    class EloquentPaymentCreator {
+        -mapper: PaymentMapper
+        +create(Payment) void
+    }
+
+    LoanFinderAll <|.. EloquentLoanFinderAll
+    LoanFinderById <|.. EloquentLoanFinderById
+    LoanCreator <|.. EloquentLoanCreator
+    LoanUpdater <|.. EloquentLoanUpdater
+    PaymentCreator <|.. EloquentPaymentCreator

@@ -1,0 +1,50 @@
+classDiagram
+    class Loan {
+        <<entity>>
+        -id: LoanIdVO
+        -customerId: CustomerIdVO
+        -originalCapital: MoneyVO
+        -interestRate: InterestRateVO
+        -startDate: DateVO
+        -dueDate: DateVO
+        -createdAt: DateVO
+        -status: LoanStatus
+        -paidInterest: MoneyVO
+        -paidCapital: MoneyVO
+        -capital: MoneyVO
+        -remainingDebt: MoneyVO
+        -nextPaymentDate: DateVO
+        +create() Loan
+        +reconstitute() Loan
+        +makePayment() Loan
+        +isInDefault() bool
+        +calculateCurrentInterest() MoneyVO
+    }
+
+    class Payment {
+        <<entity>>
+        -id: PaymentIdVO
+        -loanId: LoanIdVO
+        -amount: MoneyVO
+        -interestPortion: MoneyVO
+        -capitalPortion: MoneyVO
+        -paymentDate: DateVO
+        -status: PaymentStatus
+        +create() Payment
+        +reconstitute() Payment
+    }
+
+    class Customer {
+        <<entity>>
+        -id: CustomerIdVO
+        -name: NameVO
+        -dni: DniVO
+        -phone: PhoneVO
+        -email: EmailVO
+        -address: AddressVO
+    }
+
+    Loan --> CustomerIdVO
+    Payment --> LoanIdVO
+    Payment --> MoneyVO
+    Loan --> MoneyVO

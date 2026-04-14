@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace App\SharedKernel\Domain\Exceptions;
 
-class InvalidAddressException extends DomainException
+final class InvalidAddressException extends DomainException
 {
-    public function __construct(string $reason)
+    public function __construct(string $message = '', \Throwable $previous = null)
     {
-        $message = match ($reason) {
-            'empty' => 'La dirección es requerida',
-            'too_short' => 'La dirección es muy corta',
-            default => "La dirección es inválida: {$reason}"
-        };
-        parent::__construct($message);
+        parent::__construct($message, 0, $previous);
     }
 }

@@ -4,55 +4,59 @@ declare(strict_types=1);
 
 namespace App\UserBC\Presentation\Controllers;
 
-use App\SharedKernel\Domain\ValueObjects\EmailVO;
-use App\UserBC\Application\Commands\LoginCommand;
-use App\UserBC\Application\UseCases\LoginUseCase;
-use App\UserBC\Infrastructure\Models\UserModel;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 final class AuthController
 {
-    public function __construct(
-        private readonly LoginUseCase $loginUseCase
-    ) {}
-
     public function login(Request $request): JsonResponse
     {
-        $data = $request->all();
+        $data = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
 
-        $email = EmailVO::create($data['email']);
-        $command = new LoginCommand($email, $data['password']);
+        $user = User::where('email', $data['email'])->first();
 
-        $response = $this->loginUseCase->execute($command);
+        if (!$user || !Hash::check($data['password'], $user->password)) {
+            return response()->json([
+                'error' => [
+                    'type' => 'APPLICATION_ERROR',
+                    'code' => 'INVALID_CREDENTIALS',
+                    'message' => 'Credenciales inválidas'
+                ]
+            ], 401);
+        }
 
-        $token = Auth::login(
-            UserModel::where('email', $data['email'])->first()
-        );
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
-            'user' => $response->toArray(),
-            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email
+            ],
+            'token' => $token
         ]);
     }
 
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        Auth::logout();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logout exitoso']);
     }
 
-    public function me(): JsonResponse
+    public function me(Request $request): JsonResponse
     {
-        $user = Auth::user();
+        $user = $request->user();
 
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
-            'email' => $user->email,
-            'enabled' => $user->enabled,
+            'email' => $user->email
         ]);
     }
 }

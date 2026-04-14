@@ -4,89 +4,70 @@ declare(strict_types=1);
 
 namespace App\SharedKernel\Domain\ValueObjects;
 
+use App\SharedKernel\Domain\Exceptions\InvalidDateException;
+use DateTimeImmutable;
 use DateTimeInterface;
 
-final class DateVO implements \Stringable
+final class DateVO
 {
-    private function __construct(
-        private readonly DateTimeInterface $date
-    ) {}
+    private readonly DateTimeImmutable $value;
 
-    public static function create(DateTimeInterface|string $date): self
+    private function __construct(
+        DateTimeImmutable $date
+    ) {
+        $this->value = $date;
+    }
+
+    public static function fromString(string $value): self
     {
-        if (is_string($date)) {
-            $date = new \DateTimeImmutable($date);
+        if ($value === null || $value === '') {
+            throw new InvalidDateException('La fecha no puede estar vacia');
         }
 
-        return new self($date);
+        if (!strtotime($value)) {
+            throw new InvalidDateException('La fecha no es valida');
+        }
+        return new self(new \DateTimeImmutable($value));
     }
 
-    public static function today(): self
+    public function fromDateTime(DateTimeInterface $dateTime): self
     {
-        return new self(new \DateTimeImmutable('today'));
+        return new self($dateTime);
     }
 
-    public static function now(): self
+    public function now(): self
     {
-        return new self(new \DateTimeImmutable('now'));
-    }
-
-    public function getDate(): DateTimeInterface
-    {
-        return $this->date;
+        return new self(new \DateTimeImmutable);
     }
 
     public function getValue(): DateTimeInterface
     {
-        return $this->date;
+        return $this->value;
     }
 
-    public function getYear(): int
+    public function getFormatted(): string
     {
-        return (int) $this->date->format('Y');
-    }
-
-    public function getMonth(): int
-    {
-        return (int) $this->date->format('n');
-    }
-
-    public function getDay(): int
-    {
-        return (int) $this->date->format('j');
-    }
-
-    public function getFormatted(string $format = 'Y-m-d'): string
-    {
-        return $this->date->format($format);
+        return $this->value->format('Y-m-d');
     }
 
     public function isAfter(self $other): bool
     {
-        return $this->date > $other->date;
+        return $this->value > $other->value;
     }
 
     public function isBefore(self $other): bool
     {
-        return $this->date < $other->date;
+        return $this->value < $other->value;
     }
 
     public function isSameDay(self $other): bool
     {
-        return $this->date->format('Y-m-d') === $other->date->format('Y-m-d');
+        return $this->value->format('Y-m-d') === $other->value->format('Y-m-d');
     }
 
-    public function diffInDays(self $other): int
+    public function addMonths(int $months = 1): self
     {
-        $interval = $other->date->diff($this->date);
-        $sign = $interval->invert ? -1 : 1;
-
-        return $sign * (int) $interval->format('%a');
-    }
-
-    public function addMonths(int $months): self
-    {
-        $newDateStr = $this->date->format('Y-m-d');
+        $newDateStr = $this->value->format('Y-m-d');
         $newDate = (new \DateTimeImmutable($newDateStr))->modify("+{$months} month");
 
         return new self($newDate);
@@ -94,21 +75,21 @@ final class DateVO implements \Stringable
 
     public function isFuture(): bool
     {
-        return $this->date > new \DateTimeImmutable;
+        return $this->value > new \DateTimeImmutable;
     }
 
     public function isPast(): bool
     {
-        return $this->date < new \DateTimeImmutable;
+        return $this->value < new \DateTimeImmutable;
     }
 
     public function equals(self $other): bool
     {
-        return $this->date->format('Y-m-d') === $other->date->format('Y-m-d');
+        return $this->value->format('Y-m-d') === $other->value->format('Y-m-d');
     }
 
     public function __toString(): string
     {
-        return $this->date->format('Y-m-d');
+        return $this->value->format('Y-m-d');
     }
 }

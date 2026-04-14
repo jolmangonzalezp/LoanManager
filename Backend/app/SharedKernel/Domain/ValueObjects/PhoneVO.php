@@ -7,15 +7,19 @@ namespace App\SharedKernel\Domain\ValueObjects;
 use App\SharedKernel\Domain\Exceptions\InvalidPhoneException;
 
 final class PhoneVO
-{
-    private const DEFAULT_COUNTRY_CODE = '+57';
+{   
+    private readonly string $countryCode;
+    private readonly string $number;
 
     private function __construct(
-        private readonly string $countryCode,
-        private readonly string $number
-    ) {}
+        string $countryCode,
+        string $number
+    ) {
+        $this->countryCode = $countryCode;
+        $this->number = $number;
+    }
 
-    public static function create(string $number, string $countryCode = self::DEFAULT_COUNTRY_CODE): self
+    public static function create(string $number, string $countryCode = '+57'): self
     {
         $number = preg_replace('/[^0-9]/', '', $number);
         $countryCode = trim($countryCode);
@@ -28,19 +32,19 @@ final class PhoneVO
     private static function validate(string $countryCode, string $number): void
     {
         if ($number === '') {
-            throw new InvalidPhoneException('empty');
+            throw new InvalidPhoneException('Numero de teléfono es requerido');
         }
 
         if (!preg_match('/^\+\d{1,4}$/', $countryCode)) {
-            throw new InvalidPhoneException('invalid_country_code');
+            throw new InvalidPhoneException('Codigo de país es inválido');
         }
 
         if (strlen($number) < 7) {
-            throw new InvalidPhoneException('too_short');
+            throw new InvalidPhoneException('Numero de teléfono es invalido');
         }
 
         if (strlen($number) > 15) {
-            throw new InvalidPhoneException('too_long');
+            throw new InvalidPhoneException('Numero de teléfono es invalido');
         }
     }
 
@@ -53,29 +57,8 @@ final class PhoneVO
     {
         return $this->number;
     }
-
-    public function getNationalNumber(): string
-    {
-        return $this->number;
-    }
-
-    public function getInternationalFormat(): string
-    {
-        return "{$this->countryCode}{$this->number}";
-    }
-
-    public function isColombian(): bool
-    {
-        return $this->countryCode === self::DEFAULT_COUNTRY_CODE;
-    }
-
     public function equals(self $other): bool
     {
         return $this->countryCode === $other->countryCode && $this->number === $other->number;
-    }
-
-    public function __toString(): string
-    {
-        return $this->getInternationalFormat();
     }
 }

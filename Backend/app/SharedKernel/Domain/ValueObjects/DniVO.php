@@ -15,6 +15,8 @@ final class DniVO implements \Stringable
 
     public static function create(string $number, DniType $type = DniType::CC): self
     {
+        $value = trim($number);
+        
         $number = $type->isNumeric()
             ? preg_replace('/[^0-9]/', '', trim($number))
             : preg_replace('/[^A-Za-z0-9]/', '', trim($number));
@@ -34,17 +36,23 @@ final class DniVO implements \Stringable
     private static function validate(string $number, DniType $type): void
     {
         if ($number === '') {
-            throw new InvalidDniException('empty');
+            throw new InvalidDniException('El número de identificación es requerido');
         }
 
         $length = strlen($number);
 
         if ($length < $type->minLength() || $length > $type->maxLength()) {
-            throw new InvalidDniException('invalid_length');
+            throw new InvalidDniException('El número de identificación tiene una longitud inválida');
         }
 
-        if ($type->isNumeric() && ! ctype_digit($number)) {
-            throw new InvalidDniException('invalid_format');
+        if ($type === DniType::PASSPORT) {
+            if (!preg_match('/^[A-Z0-9]+$/', $number)) {
+                throw new InvalidDniException('Formato de pasaporte inválido');
+            }
+        }
+
+        if (!ctype_digit($number)) {
+            throw new InvalidDniException('El número de identificación debe contener solo dígitos');
         }
     }
 

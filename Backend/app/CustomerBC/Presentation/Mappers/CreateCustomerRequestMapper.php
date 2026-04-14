@@ -19,16 +19,24 @@ final class CreateCustomerRequestMapper
 
     public function fromRequest(array $data): CreateCustomerCommand
     {
+        $nameData = $data['name'] ?? [];
+        
+        $firstName = $nameData['first_name'] ?? $data['first_name'] ?? '';
+        $middleName = $nameData['last_name'] ?? $data['last_name'] ?? null;
+        $lastName = $nameData['second_last_name'] ?? $data['second_last_name'] ?? '';
+        $secondLastName = $nameData['third_last_name'] ?? $data['third_last_name'] ?? '';
+        
         $name = NameVO::create(
-            $data['first_name'],
-            $data['last_name'],
-            $data['second_last_name'] ?? '',
-            $data['middle_name'] ?? null
+            $firstName,
+            $lastName,
+            $secondLastName,
+            $middleName ?: null
         );
 
+        $dniData = $data['dni'] ?? [];
         $dni = DniVO::create(
-            $data['dni_number'],
-            DniType::from($data['dni_type'])
+            $dniData['number'] ?? $data['dni_number'] ?? '',
+            DniType::from($dniData['type'] ?? $data['dni_type'] ?? 'CC')
         );
 
         $phone = PhoneVO::create(
@@ -36,9 +44,19 @@ final class CreateCustomerRequestMapper
             $this->formatCountryCode($data['phone_country_code'] ?? '57')
         );
 
-        $address = isset($data['address'])
-            ? AddressVO::create($data['address'])
-            : null;
+        $addressData = $data['address'] ?? null;
+        $addressString = '';
+        if ($addressData) {
+            $street = $addressData['street'] ?? '';
+            $city = $addressData['city'] ?? '';
+            $country = $addressData['country'] ?? 'CO';
+            if ($street || $city) {
+                $addressString = trim($street . ($city ? ', ' . $city : '') . ($country ? ', ' . $country : ''));
+            }
+        }
+        $address = $addressString 
+            ? AddressVO::create($addressString) 
+            : AddressVO::create('Colombia - Sin dirección específica');
 
         $email = isset($data['email'])
             ? EmailVO::create($data['email'])

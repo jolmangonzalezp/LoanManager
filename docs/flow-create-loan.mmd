@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant C as Cliente
+    participant API as routes/api
+    participant LC as LoanController
+    participant CLU as CreateLoanUseCase
+    participant LCR as LoanCreator
+    participant LOAN as Loan
+    participant ELM as LoanModel
+
+    C->>API: POST /loans
+    API->>LC: store(request)
+    LC->>CLU: execute(command)
+    CLU->>LOAN: create()
+    LOAN-->>CLU: Loan
+    CLU->>LCR: create(Loan)
+    LCR->>ELM: save()
