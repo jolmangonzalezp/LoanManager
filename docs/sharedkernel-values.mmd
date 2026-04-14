@@ -1,0 +1,144 @@
+classDiagram
+    class MoneyVO {
+        <<value object>>
+        -amount: int
+        -currency: Currency
+        +create(int, Currency) MoneyVO
+        +zero(Currency) MoneyVO
+        +getAmount() int
+        +getCurrency() Currency
+        +getFormatted() string
+        +add(MoneyVO) MoneyVO
+        +subtract(MoneyVO) MoneyVO
+        +multiply(int) MoneyVO
+        +isZero() bool
+        +isGreaterThan(MoneyVO) bool
+        +isLessThan(MoneyVO) bool
+    }
+
+    class DateVO {
+        <<value object>>
+        -date: DateTimeInterface
+        +create(DateTimeInterface|string) DateVO
+        +today() DateVO
+        +now() DateVO
+        +getDate() DateTimeInterface
+        +getYear() int
+        +getMonth() int
+        +getDay() int
+        +getFormatted(string) string
+        +isAfter(DateVO) bool
+        +isBefore(DateVO) bool
+        +isSameDay(DateVO) bool
+        +diffInDays(DateVO) int
+        +addMonths(int) DateVO
+        +isFuture() bool
+        +isPast() bool
+    }
+
+    class NameVO {
+        <<value object>>
+        -firstName: string
+        -lastName: string
+        -middleName: string
+        -secondLastName: string
+        +create(string, string, string, string) NameVO
+        +getFirstName() string
+        +getLastName() string
+        +getMiddleName() string
+        +getSecondLastName() string
+        +getFullName() string
+        +getShortName() string
+    }
+
+    class DniVO {
+        <<value object>>
+        -number: string
+        -type: DniType
+        +create(string, DniType) DniVO
+        +getNumber() string
+        +getType() DniType
+        +getFormatted() string
+    }
+
+    class PhoneVO {
+        <<value object>>
+        -countryCode: string
+        -number: string
+        +create(string, string) PhoneVO
+        +getCountryCode() string
+        +getNumber() string
+        +getInternationalFormat() string
+        +isColombian() bool
+    }
+
+    class EmailVO {
+        <<value object>>
+        -value: string
+        +create(string) EmailVO
+        +getValue() string
+    }
+
+    class AddressVO {
+        <<value object>>
+        -street: string
+        -city: string
+        -region: string
+        -country: string
+        +create(string, string, string, string) AddressVO
+        +getStreet() string
+        +getCity() string
+        +getFullAddress() string
+    }
+
+    class Currency {
+        <<enum>>
+        +COP
+        +USD
+        +EUR
+        +symbol() string
+        +decimalSeparator() string
+        +thousandsSeparator() string
+    }
+
+    class DniType {
+        <<enum>>
+        +CC
+        +NIT
+        +CE
+        +TI
+        +PASSPORT
+    }
+
+    class UuidVO {
+        <<value object>>
+        -value: string
+        +create() UuidVO
+        +fromString(string) UuidVO
+        +getValue() string
+    }
+
+    class IdVO {
+        <<value object>>
+        -value: string
+        +fromString(string) static
+        +getValue() string
+    }
+
+    class PersonVO {
+        <<value object>>
+        -name: NameVO
+        -dni: DniVO
+        -phone: PhoneVO
+        +create(NameVO, DniVO, PhoneVO) PersonVO
+        +getName() NameVO
+        +getDni() DniVO
+        +getPhone() PhoneVO
+    }
+
+    MoneyVO --> Currency
+    DniVO --> DniType
+    PhoneVO --> Currency
+    PersonVO --> NameVO
+    PersonVO --> DniVO
+    PersonVO --> PhoneVO

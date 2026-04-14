@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\LoanBC\Domain\ValueObjects;
 
-use App\SharedKernel\Domain\Exceptions\DomainException;
+use App\SharedKernel\Domain\Exceptions\BusinessRuleViolationException;
 use App\SharedKernel\Domain\ValueObjects\MoneyVO;
 
 final class InterestRateVO implements \Stringable
@@ -22,10 +22,10 @@ final class InterestRateVO implements \Stringable
 
     public static function createAnnual(float $annualRate): self
     {
-        if ($annualRate < self::MIN_RATE || $annualRate > self::MAX_RATE) {
-            throw new DomainException(
+        if ($annualRate < self::MIN_RATE) {
+            throw new BusinessRuleViolationException(
                 'invalid_rate',
-                'La tasa de interés debe estar entre 0% y 100%'
+                'La tasa de interés no puede ser negativa'
             );
         }
 
@@ -36,16 +36,14 @@ final class InterestRateVO implements \Stringable
 
     public static function createMonthly(float $monthlyRate): self
     {
-        if ($monthlyRate < self::MIN_RATE || $monthlyRate > self::MAX_RATE) {
-            throw new DomainException(
+        if ($monthlyRate < self::MIN_RATE) {
+            throw new BusinessRuleViolationException(
                 'invalid_rate',
-                'La tasa de interés debe estar entre 0% y 100%'
+                'La tasa de interés no puede ser negativa'
             );
         }
 
-        $annualRate = self::calculateAnnualRate($monthlyRate);
-
-        return new self($annualRate, $monthlyRate);
+        return new self(0, $monthlyRate);
     }
 
     private static function calculateMonthlyRate(float $annualRate): float
@@ -73,6 +71,10 @@ final class InterestRateVO implements \Stringable
         $interestAmount = (int) round(
             $capital->getAmount() * $this->monthlyRate / 100
         );
+
+        if ($interestAmount <= 0) {
+            return MoneyVO::zero($capital->getCurrency());
+        }
 
         return MoneyVO::create($interestAmount, $capital->getCurrency());
     }

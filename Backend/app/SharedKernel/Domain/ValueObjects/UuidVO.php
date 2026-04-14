@@ -8,9 +8,14 @@ use App\SharedKernel\Domain\Exceptions\InvalidUuidException;
 use Ramsey\Uuid\Uuid as RamseyUuid;
 use Ramsey\Uuid\UuidInterface;
 
-final class UuidVO implements \Stringable, IdVO
+final class UuidVO
 {
-    private function __construct(private readonly UuidInterface $uuid) {}
+    private readonly UuidInterface $uuid;
+    private function __construct(
+        UuidInterface $uuid
+    ) {
+        $this->uuid = $uuid;
+    }
 
     public static function fromString(string $value): static
     {
@@ -31,13 +36,8 @@ final class UuidVO implements \Stringable, IdVO
         return $this->uuid->toString();
     }
 
-    public function equals(IdVO $other): bool
+    public function equals(self $other): bool
     {
         return $other instanceof self && $this->uuid->equals($other->uuid);
-    }
-
-    public function __toString(): string
-    {
-        return $this->getValue();
     }
 }

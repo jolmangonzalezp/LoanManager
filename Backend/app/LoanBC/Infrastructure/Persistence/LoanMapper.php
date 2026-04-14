@@ -17,26 +17,41 @@ final class LoanMapper
 {
     public function toDomain(LoanModel $model): Loan
     {
-        $paidInterest = $model->paid_interest > 0
-            ? MoneyVO::create((int) $model->paid_interest)
+        $originalCapital = (int) $model->original_capital;
+        $capital = (int) $model->capital;
+        $remainingDebt = (int) $model->remaining_debt;
+        $paidInterest = (int) $model->paid_interest;
+        $paidCapital = (int) $model->paid_capital;
+
+        $paidInterestVO = $paidInterest > 0
+            ? MoneyVO::create($paidInterest)
             : MoneyVO::zero();
-        $paidCapital = $model->paid_capital > 0
-            ? MoneyVO::create((int) $model->paid_capital)
+        $paidCapitalVO = $paidCapital > 0
+            ? MoneyVO::create($paidCapital)
+            : MoneyVO::zero();
+        $originalCapitalVO = $originalCapital > 0
+            ? MoneyVO::create($originalCapital)
+            : MoneyVO::zero();
+        $capitalVO = $capital > 0
+            ? MoneyVO::create($capital)
+            : MoneyVO::zero();
+        $remainingDebtVO = $remainingDebt > 0
+            ? MoneyVO::create($remainingDebt)
             : MoneyVO::zero();
 
         return Loan::reconstitute(
             LoanIdVO::fromString($model->id),
             CustomerIdVO::fromString($model->customer_id),
-            MoneyVO::create((int) $model->original_capital),
+            $originalCapitalVO,
             InterestRateVO::createAnnual((float) $model->interest_rate),
             DateVO::create($model->start_date),
             DateVO::create($model->due_date),
             DateVO::create($model->created_at),
             LoanStatus::from($model->status),
-            $paidInterest,
-            $paidCapital,
-            MoneyVO::create((int) $model->capital),
-            MoneyVO::create((int) $model->remaining_debt),
+            $paidInterestVO,
+            $paidCapitalVO,
+            $capitalVO,
+            $remainingDebtVO,
             DateVO::create($model->next_payment_date)
         );
     }

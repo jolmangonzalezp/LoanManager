@@ -146,7 +146,7 @@ final class Loan
     public function calculateCurrentInterest(): MoneyVO
     {
         if ($this->status !== LoanStatus::ACTIVE) {
-            return MoneyVO::create(0);
+            return MoneyVO::zero();
         }
 
         return $this->interestRate->calculateInterest($this->capital);

@@ -6,14 +6,8 @@ namespace App\SharedKernel\Domain\Exceptions;
 
 class InvalidNameException extends DomainException
 {
-    public function __construct(string $reason)
+    public function __construct(string $message, \Throwable $previous = null)
     {
-        $message = match ($reason) {
-            'empty' => 'El nombre es requerido',
-            'too_short' => 'El nombre debe tener al menos 2 caracteres',
-            'invalid_chars' => 'El nombre contiene caracteres inválidos',
-            default => "El nombre es inválido: {$reason}"
-        };
-        parent::__construct($message);
+        parent::__construct($message, 0, $previous);
     }
 }

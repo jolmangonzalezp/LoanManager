@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant C as Cliente
+    participant API as routes/api
+    participant PC as PaymentController
+    participant PPU as ProcessPaymentUseCase
+    participant LF as LoanFinderById
+    participant LU as LoanUpdater
+    participant PCR as PaymentCreator
+    participant PM as PaymentModel
+
+    C->>API: POST /payments
+    API->>PC: store(request)
+    PC->>PPU: execute(command)
+    PPU->>LF: find(loan_id)
+    LF-->>PPU: Loan
+    PPU->>LU: update(Loan)
+    LU-->>PPU: updated Loan
+    PPU->>PCR: create(Payment)
+    PCR->>PM: save()

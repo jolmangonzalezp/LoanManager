@@ -1,0 +1,60 @@
+
+classDiagram
+    class MoneyVO {
+        <<value object>>
+        -amount: int
+        -currency: Currency
+        +create(int, string) MoneyVO
+        +zero(string) MoneyVO
+        +add(MoneyVO) MoneyVO
+        +subtract(MoneyVO) MoneyVO
+        +isZero() bool
+    }
+
+    class DateVO {
+        <<value object>>
+        -date: DateTime
+        +create(string) DateVO
+        +now() DateVO
+        +addMonths(int) DateVO
+        +diffInMonths(DateVO) int
+    }
+
+    class InterestRateVO {
+        <<value object>>
+        -annualRate: float
+        -monthlyRate: float
+        +createAnnual(float) InterestRateVO
+        +createMonthly(float) InterestRateVO
+        +calculateInterest(MoneyVO) MoneyVO
+    }
+
+    class NameVO {
+        <<value object>>
+        -firstName: string
+        -lastName: string
+    }
+
+    class DniVO {
+        <<value object>>
+        -type: DniType
+        -number: string
+    }
+
+    class LoanStatus {
+        <<enum>>
+        +ACTIVE
+        +PAID
+        +DEFAULTED
+        +CANCELLED
+    }
+
+    class PaymentStatus {
+        <<enum>>
+        +PENDING
+        +VALIDATED
+        +APPLIED
+        +REJECTED
+    }
+
+    InterestRateVO --> MoneyVO

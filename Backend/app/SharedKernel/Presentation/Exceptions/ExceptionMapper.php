@@ -7,13 +7,11 @@ namespace App\SharedKernel\Presentation\Exceptions;
 use App\SharedKernel\Application\Exceptions\ApplicationException;
 use App\SharedKernel\Application\Exceptions\ConflictException;
 use App\SharedKernel\Application\Exceptions\ForbiddenException;
-use App\SharedKernel\Application\Exceptions\NotFoundException as AppNotFoundException;
+use App\SharedKernel\Application\Exceptions\NotFoundException;
 use App\SharedKernel\Application\Exceptions\ServiceUnavailableException;
 use App\SharedKernel\Application\Exceptions\UnauthorizedException;
 use App\SharedKernel\Application\Exceptions\ValidationException;
-use App\SharedKernel\Domain\Exceptions\AggregateNotFoundException;
 use App\SharedKernel\Domain\Exceptions\DomainException;
-use App\SharedKernel\Domain\Exceptions\EntityNotFoundException;
 use App\SharedKernel\Infrastructure\Exceptions\InfrastructureException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,89 +19,68 @@ use Throwable;
 
 final class ExceptionMapper
 {
+    private const HTTP_MAP = [
+        DomainException::class => 422,
+        NotFoundException::class => 404,
+        ValidationException::class => 422,
+        UnauthorizedException::class => 401,
+        ForbiddenException::class => 403,
+        ConflictException::class => 409,
+        ServiceUnavailableException::class => 503,
+        ApplicationException::class => 500,
+        InfrastructureException::class => 503,
+    ];
+
+    private const TYPE_MAP = [
+        DomainException::class => 'DOMAIN_ERROR',
+        ApplicationException::class => 'APPLICATION_ERROR',
+        InfrastructureException::class => 'INFRASTRUCTURE_ERROR',
+    ];
+
     public function map(Throwable $e, Request $request): JsonResponse
     {
-        $response = match (true) {
-            $e instanceof DomainException => $this->mapDomainException($e),
-            $e instanceof ApplicationException => $this->mapApplicationException($e),
-            $e instanceof InfrastructureException => $this->mapInfrastructureException($e),
-            default => $this->mapUnknownException($e),
-        };
+        $response = $this->buildResponse($e);
 
         $traceId = $request->attributes->get('trace_id');
-
         if ($traceId) {
             $response['trace_id'] = $traceId;
         }
 
-        return response()->json($response, $this->getHttpStatus($e));
+        $httpCode = $this->resolveHttpCode($e);
+
+        return response()->json($response, $httpCode);
     }
 
-    private function mapDomainException(DomainException $e): array
+    private function resolveHttpCode(Throwable $e): int
     {
+        foreach (self::HTTP_MAP as $exceptionClass => $code) {
+            if ($e instanceof $exceptionClass) {
+                return $code;
+            }
+        }
+        return 500;
+    }
+
+    private function resolveType(Throwable $e): string
+    {
+        foreach (self::TYPE_MAP as $exceptionClass => $type) {
+            if ($e instanceof $exceptionClass) {
+                return $type;
+            }
+        }
+        return 'INTERNAL_ERROR';
+    }
+
+    private function buildResponse(Throwable $e): array
+    {
+        $code = (new \ReflectionClass($e))->getShortName();
+
         return [
             'error' => [
-                'type' => 'DOMAIN_ERROR',
-                'code' => $this->extractCode($e),
+                'type' => $this->resolveType($e),
+                'code' => $code,
                 'message' => $e->getMessage(),
             ],
         ];
-    }
-
-    private function mapApplicationException(ApplicationException $e): array
-    {
-        return [
-            'error' => [
-                'type' => 'APPLICATION_ERROR',
-                'code' => $this->extractCode($e),
-                'message' => $e->getMessage(),
-            ],
-        ];
-    }
-
-    private function mapInfrastructureException(InfrastructureException $e): array
-    {
-        return [
-            'error' => [
-                'type' => 'INFRASTRUCTURE_ERROR',
-                'code' => $this->extractCode($e),
-                'message' => $e->getMessage(),
-            ],
-        ];
-    }
-
-    private function mapUnknownException(Throwable $e): array
-    {
-        return [
-            'error' => [
-                'type' => 'INTERNAL_ERROR',
-                'code' => 'INTERNAL_ERROR',
-                'message' => 'Error interno del servidor',
-            ],
-        ];
-    }
-
-    private function extractCode(Throwable $e): string
-    {
-        $className = (new \ReflectionClass($e))->getShortName();
-
-        return preg_replace('/Exception$/', '', $className) ?? $className;
-    }
-
-    private function getHttpStatus(Throwable $e): int
-    {
-        return match (true) {
-            $e instanceof AppNotFoundException,
-            $e instanceof EntityNotFoundException,
-            $e instanceof AggregateNotFoundException => 404,
-            $e instanceof ValidationException,
-            $e instanceof DomainException => 422,
-            $e instanceof UnauthorizedException => 401,
-            $e instanceof ForbiddenException => 403,
-            $e instanceof ConflictException => 409,
-            $e instanceof ServiceUnavailableException,
-            $e instanceof InfrastructureException => 503,
-            default => 500,
-        };
     }
 }

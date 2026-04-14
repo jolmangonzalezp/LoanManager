@@ -24,8 +24,11 @@ final class LoanResponse
         public readonly string $createdAt
     ) {}
 
-    private static function moneyToArray(MoneyVO $money): array
+    private static function moneyToArray(?MoneyVO $money): array
     {
+        if ($money === null) {
+            return ['amount' => 0, 'currency' => 'COP'];
+        }
         return [
             'amount' => $money->getAmount(),
             'currency' => $money->getCurrency()->value,
@@ -55,6 +58,10 @@ final class LoanResponse
 
     public function toArray(): array
     {
+        $startTimestamp = strtotime($this->startDate);
+        $dueTimestamp = strtotime($this->dueDate);
+        $months = round(($dueTimestamp - $startTimestamp) / (30 * 24 * 60 * 60));
+        
         return [
             'id' => $this->id,
             'customer_id' => $this->customerId,
@@ -63,6 +70,7 @@ final class LoanResponse
             'interest_rate' => $this->interestRate,
             'start_date' => $this->startDate,
             'due_date' => $this->dueDate,
+            'term' => $months,
             'next_payment_date' => $this->nextPaymentDate,
             'status' => $this->status,
             'paid_capital' => $this->paidCapital,

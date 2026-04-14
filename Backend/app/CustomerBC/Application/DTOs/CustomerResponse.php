@@ -33,10 +33,27 @@ final class CustomerResponse
 
     public function toArray(): array
     {
+        $nameParts = explode(' ', $this->name, 4);
+        
+        $dniFormatted = $this->dni;
+        $dniType = 'CC';
+        if (preg_match('/^([A-Z]+)[.:]?(.+)$/', $dniFormatted, $matches)) {
+            $dniType = $matches[1];
+            $dniFormatted = $matches[2];
+        }
+        
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'dni' => $this->dni,
+            'name' => [
+                'first_name' => $nameParts[0] ?? '',
+                'last_name' => $nameParts[1] ?? '',
+                'second_last_name' => $nameParts[2] ?? '',
+                'third_last_name' => $nameParts[3] ?? ''
+            ],
+            'dni' => [
+                'type' => $dniType,
+                'number' => trim($dniFormatted)
+            ],
             'phone' => $this->phone,
             'address' => $this->address,
             'email' => $this->email,

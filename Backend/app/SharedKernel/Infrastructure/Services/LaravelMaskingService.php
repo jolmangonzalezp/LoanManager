@@ -8,33 +8,7 @@ use App\SharedKernel\Domain\Ports\MaskingService;
 
 final class LaravelMaskingService implements MaskingService
 {
-    public function maskEmail(string $email): string
-    {
-        $atPosition = strpos($email, '@');
-
-        if ($atPosition === false) {
-            return $this->mask($email, 4);
-        }
-
-        $localPart = substr($email, 0, $atPosition);
-        $domain = substr($email, $atPosition);
-
-        $maskedLocal = $this->mask($localPart, 1);
-
-        return $maskedLocal.$domain;
-    }
-
-    public function maskPhone(string $phone): string
-    {
-        return $this->maskEnd($phone, 4);
-    }
-
-    public function maskDni(string $dni, string $type): string
-    {
-        return $this->maskEnd($dni, 4);
-    }
-
-    public function mask(string $value, int $visibleAtStart = 4, string $maskChar = '*'): string
+    public function mask(string $value): string
     {
         $length = strlen($value);
 
@@ -42,15 +16,15 @@ final class LaravelMaskingService implements MaskingService
             $visible = (int) ceil($length / 2);
             $maskedLength = $length - $visible;
 
-            return str_repeat($maskChar, $maskedLength).substr($value, -$visible);
+            return str_repeat('*', $maskedLength).substr($value, -$visible);
         }
 
-        $maskedLength = $length - $visibleAtStart;
+        $maskedLength = $length - 4;
 
-        return str_repeat($maskChar, $maskedLength).substr($value, -$visibleAtStart);
+        return str_repeat('*', $maskedLength).substr($value, -4);
     }
 
-    public function maskEnd(string $value, int $visibleAtEnd = 4, string $maskChar = '*'): string
+    public function maskEnd(string $value): string
     {
         $length = strlen($value);
 
@@ -58,11 +32,11 @@ final class LaravelMaskingService implements MaskingService
             $visible = (int) ceil($length / 2);
             $maskedLength = $length - $visible;
 
-            return str_repeat($maskChar, $maskedLength).substr($value, -$visible);
+            return str_repeat('*', $maskedLength).substr($value, -$visible);
         }
 
-        $maskedLength = $length - $visibleAtEnd;
+        $maskedLength = $length - 4;
 
-        return str_repeat($maskChar, $maskedLength).substr($value, -$visibleAtEnd);
+        return str_repeat('*', $maskedLength).substr($value, -4);
     }
 }

@@ -6,13 +6,8 @@ namespace App\SharedKernel\Domain\Exceptions;
 
 class InvalidMoneyException extends DomainException
 {
-    public function __construct(string $reason)
+    public function __construct(string $mmessage = '', \Throwable $previous = null)
     {
-        $message = match ($reason) {
-            'negative' => 'El monto no puede ser negativo',
-            'would_be_negative' => 'El resultado de la operación sería negativo',
-            default => "El monto es inválido: {$reason}"
-        };
-        parent::__construct($message);
+        parent::__construct($mmessage,0, $previous);
     }
 }

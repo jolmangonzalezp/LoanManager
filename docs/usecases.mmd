@@ -1,0 +1,43 @@
+classDiagram
+    class LoanController {
+        +index() JSON
+        +show(string) JSON
+        +store(Request) JSON
+        +update(Request, string) JSON
+        +makePayment(Request, string) JSON
+    }
+
+    class PaymentController {
+        +index() JSON
+        +store(Request) JSON
+    }
+
+    class CustomerController {
+        +index() JSON
+        +show(string) JSON
+        +store(Request) JSON
+        +update(Request, string) JSON
+    }
+
+    class CreateLoanUseCase {
+        -finder: LoanFinderByCustomerId
+        -creator: LoanCreator
+        +execute(CreateLoanCommand) LoanResponse
+    }
+
+    class ProcessPaymentUseCase {
+        -finder: PaymentFinderByLoanId
+        -loanFinder: LoanFinderById
+        -loanUpdater: LoanUpdater
+        -paymentCreator: PaymentCreator
+        +execute(ProcessPaymentCommand) PaymentResponse
+    }
+
+    class GetAllLoansUseCase {
+        -finder: LoanFinderAll
+        +execute() array
+    }
+
+    LoanController --> CreateLoanUseCase
+    LoanController --> GetAllLoansUseCase
+    PaymentController --> ProcessPaymentUseCase

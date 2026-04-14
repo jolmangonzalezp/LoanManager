@@ -14,8 +14,7 @@ enum DniType: string
     public function minLength(): int
     {
         return match ($this) {
-            self::CC, self::PASSPORT => 6,
-            self::CE => 6,
+            self::CC, self::PASSPORT, self::CE => 6,
             self::NIT => 9,
         };
     }
@@ -23,9 +22,8 @@ enum DniType: string
     public function maxLength(): int
     {
         return match ($this) {
-            self::CC => 10,
+            self::CC, self::NIT => 10,
             self::CE, self::PASSPORT => 15,
-            self::NIT => 10,
         };
     }
 
