@@ -1,11 +1,13 @@
 <script setup>
 import { onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { PageHeader, KPI, TableWrap, Ref, Amount, Btn } from '@/Shared'
 import { useLoanApi, LoanFormModal, LoanDetailModal } from '@/Modules/Loan'
 import { usePaymentApi, PaymentFormModal } from '@/Modules/Payment'
 import { useCustomerApi } from '@/Modules/Customer'
 import { useDataLoader, useModalState, formatCurrency, getStatusLabel } from '@/Shared'
 
+const route = useRoute()
 const loanApi = useLoanApi()
 const paymentApi = usePaymentApi()
 const customerApi = useCustomerApi()
@@ -17,7 +19,18 @@ const { data: reportData, load: loadReportData } = useDataLoader(() => loanApi.g
 
 const report = computed(() => reportData.value || {})
 
+const preselectedCustomer = computed(() => {
+  const cid = route.query.customer_id
+  return customers.value?.find(c => c.id === cid)
+})
+
 const { showForm, showDetail, showPayment, editing, selected, openForm, closeForm, openDetail, closeDetail } = useModalState()
+
+function editLoan() {
+  const loanToEdit = selected.value
+  closeDetail()
+  setTimeout(() => openForm(loanToEdit), 100)
+}
 
 function viewPayment(loan) {
   selected.value = loan
@@ -40,10 +53,22 @@ async function savePayment(data) {
   loadLoans()
 }
 
+function openNewLoan() {
+  if (preselectedCustomer.value) {
+    openForm({ customer_id: preselectedCustomer.value.id })
+  } else {
+    openForm()
+  }
+}
+
 onMounted(() => {
   loadLoans()
   loadReportData()
-  loadCustomers()
+  loadCustomers().then(() => {
+    if (route.query.new === 'true') {
+      openNewLoan()
+    }
+  })
 })
 </script>
 
@@ -55,14 +80,14 @@ onMounted(() => {
 
     <template v-else>
       <div class="kpi-grid">
-        <KPI label="Cartera Total" :value="formatCurrency(loans.reduce((s,l) => s + ((l.capital?.amount || 0) / 100), 0))" :goldValue="true" />
+        <KPI label="Cartera Total" :value="formatCurrency(loans.reduce((s,l) => s + (l.capital?.amount || 0), 0))" :goldValue="true" />
         <KPI label="Activos" :value="report.active_loans || 0" :goldValue="true" />
         <KPI label="En Mora" :value="report.defaulted_loans || 0" :goldValue="true" />
       </div>
 
-      <TableWrap v-if="loans.length" :headers="['Referencia', 'Cliente', 'Monto', 'Estado', '']">
+      <TableWrap v-if="loans.length" :headers="['No. Préstamo', 'Cliente', 'Monto', 'Estado', '']">
         <tr v-for="l in loans" :key="l.id" class="trow" @click="openDetail(l)">
-          <td><Ref>#{{ l.id?.slice(0, 8) }}</Ref></td>
+          <td><Ref>{{ l.loan_number || l.id?.slice(0, 8) }}</Ref></td>
           <td>{{ l.customer_name }}</td>
           <td><Amount>{{ formatCurrency(l.capital?.amount) }}</Amount></td>
           <td>{{ getStatusLabel(l.status) }}</td>
@@ -72,8 +97,8 @@ onMounted(() => {
     </template>
 
     <LoanFormModal :open="showForm" :customers="customers" :loan="editing" @close="closeForm" @save="saveLoan" />
-    <LoanDetailModal :open="showDetail" :loan="selected" @close="closeDetail" @edit="openForm(selected)" @payment="viewPayment" />
-    <PaymentFormModal :open="showPayment" :loan="selected" :customers="customers" :loans="loans" @close="showPayment = false" @save="savePayment" />
+    <LoanDetailModal :open="showDetail" :loan="selected" @close="closeDetail" @edit="editLoan" @payment="viewPayment" />
+    <PaymentFormModal :open="showPayment" :loan="selected" @close="showPayment = false" @save="savePayment" />
   </div>
 </template>
 

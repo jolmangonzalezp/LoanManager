@@ -19,6 +19,7 @@ const alert = useAlert()
 
 const { showNewLoan, showNewCustomer, showNewPayment, openNewLoan, openNewCustomer, openNewPayment, closeAll } = useGlobalModals()
 const fabOpen = ref(false)
+const sidebarCollapsed = ref(false)
 
 const customers = ref([])
 const loans = ref([])
@@ -53,6 +54,10 @@ const currentRoute = computed(() => {
 
 const navigate = (to) => router.push('/' + to)
 
+const toggleSidebar = () => {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+}
+
 function handleNewLoan() {
   loadCustomers()
   loadLoans()
@@ -67,17 +72,16 @@ function handleNewCustomer() {
 function handleNewPayment() {
   loadCustomers()
   loadLoans()
-  loadCustomers()
   openNewPayment()
 }
 
 async function saveCustomer(data) {
-  alert.showLoading('Guardando cliente...')
   try {
+    alert.showLoading('Guardando cliente...')
     await customerApi.create(data)
     alert.close()
-    alert.showSuccess('Cliente creado exitosamente')
     closeAll()
+    alert.showSuccess('Cliente creado exitosamente')
   } catch (e) {
     alert.close()
     alert.showError(e.message || 'Error al crear cliente')
@@ -86,13 +90,13 @@ async function saveCustomer(data) {
 
 async function saveLoan(data) {
   console.log('Sending loan data:', data)
-  alert.showLoading('Guardando préstamo...')
   try {
+    alert.showLoading('Guardando préstamo...')
     const result = await loanApi.create(data)
     console.log('Loan created:', result)
     alert.close()
-    alert.showSuccess('Préstamo creado exitosamente')
     closeAll()
+    alert.showSuccess('Préstamo creado exitosamente')
   } catch (e) {
     console.error('Loan error:', e)
     alert.close()
@@ -101,16 +105,16 @@ async function saveLoan(data) {
 }
 
 async function savePayment(data) {
-  alert.showLoading('Procesando pago...')
   try {
+    alert.showLoading('Procesando pago...')
     await fetch('http://localhost:8000/api/payments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
       body: JSON.stringify(data)
     })
     alert.close()
-    alert.showSuccess('Pago registrado exitosamente')
     closeAll()
+    alert.showSuccess('Pago registrado exitosamente')
   } catch (e) {
     alert.close()
     alert.showError(e.message || 'Error al registrar pago')
@@ -122,11 +126,24 @@ async function savePayment(data) {
   <div class="app">
     <Sidebar v-if="showSidebar" 
       :current-route="currentRoute" 
+      :collapsed="sidebarCollapsed"
       @navigate="navigate"
       @newLoan="handleNewLoan"
       @newCustomer="handleNewCustomer"
       @newPayment="handleNewPayment"
+      @toggle="toggleSidebar"
     />
+
+    <header v-if="showSidebar" class="header">
+      <button class="menu-toggle" @click="toggleSidebar">
+        <span class="toggle-icon">{{ sidebarCollapsed ? '☰' : '✕' }}</span>
+      </button>
+      <div class="header-logo">
+        <img src="/logo.webp" alt="Logo" class="logo-img" />
+      </div>
+      <div class="header-spacer"></div>
+    </header>
+
     <main class="main" :class="{ 'no-sidebar': !showSidebar }">
       <router-view />
     </main>
@@ -148,8 +165,58 @@ async function savePayment(data) {
 
 <style scoped>
 .app { display: flex; min-height: 100vh; }
-.main { margin-left: 220px; flex: 1; padding: 32px 30px 80px; min-height: 100vh; }
+.main { flex: 1; padding: 32px 30px 80px; min-height: calc(100vh - 56px); margin-top: 56px; margin-left: 220px; }
 .main.no-sidebar { margin-left: 0; padding: 0; }
+
+.header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 250;
+}
+
+.menu-toggle {
+  position: fixed;
+  left: 16px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 260;
+}
+
+.toggle-icon {
+  font-size: 20px;
+  color: #d4af37;
+}
+
+.header-logo {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 6px;
+}
+
+.logo-img {
+  height: 44px;
+  width: auto;
+  border-radius: 50%;
+}
+
+.header-spacer {
+  width: 40px;
+}
 
 .fab {
   position: fixed;

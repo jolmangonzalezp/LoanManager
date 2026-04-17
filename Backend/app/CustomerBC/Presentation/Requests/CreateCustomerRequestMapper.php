@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\CustomerBC\Presentation\Requests;
 
-use App\CustomerBC\Application\DTOs\CreateCustomerRequest;
-use App\SharedKernel\Domain\ValueObjects\DniType;
+use App\CustomerBC\Application\DTO\CreateCustomerRequest;
+use App\SharedKernel\Domain\ValueObject\DniType;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class CreateCustomerRequestMapper extends FormRequest

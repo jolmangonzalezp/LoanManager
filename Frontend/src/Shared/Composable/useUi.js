@@ -1,11 +1,9 @@
 import { ref } from 'vue'
-import { useAlert } from './useAlert'
 
 export function useDataLoader(apiMethod, onLoad = null) {
   const loading = ref(false)
   const error = ref(null)
   const data = ref([])
-  const alert = useAlert()
 
   async function load() {
     loading.value = true
@@ -16,8 +14,8 @@ export function useDataLoader(apiMethod, onLoad = null) {
       if (onLoad) onLoad(result)
       return result
     } catch (e) {
-      error.value = e.message
-      alert.showError('Error al cargar datos')
+      console.error('useDataLoader error:', e)
+      error.value = e.message || 'Error al cargar datos'
     } finally {
       loading.value = false
     }

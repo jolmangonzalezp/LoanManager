@@ -25,19 +25,15 @@ watch(() => props.customer, (c) => {
   if (c) {
     form.value = {
       name: { 
-        first_name: c.name.first_name, 
-        last_name: c.name.last_name || '',
-        second_last_name: c.name.second_last_name || '',
-        third_last_name: c.name.third_last_name || ''
+        first_name: c.first_name || '', 
+        last_name: c.middle_name || '',
+        second_last_name: c.last_name || '',
+        third_last_name: c.second_last_name || ''
       },
-      dni: { type: c.dni.type, number: c.dni.number },
+      dni: { type: c.dni?.type || 'CC', number: c.dni?.number || '' },
       email: c.email || '',
       phone: c.phone || '',
-      address: c.address ? { 
-        street: c.address.street, 
-        city: c.address.city || '',
-        country: c.address.country || 'CO'
-      } : { street: '', city: '', country: 'CO' }
+      address: { street: c.address || '', city: '', country: 'CO' }
     }
   } else {
     reset()
@@ -128,11 +124,6 @@ async function save() {
       <div class="field">
         <label>Email</label>
         <input type="email" v-model="form.email" placeholder="correo@ejemplo.com" />
-      </div>
-      
-      <div class="field">
-        <label>Ciudad</label>
-        <input type="text" v-model="form.address.city" placeholder="Bogotá" />
       </div>
       
       <div class="field">

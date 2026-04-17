@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\CustomerBC\Presentation\Mappers;
 
-use App\CustomerBC\Application\Commands\UpdateCustomerCommand;
-use App\SharedKernel\Domain\ValueObjects\AddressVO;
-use App\SharedKernel\Domain\ValueObjects\DniType;
-use App\SharedKernel\Domain\ValueObjects\DniVO;
-use App\SharedKernel\Domain\ValueObjects\EmailVO;
-use App\SharedKernel\Domain\ValueObjects\NameVO;
-use App\SharedKernel\Domain\ValueObjects\PersonVO;
-use App\SharedKernel\Domain\ValueObjects\PhoneVO;
+use App\CustomerBC\Application\CQRS\Command\UpdateCustomerCommand;
+use App\CustomerBC\Domain\ValueObject\CustomerIdVO;
+use App\SharedKernel\Domain\ValueObject\AddressVO;
+use App\SharedKernel\Domain\ValueObject\DniType;
+use App\SharedKernel\Domain\ValueObject\DniVO;
+use App\SharedKernel\Domain\ValueObject\EmailVO;
+use App\SharedKernel\Domain\ValueObject\NameVO;
+use App\SharedKernel\Domain\ValueObject\PersonVO;
+use App\SharedKernel\Domain\ValueObject\PhoneVO;
 
 final class UpdateCustomerRequestMapper
 {
@@ -19,24 +20,41 @@ final class UpdateCustomerRequestMapper
 
     public function fromRequest(array $data): UpdateCustomerCommand
     {
+        $firstName = $data['first_name'] ?? '';
+        $middleName = $data['middle_name'] ?? null;
+        $lastName = $data['last_name'] ?? '';
+        $secondLastName = $data['second_last_name'] ?? '';
+
         $name = NameVO::create(
-            $data['first_name'],
-            $data['last_name'],
-            $data['second_last_name'],
-            $data['middle_name'] ?? null
+            $firstName,
+            $lastName,
+            $secondLastName,
+            $middleName
         );
 
         $dni = DniVO::create(
-            $data['dni_number'],
-            DniType::from($data['dni_type'])
+            $data['dni_number'] ?? '',
+            DniType::from($data['dni_type'] ?? 'CC')
         );
 
         $phone = PhoneVO::create(
-            $data['phone_number'],
+            $data['phone'] ?? $data['phone_number'] ?? '',
             $this->formatCountryCode($data['phone_country_code'] ?? '57')
         );
 
-        $address = AddressVO::create($data['address']);
+        $addressData = $data['address'] ?? null;
+        $addressString = '';
+        if ($addressData) {
+            $street = $addressData['street'] ?? '';
+            $city = $addressData['city'] ?? '';
+            $country = $addressData['country'] ?? 'CO';
+            if ($street || $city) {
+                $addressString = trim($street . ($city ? ', ' . $city : '') . ($country ? ', ' . $country : ''));
+            }
+        }
+        $address = $addressString 
+            ? AddressVO::create($addressString) 
+            : AddressVO::create('Colombia - Sin dirección específica');
 
         $email = isset($data['email'])
             ? EmailVO::create($data['email'])
@@ -44,7 +62,7 @@ final class UpdateCustomerRequestMapper
 
         $personalData = PersonVO::create($name, $dni, $phone, $address, $email);
 
-        return new UpdateCustomerCommand($data['id'], $personalData);
+        return new UpdateCustomerCommand(CustomerIdVO::fromString($data['id']), $personalData);
     }
 
     private function formatCountryCode(string $code): string

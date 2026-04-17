@@ -4,40 +4,67 @@ import { useRouter } from 'vue-router'
 import { useApi } from '../../composables/useApi'
 
 const props = defineProps({
-  currentRoute: { type: String, default: 'dashboard' }
+  currentRoute: { type: String, default: 'dashboard' },
+  collapsed: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['navigate', 'newLoan', 'newCustomer', 'newPayment'])
+const emit = defineEmits(['navigate', 'newLoan', 'newCustomer', 'newPayment', 'toggle'])
 const router = useRouter()
 const api = useApi()
 
 const user = ref({ name: 'Admin', email: '' })
-const showPlusMenu = ref(false)
 
-const menuItems = [
-  { id: 'dashboard', label: ' inicio', icon: '◈' },
+const mainMenuItems = [
+  { id: 'dashboard', label: 'Inicio', icon: '◈' },
   { id: 'clientes', label: 'Clientes', icon: '⊕' },
   { id: 'prestamos', label: 'Cartera', icon: '◎' },
   { id: 'pagos', label: 'Pagos', icon: '◉' },
-  { id: 'reportes', label: 'Reportes', icon: '▤' }
 ]
+
+const reportsMenuItems = [
+  { path: '/reportes', label: 'Resumen', icon: '📊' },
+  { path: '/reportes/cartera', label: 'Cartera', icon: '💰' },
+  { path: '/reportes/rentabilidad', label: 'Rentabilidad', icon: '📈' },
+  { path: '/reportes/mora', label: 'Mora', icon: '⚠️' },
+  { path: '/reportes/prestamos-activos', label: 'Préstamos Activos', icon: '📋' },
+  { path: '/reportes/flujo-caja', label: 'Flujo de Caja', icon: '💸' },
+  { path: '/reportes/historial-pagos', label: 'Historial de Pagos', icon: '💳' },
+  { path: '/reportes/auditoria', label: 'Auditoría', icon: '📝' },
+]
+
+const showReportsSubmenu = ref(false)
 
 function logout() {
   localStorage.removeItem('token')
   router.push('/login')
 }
 
-function openPlusMenu() {
-  showPlusMenu.value = !showPlusMenu.value
+function toggleSidebar() {
+  emit('toggle')
 }
 
-function closeMenu() {
-  showPlusMenu.value = false
+function navigateTo(id) {
+  if (id === 'reportes') {
+    showReportsSubmenu.value = !showReportsSubmenu.value
+  } else {
+    showReportsSubmenu.value = false
+    emit('navigate', id)
+  }
 }
 
-function handleNew(type) {
-  emit('new' + type)
-  closeMenu()
+function navigateToReport(path) {
+  showReportsSubmenu.value = false
+  router.push(path)
+}
+
+function isMainActive(id) {
+  if (id === 'reportes') return props.currentRoute === 'reportes'
+  return props.currentRoute === id
+}
+
+function isReportActive(path) {
+  if (path === '/reportes') return window.location.pathname === '/reportes'
+  return window.location.pathname.startsWith(path)
 }
 
 onMounted(async () => {
@@ -51,31 +78,51 @@ onMounted(async () => {
 </script>
 
 <template>
-  <aside class="sidebar">
-    <div class="logo-section">
-      <img src="/logo.webp" alt="Logo" class="logo-img" />
-    </div>
+  <aside class="sidebar" :class="{ collapsed }">
     <nav class="nav">
       <div 
-        v-for="item in menuItems" 
+        v-for="item in mainMenuItems" 
         :key="item.id"
         class="nav-item"
-        :class="{ active: currentRoute === item.id }"
-        @click="emit('navigate', item.id)"
+        :class="{ active: isMainActive(item.id) }"
+        @click="navigateTo(item.id)"
       >
         <span class="nav-icon">{{ item.icon }}</span>
         <span class="nav-label">{{ item.label }}</span>
       </div>
+
+      <div 
+        class="nav-item"
+        :class="{ active: isMainActive('reportes') }"
+        @click="navigateTo('reportes')"
+      >
+        <span class="nav-icon">▤</span>
+        <span class="nav-label">Reportes</span>
+        <span class="nav-arrow" :class="{ rotated: showReportsSubmenu }">▶</span>
+      </div>
+
+      <div v-if="showReportsSubmenu && !collapsed" class="submenu">
+        <div 
+          v-for="item in reportsMenuItems" 
+          :key="item.path"
+          class="submenu-item"
+          :class="{ active: isReportActive(item.path) }"
+          @click="navigateToReport(item.path)"
+        >
+          <span class="submenu-icon">{{ item.icon }}</span>
+          <span class="submenu-label">{{ item.label }}</span>
+        </div>
+      </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user">
+      <div class="user" :class="{ hidden: collapsed }">
         <span class="user-avatar">JM</span>
         <div class="user-info">
           <div class="user-name">Admin</div>
           <div class="user-role">Administrador</div>
         </div>
       </div>
-      <button class="logout-btn" @click="logout">Cerrar Sesión</button>
+      <button class="logout-btn" :class="{ hidden: collapsed }" @click="logout">Cerrar Sesión</button>
     </div>
   </aside>
 </template>
@@ -83,29 +130,21 @@ onMounted(async () => {
 <style scoped>
 .sidebar {
   width: 220px;
-  min-height: 100vh;
+  min-height: calc(100vh - 56px);
   background: rgba(0,0,0,0.3);
   border-right: 1px solid rgba(255,255,255,0.07);
   display: flex;
   flex-direction: column;
+  transition: width 0.3s ease;
   position: fixed;
+  top: 56px;
   left: 0;
-  top: 0;
+  flex-shrink: 0;
+  z-index: 200;
 }
 
-.logo-section {
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-}
-
-.logo-img {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  padding: 8px;
+.sidebar.collapsed {
+  width: 64px;
 }
 
 .nav {
@@ -126,6 +165,13 @@ onMounted(async () => {
   transition: all 0.15s;
   color: #94a3b8;
   font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px;
 }
 
 .nav-item:hover {
@@ -139,74 +185,103 @@ onMounted(async () => {
   border-left: 2px solid #d4af37;
 }
 
+.sidebar.collapsed .nav-item.active {
+  border-left: none;
+  border-bottom: 2px solid #d4af37;
+}
+
 .nav-icon {
-  font-size: 14px;
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
 }
 
-.plus-section {
-  padding: 12px;
-  position: relative;
+.nav-label {
+  flex: 1;
+  transition: opacity 0.2s ease;
 }
 
-.plus-btn {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, #d4af37, #b89150);
-  border: none;
-  border-radius: 8px;
-  color: #06090f;
-  font-size: 20px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
+.nav-arrow {
+  font-size: 10px;
+  transition: transform 0.2s ease;
+  color: #64748b;
 }
 
-.plus-btn:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(212,175,55,0.3);
+.nav-arrow.rotated {
+  transform: rotate(90deg);
 }
 
-.plus-menu {
-  position: absolute;
-  bottom: 100%;
-  left: 12px;
-  right: 12px;
-  background: rgba(8,12,16,0.95);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  padding: 8px;
-  margin-bottom: 8px;
+.sidebar.collapsed .nav-label {
+  opacity: 0;
+  width: 0;
+}
+
+.sidebar.collapsed .nav-arrow {
+  display: none;
+}
+
+.submenu {
+  padding-left: 20px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  margin-top: 4px;
+  margin-bottom: 8px;
 }
 
-.plus-item {
-  padding: 10px 12px;
+.submenu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
   border-radius: 6px;
   cursor: pointer;
-  color: #94a3b8;
-  font-size: 13px;
   transition: all 0.15s;
+  color: #64748b;
+  font-size: 12px;
 }
 
-.plus-item:hover {
-  background: rgba(212,175,55,0.1);
+.submenu-item:hover {
+  background: rgba(255,255,255,0.03);
+  color: #94a3b8;
+}
+
+.submenu-item.active {
+  background: rgba(212,175,55,0.08);
   color: #d4af37;
+}
+
+.submenu-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+
+.submenu-label {
+  white-space: nowrap;
 }
 
 .sidebar-footer {
   padding: 16px;
   border-top: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .user {
   display: flex;
   align-items: center;
   gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.user.hidden {
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
 }
 
 .user-avatar {
@@ -222,6 +297,7 @@ onMounted(async () => {
   font-weight: 700;
   color: #d4af37;
   font-family: 'Share Tech Mono', monospace;
+  flex-shrink: 0;
 }
 
 .user-info {
@@ -242,7 +318,6 @@ onMounted(async () => {
 
 .logout-btn {
   width: 100%;
-  margin-top: 12px;
   padding: 8px;
   background: transparent;
   border: 1px solid rgba(255,255,255,0.07);
@@ -251,11 +326,20 @@ onMounted(async () => {
   font-size: 11px;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
 }
 
 .logout-btn:hover {
   background: rgba(239,68,68,0.1);
   border-color: rgba(239,68,68,0.3);
   color: #ef4444;
+}
+
+.logout-btn.hidden {
+  opacity: 0;
+  height: 0;
+  padding: 0;
+  border: none;
+  overflow: hidden;
 }
 </style>

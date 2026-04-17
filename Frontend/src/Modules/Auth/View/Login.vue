@@ -20,15 +20,22 @@ async function login() {
   loading.value = true
   error.value = null
   
+  console.log('Intentando login...')
+  console.log('Email:', form.value.email)
+  console.log('Password:', form.value.password)
+  
   try {
     const data = await api.post('/auth/login', {
       email: form.value.email,
       password: form.value.password
     })
     
+    console.log('Response:', data)
+    
     api.setToken(data.token)
     router.push('/')
   } catch (e) {
+    console.error('Login error:', e)
     error.value = e.message || 'Credenciales inválidas'
   } finally {
     loading.value = false
@@ -63,7 +70,7 @@ async function login() {
         </Btn>
         
         <div class="hint">
-          Demo: test@example.com / password
+          Demo: admin@loanmanager.com / admin123
         </div>
       </GCard>
     </div>

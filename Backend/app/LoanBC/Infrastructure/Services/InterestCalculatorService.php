@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\LoanBC\Infrastructure\Services;
 
 use App\LoanBC\Domain\Services\InterestCalculator;
-use App\SharedKernel\Domain\ValueObjects\DateVO;
-use App\SharedKernel\Domain\ValueObjects\MoneyVO;
+use App\SharedKernel\Domain\ValueObject\DateVO;
+use App\SharedKernel\Domain\ValueObject\MoneyVO;
 
 final class InterestCalculatorService implements InterestCalculator
 {
@@ -19,7 +19,11 @@ final class InterestCalculatorService implements InterestCalculator
             $capital->getAmount() * $monthlyRate / 100
         );
 
-        return MoneyVO::create($interestAmount, $capital->getCurrency());
+        if ($interestAmount <= 0) {
+            return MoneyVO::zero();
+        }
+
+        return MoneyVO::create($interestAmount);
     }
 
     public function calculateInterestFromDate(
@@ -37,7 +41,11 @@ final class InterestCalculatorService implements InterestCalculator
         $monthlyInterest = $this->calculateMonthlyInterest($capital, $annualRate);
         $totalInterestAmount = $monthlyInterest->getAmount() * $monthsSinceStart;
 
-        return MoneyVO::create($totalInterestAmount, $capital->getCurrency());
+        if ($totalInterestAmount <= 0) {
+            return MoneyVO::zero();
+        }
+
+        return MoneyVO::create($totalInterestAmount);
     }
 
     public function isInDefault(DateVO $dueDate): bool
@@ -52,16 +60,20 @@ final class InterestCalculatorService implements InterestCalculator
         }
 
         $today = DateVO::now();
+        $from = $dueDate->getValue();
+        $to = $today->getValue();
 
-        return $today->diffInDays($dueDate);
+        return (int) $from->diff($to)->days;
     }
 
     private function calculateMonthsDifference(DateVO $from, DateVO $to): int
     {
-        $fromYear = $from->getYear();
-        $fromMonth = $from->getMonth();
-        $toYear = $to->getYear();
-        $toMonth = $to->getMonth();
+        $fromDt = $from->getValue();
+        $toDt = $to->getValue();
+        $fromYear = (int) $fromDt->format('Y');
+        $fromMonth = (int) $fromDt->format('n');
+        $toYear = (int) $toDt->format('Y');
+        $toMonth = (int) $toDt->format('n');
 
         return (($toYear - $fromYear) * 12) + ($toMonth - $fromMonth);
     }

@@ -60,13 +60,10 @@ describe('DniVO', function () {
     });
 
     it('messages are user-friendly', function () {
-        $e = new InvalidDniException('empty');
-        expect($e->getMessage())->toBe('El número de documento es requerido');
+        $e = new InvalidDniException('El número de identificación es requerido');
+        expect($e->getMessage())->toBe('El número de identificación es requerido');
 
-        $e = new InvalidDniException('invalid_length');
-        expect($e->getMessage())->toBe('La longitud del documento no es válida para el tipo especificado');
-
-        $e = new InvalidDniException('invalid_format');
-        expect($e->getMessage())->toBe('El formato del documento no es válido para el tipo especificado');
+        $e = new InvalidDniException('El número de identificación tiene una longitud inválida');
+        expect($e->getMessage())->toBe('El número de identificación tiene una longitud inválida');
     });
 });

@@ -12,30 +12,41 @@ import { formatCurrency, getStatusLabel, getStatusColor } from '@/Shared/Composa
 const props = defineProps({
   open: Boolean,
   customer: Object,
-  loans: Array
+  loans: Array,
+  loading: Boolean
 })
 
 const emit = defineEmits(['close', 'edit', 'newLoan'])
 
 const initials = computed(() => {
-  if (!props.customer?.name) return '??'
-  const n = props.customer.name
-  return (n.first_name?.[0] || '') + (n.last_name?.[0] || '')
+  if (!props.customer) return '??'
+  const parts = [
+    props.customer.first_name?.[0] || '',
+    props.customer.middle_name?.[0] || '',
+    props.customer.last_name?.[0] || '',
+    props.customer.second_last_name?.[0] || ''
+  ].filter(Boolean)
+  return parts.slice(0, 2).join('').toUpperCase() || '??'
 })
 
 const fullName = computed(() => {
-  if (!props.customer?.name) return 'Cliente'
-  const n = props.customer.name
-  return `${n.first_name} ${n.last_name}`.trim()
+  if (!props.customer) return 'Cliente'
+  const f = props.customer.first_name || ''
+  const m = props.customer.middle_name ? props.customer.middle_name + ' ' : ''
+  const l = props.customer.last_name || ''
+  const s = props.customer.second_last_name || ''
+  return `${f} ${m}${l} ${s}`.trim()
 })
 
 const totalDebt = computed(() => 
-  props.loans?.reduce((sum, l) => sum + (l.remaining_debt?.amount || l.capital?.amount || 0), 0) || 0
+  props.loans?.reduce((sum, l) => sum + (l.remaining_debt || l.capital || 0), 0) || 0
 )
 </script>
 
 <template>
   <Modal :open="open" :title="fullName" @close="emit('close')">
+    <div v-if="loading" class="loading">Cargando...</div>
+    <template v-else-if="customer">
     <div class="detail">
       <div class="header">
         <Ava :initials="initials" :size="52" />
@@ -43,7 +54,7 @@ const totalDebt = computed(() =>
           <div class="name">{{ fullName }}</div>
           <div class="meta">
             {{ customer?.dni?.type }}-{{ customer?.dni?.number }} · 
-            {{ customer?.address?.street }}
+            {{ customer?.address || '—' }}
           </div>
         </div>
       </div>
@@ -60,7 +71,11 @@ const totalDebt = computed(() =>
         </div>
         <div class="info-row">
           <label>Dirección</label>
-          <div>{{ customer?.address?.street || '—' }}</div>
+          <div>{{ customer?.address || '—' }}</div>
+        </div>
+        <div class="info-row">
+          <label>Fecha Registro</label>
+          <div>{{ customer?.created_at || '—' }}</div>
         </div>
       </GCard>
 
@@ -85,7 +100,7 @@ const totalDebt = computed(() =>
               <span class="loan-type">Personal</span>
             </div>
             <div class="loan-amount">
-              {{ formatCurrency(loan.capital?.amount || loan.remaining_debt?.amount || 0) }}
+              {{ formatCurrency(loan.capital || loan.remaining_debt || 0) }}
             </div>
             <Badge :type="getStatusColor(loan.status)">{{ getStatusLabel(loan.status) }}</Badge>
           </div>
@@ -98,6 +113,7 @@ const totalDebt = computed(() =>
         <Btn variant="ghost" @click="emit('close')">Cerrar</Btn>
       </div>
     </div>
+    </template>
   </Modal>
 </template>
 
@@ -210,5 +226,11 @@ const totalDebt = computed(() =>
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
 }
 </style>

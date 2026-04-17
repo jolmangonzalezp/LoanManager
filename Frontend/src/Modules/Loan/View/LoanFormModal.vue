@@ -23,7 +23,7 @@ const error = ref('')
 const form = ref({
   customer_id: '',
   capital: 0,
-  interest_rate: 0,
+  interest_rate: 5,
   start_date: getLocalDate()
 })
 
@@ -44,7 +44,7 @@ function reset() {
   form.value = {
     customer_id: '',
     capital: 0,
-    interest_rate: 0,
+    interest_rate: 5,
     start_date: getLocalDate()
   }
 }
@@ -67,7 +67,7 @@ async function save() {
       customer_id: form.value.customer_id,
       capital: parseInt(form.value.capital),
       interest_rate: parseFloat(form.value.interest_rate),
-      start_date: getLocalDate()
+      start_date: form.value.start_date
     }
     console.log('Loan form data:', data)
     console.log('interest_rate type:', typeof data.interest_rate, 'value:', data.interest_rate)
@@ -90,7 +90,7 @@ async function save() {
         <select v-model="form.customer_id">
           <option value="">Seleccionar...</option>
           <option v-for="c in customers" :key="c.id" :value="c.id">
-            {{ c.name?.first_name }} {{ c.name?.last_name }}
+            {{ c.first_name }} {{ c.last_name }}
           </option>
         </select>
       </div>

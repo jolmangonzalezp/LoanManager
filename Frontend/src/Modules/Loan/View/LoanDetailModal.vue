@@ -17,9 +17,9 @@ const props = defineProps({
 const emit = defineEmits(['close', 'edit', 'payment'])
 
 const progress = computed(() => {
-  if (!props.loan?.term) return 0
+  const capital = props.loan?.capital?.amount || 0
   const paid = props.loan?.paid_capital?.amount || 0
-  const total = props.loan?.capital?.amount || props.loan?.original_capital?.amount || 1
+  const total = capital || 1
   return Math.round((paid / total) * 100)
 })
 
@@ -29,46 +29,32 @@ const paidAmount = computed(() =>
 </script>
 
 <template>
-  <Modal :open="open" :title="`#${loan?.id?.slice(0, 8)}`" @close="emit('close')">
+  <Modal :open="open" :title="`Préstamo ${loan?.loan_number || ''}`" @close="emit('close')">
     <div class="detail">
-      <GCard>
-        <div class="loan-header">
-          <div>
-            <div class="loan-title">Préstamo {{ loan?.type || 'Personal' }}</div>
-            <div class="loan-meta">
-              Cliente: {{ loan?.customer_name }} · Inicio: {{ formatDate(loan?.start_date) }}
-            </div>
-          </div>
-          <Badge :type="getStatusColor(loan?.status || 'active')">
-            {{ getStatusLabel(loan?.status || 'active') }}
-          </Badge>
-        </div>
-      </GCard>
+      <div class="header-bar">
+        <span class="customer-name">{{ loan?.customer_name }}</span>
+        <Badge :type="getStatusColor(loan?.status || 'active')">
+          {{ loan?.loan_number || getStatusLabel(loan?.status || 'active') }}
+        </Badge>
+      </div>
 
-      <div class="kpi-grid">
+      <div class="main-grid">
         <div class="kpi">
-          <label>Monto Original</label>
-          <value>{{ formatCurrency(loan?.capital?.amount || loan?.original_capital?.amount) }}</value>
+          <label>Monto</label>
+          <value>{{ formatCurrency(loan?.capital?.amount) }}</value>
         </div>
         <div class="kpi">
           <label>Saldo Pendiente</label>
           <value class="danger">{{ formatCurrency(loan?.remaining_debt?.amount) }}</value>
         </div>
         <div class="kpi">
-          <label>Cuota Mensual</label>
-          <value class="gold">${{ Math.round((loan?.capital?.amount || 0) / (loan?.term || 1)).toLocaleString('es-CO') }}</value>
-        </div>
-        <div class="kpi">
-          <label>Tasa</label>
-          <value>{{ loan?.interest_rate?.annual }}% E.A.</value>
-        </div>
-        <div class="kpi">
-          <label>Plazo</label>
-          <value>{{ loan?.term }} meses</value>
+          <label>Tasa Mensual</label>
+          <value class="gold">{{ loan?.interest_rate?.monthly || 0 }}%</value>
         </div>
         <div class="kpi">
           <label>Progreso</label>
-          <value>{{ progress }}% <Pbar :pct="progress" style="margin-top: 8px" /></value>
+          <value>{{ progress }}%</value>
+          <Pbar :pct="progress" style="margin-top: 8px" />
         </div>
       </div>
 
@@ -91,8 +77,7 @@ const paidAmount = computed(() =>
         <GCard>
           <CardTitle>Próximo Pago</CardTitle>
           <div class="next-payment">
-            <div class="date">{{ formatDate(loan?.next_payment_date) }}</div>
-            <div class="amount">${{ Math.round((loan?.capital?.amount || 0) / (loan?.term || 1)).toLocaleString('es-CO') }}</div>
+            {{ formatDate(loan?.next_payment_date) }}
           </div>
         </GCard>
       </div>
@@ -113,26 +98,22 @@ const paidAmount = computed(() =>
   gap: 16px;
 }
 
-.loan-header {
+.header-bar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 
-.loan-title {
-  font-size: 18px;
-  font-weight: 300;
-}
-
-.loan-meta {
-  font-size: 12px;
+.customer-name {
+  font-size: 14px;
   color: #94a3b8;
-  margin-top: 4px;
 }
 
-.kpi-grid {
+.main-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
@@ -140,7 +121,7 @@ const paidAmount = computed(() =>
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 8px;
-  padding: 14px;
+  padding: 16px;
   text-align: center;
 }
 
@@ -151,12 +132,12 @@ const paidAmount = computed(() =>
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .kpi value {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
 }
 
@@ -197,19 +178,9 @@ const paidAmount = computed(() =>
 
 .next-payment {
   text-align: center;
-}
-
-.next-payment .date {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.next-payment .amount {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 20px;
-  font-weight: 700;
-  color: #d4af37;
-  margin-top: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 0;
 }
 
 .actions {
