@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { PageHeader, KPI, TableWrap, Ref } from '@/Shared'
 import { useCustomerApi, CustomerFormModal, CustomerDetailModal } from '@/Modules/Customer'
 import { useLoanApi } from '@/Modules/Loan'
@@ -9,26 +9,49 @@ const customerApi = useCustomerApi()
 const loanApi = useLoanApi()
 
 const { loading, data: customers, load: loadCustomers } = useDataLoader(() => customerApi.getAll())
-const { data: summaryData, load: loadSummary } = useDataLoader(() => customerApi.getSummary())
 const { data: loansData, load: loadLoans } = useDataLoader(() => loanApi.getAll())
 
+const detailLoading = ref(false)
+const detailCustomer = ref(null)
+const detailLoans = ref([])
+
 const summary = computed(() => {
+  const customerIdsWithLoans = new Set(loansData.value?.map(l => l.customer_id) || [])
+  const active = customers.value?.filter(c => customerIdsWithLoans.has(c.id)).length || 0
   return {
-    total: summaryData.value?.total_customers || 0,
-    active: summaryData.value?.customers_with_loans || 0,
-    inactive: summaryData.value?.customers_without_loans || 0
+    total: customers.value?.length || 0,
+    active: active,
+    inactive: (customers.value?.length || 0) - active
   }
 })
 
 const { showForm, showDetail, editing, selected, openForm, closeForm, openDetail, closeDetail } = useModalState()
-const customerLoans = computed(() => {
-  if (!selected.value) return []
-  return loansData.value?.filter(l => l.customer_id === selected.value.id) || []
-})
+
+function editCustomer() {
+  closeDetail()
+  openForm(detailCustomer.value)
+}
 
 async function openCustomer(c) {
-  await loadLoans()
-  openDetail(c)
+  detailLoading.value = true
+  try {
+    const [unmaskedCustomer, loans] = await Promise.all([
+      customerApi.getById(c.id),
+      loanApi.getAll()
+    ])
+    detailCustomer.value = unmaskedCustomer
+    detailLoans.value = loans.filter(l => l.customer_id === c.id)
+    openDetail(unmaskedCustomer)
+  } catch (e) {
+    console.error('Error loading customer detail:', e)
+  } finally {
+    detailLoading.value = false
+  }
+}
+
+function openNewLoan() {
+  closeDetail()
+  window.location.href = '/prestamos?new=true'
 }
 
 async function saveCustomer(data) {
@@ -38,17 +61,15 @@ async function saveCustomer(data) {
     await customerApi.create(data)
   }
   closeForm()
-  loadCustomers()
+  await loadCustomers()
 }
 
 function maskDni(dni) {
   return dni ? '****' + dni.number?.slice(-4) : ''
 }
 
-onMounted(() => {
-  loadCustomers()
-  loadSummary()
-  loadLoans()
+onMounted(async () => {
+  await Promise.all([loadCustomers(), loadLoans()])
 })
 </script>
 
@@ -65,13 +86,13 @@ onMounted(() => {
         <KPI label="Sin préstamos" :value="summary.inactive" sub="Sin actividad" :goldValue="true" />
       </div>
 
-      <TableWrap :headers="['Primer Nombre', 'Segundo Nombre', 'Documento', 'Email', 'Teléfono']">
+      <TableWrap :headers="['Primer Nombre', 'Primer Apellido', 'Documento', 'Email', 'Teléfono']">
         <tr v-for="c in customers" :key="c.id" class="trow" @click="openCustomer(c)">
-          <td>{{ c.name?.first_name || '' }}</td>
-          <td>{{ c.name?.last_name || '' }}</td>
+          <td>{{ c.first_name || '' }}</td>
+          <td>{{ c.last_name || '' }}</td>
           <td><Ref>{{ maskDni(c.dni) }}</Ref></td>
-          <td>{{ c.email }}</td>
-          <td>{{ c.phone }}</td>
+          <td>{{ c.email || '' }}</td>
+          <td>{{ c.phone || '' }}</td>
         </tr>
       </TableWrap>
     </template>
@@ -85,10 +106,12 @@ onMounted(() => {
 
     <CustomerDetailModal 
       :open="showDetail" 
-      :customer="selected"
-      :loans="customerLoans"
+      :customer="detailCustomer"
+      :loans="detailLoans"
+      :loading="detailLoading"
       @close="closeDetail"
-      @edit="openForm(selected)"
+      @edit="editCustomer"
+      @new-loan="openNewLoan"
     />
   </div>
 </template>

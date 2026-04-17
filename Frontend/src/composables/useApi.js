@@ -20,13 +20,19 @@ export function useApi() {
     loading.value = true
     error.value = null
 
+    console.log('API Request:', options.method || 'GET', `${API_URL}${endpoint}`)
+    console.log('Headers:', { ...headers, ...options.headers })
+    console.log('Body:', options.body)
+
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers: { ...headers, ...options.headers }
       })
 
+      console.log('Response status:', response.status)
       const data = await response.json()
+      console.log('Response data:', data)
 
       if (!response.ok) {
         throw new Error(data.error?.message || data.error?.code || 'Request failed')
@@ -34,6 +40,7 @@ export function useApi() {
 
       return data
     } catch (e) {
+      console.error('API Error:', e)
       error.value = e.message
       throw e
     } finally {

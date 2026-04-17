@@ -2,7 +2,7 @@ import { ref } from 'vue'
 
 const API_URL = 'http://localhost:8000/api'
 
-let token = ref(null)
+let token = ref(localStorage.getItem('token'))
 
 export function useApi() {
   const loading = ref(false)
@@ -23,13 +23,19 @@ export function useApi() {
     loading.value = true
     error.value = null
 
+    console.log('API Request:', options.method || 'GET', `${API_URL}${endpoint}`)
+    console.log('Headers:', getHeaders())
+    console.log('Body:', options.body)
+
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers: { ...getHeaders(), ...options.headers }
       })
 
+      console.log('Response status:', response.status)
       const data = await response.json()
+      console.log('Response data:', data)
 
       if (!response.ok) {
         throw new Error(data.error?.message || data.error?.code || 'Request failed')
@@ -37,6 +43,7 @@ export function useApi() {
 
       return data
     } catch (e) {
+      console.error('API Error:', e)
       error.value = e.message
       throw e
     } finally {
@@ -71,8 +78,8 @@ export function useApi() {
 
 export function formatCurrency(value) {
   if (value == null) return '$0'
-  const num = typeof value === 'number' ? value / 100 : Number(value) / 100
-  return '$' + Math.round(num).toLocaleString('es-CO')
+  const num = Math.round(typeof value === 'number' ? value : Number(value))
+  return '$' + num.toLocaleString('es-CO')
 }
 
 export function formatDate(date) {

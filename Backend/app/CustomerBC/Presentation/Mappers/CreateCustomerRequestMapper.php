@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\CustomerBC\Presentation\Mappers;
 
-use App\CustomerBC\Application\Commands\CreateCustomerCommand;
-use App\SharedKernel\Domain\ValueObjects\AddressVO;
-use App\SharedKernel\Domain\ValueObjects\DniType;
-use App\SharedKernel\Domain\ValueObjects\DniVO;
-use App\SharedKernel\Domain\ValueObjects\EmailVO;
-use App\SharedKernel\Domain\ValueObjects\NameVO;
-use App\SharedKernel\Domain\ValueObjects\PersonVO;
-use App\SharedKernel\Domain\ValueObjects\PhoneVO;
+use App\CustomerBC\Application\CQRS\Command\CreateCustomerCommand;
+use App\SharedKernel\Domain\ValueObject\AddressVO;
+use App\SharedKernel\Domain\ValueObject\DniType;
+use App\SharedKernel\Domain\ValueObject\DniVO;
+use App\SharedKernel\Domain\ValueObject\EmailVO;
+use App\SharedKernel\Domain\ValueObject\NameVO;
+use App\SharedKernel\Domain\ValueObject\PersonVO;
+use App\SharedKernel\Domain\ValueObject\PhoneVO;
 
 final class CreateCustomerRequestMapper
 {
@@ -22,9 +22,9 @@ final class CreateCustomerRequestMapper
         $nameData = $data['name'] ?? [];
         
         $firstName = $nameData['first_name'] ?? $data['first_name'] ?? '';
-        $middleName = $nameData['last_name'] ?? $data['last_name'] ?? null;
-        $lastName = $nameData['second_last_name'] ?? $data['second_last_name'] ?? '';
-        $secondLastName = $nameData['third_last_name'] ?? $data['third_last_name'] ?? '';
+        $middleName = $nameData['middle_name'] ?? $data['middle_name'] ?? null;
+        $lastName = $nameData['last_name'] ?? $data['last_name'] ?? '';
+        $secondLastName = $nameData['second_last_name'] ?? $data['second_last_name'] ?? '';
         
         $name = NameVO::create(
             $firstName,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\LoanBC\Domain\Services;
 
-use App\SharedKernel\Domain\ValueObjects\DateVO;
-use App\SharedKernel\Domain\ValueObjects\MoneyVO;
+use App\SharedKernel\Domain\ValueObject\DateVO;
+use App\SharedKernel\Domain\ValueObject\MoneyVO;
 
 interface InterestCalculator
 {

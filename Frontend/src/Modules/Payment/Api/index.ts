@@ -20,6 +20,10 @@ export function usePaymentApi() {
     return api.get('/reports/client-profitability')
   }
 
+  async function getMonthlyReport() {
+    return api.get('/reports/monthly')
+  }
+
   async function create(data) {
     return api.post('/payments', data)
   }
@@ -37,6 +41,7 @@ export function usePaymentApi() {
     getProjectedVsActual,
     getCollectionAvailability,
     getClientProfitability,
+    getMonthlyReport,
     create: (data) => crud.create(data, 'Pago registrado'),
     delete: (id) => crud.remove(id, 'Pago eliminado')
   }

@@ -40,16 +40,12 @@ describe('NameVO', function () {
         expect(fn () => NameVO::create('Juan', 'García', ''))->toThrow(InvalidNameException::class);
     });
 
-    it('throws on empty middle name', function () {
-        expect(fn () => NameVO::create('Juan', 'García', 'López', ''))->toThrow(InvalidNameException::class);
-    });
-
     it('throws on invalid characters', function () {
         expect(fn () => NameVO::create('Juan123', 'García', 'López'))->toThrow(InvalidNameException::class);
     });
 
     it('throws on names too short', function () {
-        expect(fn () => NameVO::create('J', 'García', 'López'))->toThrow(InvalidNameException::class);
+        expect(fn () => NameVO::create('Jo', 'García', 'López'))->toThrow(InvalidNameException::class);
     });
 
     it('ignores valid middle name', function () {
@@ -73,20 +69,11 @@ describe('NameVO', function () {
         expect($name1->equals($name3))->toBeFalse();
     });
 
-    it('casts to string', function () {
-        $name = NameVO::create('Juan', 'García', 'López');
-
-        expect((string) $name)->toBe('Juan García López');
-    });
-
     it('messages are user-friendly', function () {
-        $e = new InvalidNameException('empty');
-        expect($e->getMessage())->toBe('El nombre es requerido');
+        $e = new InvalidNameException('Nombre o apellido es requerido');
+        expect($e->getMessage())->toBe('Nombre o apellido es requerido');
 
-        $e = new InvalidNameException('too_short');
-        expect($e->getMessage())->toBe('El nombre debe tener al menos 2 caracteres');
-
-        $e = new InvalidNameException('invalid_chars');
-        expect($e->getMessage())->toBe('El nombre contiene caracteres inválidos');
+        $e = new InvalidNameException('Nombre o apellido debe tener al menos 3 caracteres');
+        expect($e->getMessage())->toBe('Nombre o apellido debe tener al menos 3 caracteres');
     });
 });

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import Modal from '@/Shared/Components/Modal.vue'
 import Btn from '@/Shared/Components/Btn.vue'
 import { formatCurrency } from '@/Shared/Composable/useApi'
@@ -12,9 +12,7 @@ function getLocalDate() {
 
 const props = defineProps({
   open: Boolean,
-  loan: Object,
-  customers: Array,
-  loans: Array
+  loan: Object
 })
 
 const emit = defineEmits(['close', 'save'])
@@ -23,66 +21,30 @@ const loading = ref(false)
 const error = ref('')
 
 const form = ref({
-  customer_id: '',
-  loan_id: '',
   amount: 0,
   payment_date: getLocalDate()
 })
 
-const selectedLoan = computed(() => {
-  if (!form.value.loan_id) return null
-  return props.loans?.find(l => l.id === form.value.loan_id) || props.loan
-})
-
-const customerLoans = computed(() => {
-  if (!form.value.customer_id) return []
-  return props.loans?.filter(l => l.customer_id === form.value.customer_id) || []
-})
-
 watch(() => props.loan, (l) => {
   if (l) {
-    const capitalInPesos = (l.capital?.amount || l.remaining_debt?.amount || 0) / 100
+    const capitalAmount = l.capital?.amount || l.remaining_debt?.amount || 0
     form.value = {
-      customer_id: l.customer_id || '',
-      loan_id: l.id || '',
-      amount: Math.round(capitalInPesos / (l.term || 24)),
+      amount: Math.round(capitalAmount * 0.1),
       payment_date: getLocalDate()
     }
+  } else {
+    reset()
   }
 }, { immediate: true })
 
-watch(() => form.value.customer_id, () => {
-  form.value.loan_id = ''
-  form.value.amount = 0
-})
-
-watch(() => form.value.loan_id, () => {
-  if (form.value.loan_id && customerLoans.value.length) {
-    const loan = customerLoans.value.find(l => l.id === form.value.loan_id)
-    if (loan) {
-      const capitalAmount = (loan.capital?.amount || loan.remaining_debt?.amount || 0) / 100
-      const term = loan.term || 24
-      form.value.amount = Math.round(capitalAmount / term)
-    }
+function reset() {
+  form.value = {
+    amount: 0,
+    payment_date: getLocalDate()
   }
-})
-
-function getCustomerName(id) {
-  const c = props.customers?.find(c => c.id === id)
-  if (!c) return ''
-  return `${c.name?.first_name || ''} ${c.name?.last_name || ''}`.trim()
 }
 
 async function save() {
-  console.log('Payment save - amount:', form.value.amount, 'type:', typeof form.value.amount)
-  if (!form.value.customer_id) {
-    error.value = 'Seleccione un cliente'
-    return
-  }
-  if (!form.value.loan_id) {
-    error.value = 'Seleccione un préstamo'
-    return
-  }
   if (!form.value.amount || form.value.amount <= 0) {
     error.value = 'Monto inválido'
     return
@@ -90,10 +52,10 @@ async function save() {
 
   loading.value = true
   error.value = ''
-  
+
   try {
     emit('save', {
-      loan_id: form.value.loan_id,
+      loan_id: props.loan.id,
       amount: parseInt(form.value.amount),
       payment_date: form.value.payment_date
     })
@@ -106,33 +68,28 @@ async function save() {
 </script>
 
 <template>
-  <Modal :open="open" title="Registrar Pago" @close="emit('close')">
+  <Modal :open="open" :title="'Registrar Pago'" @close="emit('close')">
     <div class="form">
-      <div class="field">
-        <label>Cliente</label>
-        <select v-model="form.customer_id">
-          <option value="">Seleccionar...</option>
-          <option v-for="c in customers" :key="c.id" :value="c.id">
-            {{ c.name?.first_name }} {{ c.name?.last_name }}
-          </option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Préstamo</label>
-        <select v-model="form.loan_id" :disabled="!form.customer_id">
-          <option value="">Seleccionar...</option>
-          <option v-for="l in customerLoans" :key="l.id" :value="l.id">
-            #{{ l.id?.slice(0, 8) }} - {{ formatCurrency(l.capital?.amount) }}
-          </option>
-        </select>
-      </div>
-
       <div v-if="error" class="error">{{ error }}</div>
+
+      <div class="loan-info">
+        <div class="info-row">
+          <span>Cliente</span>
+          <span>{{ loan?.customer_name }}</span>
+        </div>
+        <div class="info-row">
+          <span>Préstamo</span>
+          <span>{{ loan?.loan_number || loan?.id?.slice(0, 8) }}</span>
+        </div>
+        <div class="info-row">
+          <span>Saldo</span>
+          <span>{{ formatCurrency(loan?.remaining_debt?.amount) }}</span>
+        </div>
+      </div>
 
       <div class="field">
         <label>Monto ($)</label>
-        <input type="number" v-model="form.amount" min="1" />
+        <input type="number" v-model.number="form.amount" min="1" placeholder="0" />
       </div>
 
       <div class="field">
@@ -151,27 +108,23 @@ async function save() {
 </template>
 
 <style scoped>
-.payment-info {
-  text-align: center;
-  padding: 8px;
+.loan-info {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
 }
 
-.info-label {
-  font-size: 10px;
-  color: #d4af37;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 700;
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 12px;
 }
 
-.info-value {
-  font-size: 14px;
-  font-weight: 300;
-  margin-top: 4px;
-}
-
-.info-value.danger {
-  color: #ef4444;
+.info-row span:first-child {
+  color: #94a3b8;
 }
 
 .error {
