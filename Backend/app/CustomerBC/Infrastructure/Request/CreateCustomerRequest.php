@@ -10,25 +10,26 @@ use App\SharedKernel\Domain\ValueObject\EmailVO;
 use App\SharedKernel\Domain\ValueObject\NameVO;
 use App\SharedKernel\Domain\ValueObject\PersonVO;
 use App\SharedKernel\Domain\ValueObject\PhoneVO;
+use Illuminate\Http\Request;
 
 final class CreateCustomerRequest
 {
-    public static function fromArray(array $data): CreateCustomerCommand
+    public static function fromArray(Request $request): CreateCustomerCommand
     {
         $person = PersonVO::create(
             NameVO::create(
-                $data['first_name'] ?? '',
-                $data['last_name'] ?? '',
-                $data['second_last_name'] ?? '',
-                $data['middle_name'] ?? null
+                $request["name"]["first_name"] ?? '',
+                    $request["name"]["last_name"] ?? '',
+                    $request["name"]["second_last_name"]?? '',
+                    $request["name"]['middle_name'] ?? null
             ),
             DniVO::create(
-                $data['dni_number'] ?? '',
-                DniType::from($data['dni_type'] ?? 'CC')
+                $request["dni"]['number'] ?? '',
+                DniType::from($request["dni"]['type'] ?? 'CC')
             ),
-            PhoneVO::create($data['phone'] ?? ''),
-            AddressVO::create($data['address'] ?? ''),
-            ! empty($data['email']) ? EmailVO::create($data['email']) : null
+            PhoneVO::create($request['phone'] ?? ''),
+            AddressVO::create($request['address'] ?? ''),
+            ! empty($request['email']) ? EmailVO::create($request['email']) : ""
         );
 
         return new CreateCustomerCommand($person);

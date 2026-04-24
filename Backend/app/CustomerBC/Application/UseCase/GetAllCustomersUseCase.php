@@ -12,7 +12,6 @@ final class GetAllCustomersUseCase
 {
     public function __construct(
         private readonly CustomerFinderAll $finder,
-        private readonly MaskingService $masking
     ) {}
 
     public function execute(): array
@@ -20,7 +19,7 @@ final class GetAllCustomersUseCase
         $customers = $this->finder->findAll();
 
         return array_map(
-            fn ($customer) => CustomerResponse::fromEntity($customer)->toArrayMasked($this->masking),
+            fn ($customer) => CustomerResponse::fromEntity($customer)->toArray(),
             $customers
         );
     }

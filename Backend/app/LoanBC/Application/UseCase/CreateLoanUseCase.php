@@ -26,18 +26,20 @@ final class CreateLoanUseCase
             throw new CustomerNotFoundException($command->customerId->getValue());
         }
 
+        $dueDate = $command->startDate->addMonths($command->term);
+
         $loan = Loan::create(
             $command->customerId,
             $command->capital,
             $command->interestRate,
             $command->startDate,
-            $command->dueDate
+            $dueDate
         );
 
         $this->creator->create($loan);
 
         $response = LoanResponse::fromEntity($loan);
-        $response->loanNumber = $this->loanNumberGenerator->generate();
+        $response->setLoanNumber($this->loanNumberGenerator->generate());
 
         return $response;
     }

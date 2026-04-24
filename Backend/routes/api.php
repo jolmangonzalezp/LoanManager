@@ -34,6 +34,7 @@ Route::middleware(['handle.exceptions', 'handle.cors'])->group(function () {
     Route::get('/customers/summary', [CustomerController::class, 'summary']);
     Route::get('/customers/report', [CustomerController::class, 'report']);
     Route::get('/customers/{id}', [CustomerController::class, 'show']);
+    Route::get('/customers/{id}/loans', [CustomerController::class, 'loans']);
     Route::post('/customers', [CustomerController::class, 'store']);
     Route::put('/customers/{id}', [CustomerController::class, 'update']);
 
@@ -42,9 +43,11 @@ Route::middleware(['handle.exceptions', 'handle.cors'])->group(function () {
     Route::get('/loans/report', [LoanController::class, 'report']);
     Route::get('/loans/{id}', [LoanController::class, 'show']);
     Route::put('/loans/{id}', [LoanController::class, 'update']);
+    Route::post('/loans/{id}/payment', [LoanController::class, 'makePayment']);
 
     Route::post('/payments', [PaymentController::class, 'store']);
     Route::get('/payments', [PaymentController::class, 'index']);
+    Route::get('/payments/{id}', [PaymentController::class, 'show']);
 });
 
 require __DIR__.'/reports.php';

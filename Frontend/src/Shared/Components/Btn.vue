@@ -2,7 +2,8 @@
 const props = defineProps({
   variant: { type: String, default: 'primary' },
   size: { type: String, default: 'md' },
-  disabled: { type: Boolean, default: false }
+  disabled: { type: Boolean, default: false },
+  circle: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['click'])
@@ -34,7 +35,7 @@ const sizes = {
 <template>
   <button
     class="btn"
-    :class="[variant, size]"
+    :class="[variant, size, {'circle' : circle}]"
     :disabled="disabled"
     @click="emit('click', $event)"
   >
@@ -93,5 +94,16 @@ const sizes = {
 
 .btn.md {
   padding: 10px 20px;
+}
+
+.circle{
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
 }
 </style>

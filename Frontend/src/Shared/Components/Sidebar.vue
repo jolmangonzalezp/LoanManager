@@ -2,6 +2,23 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '../../composables/useApi'
+import {
+  faHome,
+  faUsers,
+  faMoneyCheckAlt,
+  faHandHoldingUsd,
+  faChartBar,
+  faChartPie,
+  faChartLine,
+  faExclamationTriangle,
+  faFileAlt,
+  faFileInvoiceDollar,
+  faHistory,
+  faClipboardList,
+  faChevronRight,
+  faSignOutAlt
+} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps({
   currentRoute: { type: String, default: 'dashboard' },
@@ -15,21 +32,21 @@ const api = useApi()
 const user = ref({ name: 'Admin', email: '' })
 
 const mainMenuItems = [
-  { id: 'dashboard', label: 'Inicio', icon: '◈' },
-  { id: 'clientes', label: 'Clientes', icon: '⊕' },
-  { id: 'prestamos', label: 'Cartera', icon: '◎' },
-  { id: 'pagos', label: 'Pagos', icon: '◉' },
+  { id: 'dashboard', label: 'Inicio', icon: faHome },
+  { id: 'clientes', label: 'Clientes', icon: faUsers },
+  { id: 'prestamos', label: 'Cartera', icon: faMoneyCheckAlt },
+  { id: 'pagos', label: 'Pagos', icon: faHandHoldingUsd },
 ]
 
 const reportsMenuItems = [
-  { path: '/reportes', label: 'Resumen', icon: '📊' },
-  { path: '/reportes/cartera', label: 'Cartera', icon: '💰' },
-  { path: '/reportes/rentabilidad', label: 'Rentabilidad', icon: '📈' },
-  { path: '/reportes/mora', label: 'Mora', icon: '⚠️' },
-  { path: '/reportes/prestamos-activos', label: 'Préstamos Activos', icon: '📋' },
-  { path: '/reportes/flujo-caja', label: 'Flujo de Caja', icon: '💸' },
-  { path: '/reportes/historial-pagos', label: 'Historial de Pagos', icon: '💳' },
-  { path: '/reportes/auditoria', label: 'Auditoría', icon: '📝' },
+  { path: '/reportes', label: 'Resumen', icon: faChartBar },
+  { path: '/reportes/cartera', label: 'Cartera', icon: faChartPie },
+  { path: '/reportes/rentabilidad', label: 'Rentabilidad', icon: faChartLine },
+  { path: '/reportes/mora', label: 'Mora', icon: faExclamationTriangle },
+  { path: '/reportes/prestamos-activos', label: 'Préstamos Activos', icon: faFileAlt },
+  { path: '/reportes/flujo-caja', label: 'Flujo de Caja', icon: faFileInvoiceDollar },
+  { path: '/reportes/historial-pagos', label: 'Historial de Pagos', icon: faHistory },
+  { path: '/reportes/auditoria', label: 'Auditoría', icon: faClipboardList },
 ]
 
 const showReportsSubmenu = ref(false)
@@ -87,7 +104,7 @@ onMounted(async () => {
         :class="{ active: isMainActive(item.id) }"
         @click="navigateTo(item.id)"
       >
-        <span class="nav-icon">{{ item.icon }}</span>
+        <FontAwesomeIcon :icon="item.icon" class="nav-icon" />
         <span class="nav-label">{{ item.label }}</span>
       </div>
 
@@ -96,9 +113,9 @@ onMounted(async () => {
         :class="{ active: isMainActive('reportes') }"
         @click="navigateTo('reportes')"
       >
-        <span class="nav-icon">▤</span>
+        <FontAwesomeIcon :icon="faChartBar" class="nav-icon" />
         <span class="nav-label">Reportes</span>
-        <span class="nav-arrow" :class="{ rotated: showReportsSubmenu }">▶</span>
+        <FontAwesomeIcon :icon="faChevronRight" class="nav-arrow" :class="{ rotated: showReportsSubmenu }" />
       </div>
 
       <div v-if="showReportsSubmenu && !collapsed" class="submenu">
@@ -109,7 +126,7 @@ onMounted(async () => {
           :class="{ active: isReportActive(item.path) }"
           @click="navigateToReport(item.path)"
         >
-          <span class="submenu-icon">{{ item.icon }}</span>
+          <FontAwesomeIcon :icon="item.icon" class="submenu-icon" />
           <span class="submenu-label">{{ item.label }}</span>
         </div>
       </div>
@@ -122,7 +139,10 @@ onMounted(async () => {
           <div class="user-role">Administrador</div>
         </div>
       </div>
-      <button class="logout-btn" :class="{ hidden: collapsed }" @click="logout">Cerrar Sesión</button>
+      <button class="logout-btn" :class="{ hidden: collapsed }" @click="logout">
+        <FontAwesomeIcon :icon="faSignOutAlt" />
+        <span>Cerrar Sesión</span>
+      </button>
     </div>
   </aside>
 </template>
@@ -131,8 +151,8 @@ onMounted(async () => {
 .sidebar {
   width: 220px;
   min-height: calc(100vh - 56px);
-  background: rgba(0,0,0,0.3);
-  border-right: 1px solid rgba(255,255,255,0.07);
+  background: rgba(6, 68, 54, 0.4);
+  border-right: 1px solid rgba(212, 175, 55, 0.15);
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease;
@@ -160,13 +180,12 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s;
   color: #94a3b8;
   font-size: 13px;
   white-space: nowrap;
-  overflow: hidden;
 }
 
 .sidebar.collapsed .nav-item {
@@ -175,19 +194,19 @@ onMounted(async () => {
 }
 
 .nav-item:hover {
-  background: rgba(212,175,55,0.05);
+  background: rgba(212, 175, 55, 0.08);
   color: #e8c84a;
 }
 
 .nav-item.active {
-  background: rgba(212,175,55,0.1);
+  background: rgba(212, 175, 55, 0.12);
   color: #d4af37;
-  border-left: 2px solid #d4af37;
+  border-left: 3px solid #d4af37;
 }
 
 .sidebar.collapsed .nav-item.active {
   border-left: none;
-  border-bottom: 2px solid #d4af37;
+  border-bottom: 3px solid #d4af37;
 }
 
 .nav-icon {
@@ -203,7 +222,7 @@ onMounted(async () => {
 }
 
 .nav-arrow {
-  font-size: 10px;
+  font-size: 12px;
   transition: transform 0.2s ease;
   color: #64748b;
 }
@@ -222,7 +241,7 @@ onMounted(async () => {
 }
 
 .submenu {
-  padding-left: 20px;
+  padding-left: 16px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -243,12 +262,12 @@ onMounted(async () => {
 }
 
 .submenu-item:hover {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.05);
   color: #94a3b8;
 }
 
 .submenu-item.active {
-  background: rgba(212,175,55,0.08);
+  background: rgba(212, 175, 55, 0.1);
   color: #d4af37;
 }
 
@@ -265,7 +284,7 @@ onMounted(async () => {
 
 .sidebar-footer {
   padding: 16px;
-  border-top: 1px solid rgba(255,255,255,0.07);
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -288,15 +307,14 @@ onMounted(async () => {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: rgba(212,175,55,0.1);
-  border: 1px solid rgba(212,175,55,0.28);
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
   color: #d4af37;
-  font-family: 'Share Tech Mono', monospace;
   flex-shrink: 0;
 }
 
@@ -317,21 +335,24 @@ onMounted(async () => {
 }
 
 .logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 6px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
   color: #94a3b8;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.15s;
-  white-space: nowrap;
 }
 
 .logout-btn:hover {
-  background: rgba(239,68,68,0.1);
-  border-color: rgba(239,68,68,0.3);
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
   color: #ef4444;
 }
 

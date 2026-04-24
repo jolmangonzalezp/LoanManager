@@ -7,6 +7,7 @@ namespace App\PaymentBC\Presenter\Controllers;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
 use App\PaymentBC\Application\CQRS\Command\ProcessPaymentCommand;
 use App\PaymentBC\Application\UseCase\GetAllPaymentsUseCase;
+use App\PaymentBC\Application\UseCase\GetPaymentByIdUseCase;
 use App\PaymentBC\Application\UseCase\ProcessPaymentUseCase;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,8 @@ final class PaymentController
 {
     public function __construct(
         private readonly ProcessPaymentUseCase $processPaymentUseCase,
-        private readonly GetAllPaymentsUseCase $getAllPaymentsUseCase
+        private readonly GetAllPaymentsUseCase $getAllPaymentsUseCase,
+        private readonly GetPaymentByIdUseCase $getPaymentByIdUseCase
     ) {}
 
     public function store(Request $request): JsonResponse
@@ -41,5 +43,12 @@ final class PaymentController
         $responses = $this->getAllPaymentsUseCase->execute();
 
         return response()->json($responses);
+    }
+
+    public function show(string $id): JsonResponse
+    {
+        $response = $this->getPaymentByIdUseCase->execute($id);
+
+        return response()->json($response);
     }
 }

@@ -1,23 +1,16 @@
 <script setup>
-import { onMounted } from 'vue'
-import { PageHeader, KPI, GCard, CardTitle, Btn, Ref, useDataLoader } from '@/Shared'
-import { useReportApi } from '@/Modules/Report'
+import { PageHeader, KPI, GCard, CardTitle, Btn, useDataLoader } from '@/Shared'
+import { useDashboardView } from '@/Modules/Dashboard'
 import { formatCurrency } from '@/Shared'
 
-const reportApi = useReportApi()
-
-const { loading, data: summary, load } = useDataLoader(() => reportApi.getSummary())
-
-onMounted(() => {
-  load()
-})
+const { loading, summary, navigateToLoans } = useDashboardView()
 </script>
 
 <template>
   <div class="dashboard pu">
     <PageHeader title="Resumen de Activos">
       <template #action>
-        <Btn @click="$router.push('/prestamos')">Nueva Operación</Btn>
+        <Btn @click="navigateToLoans">Nueva Operación</Btn>
       </template>
     </PageHeader>
 

@@ -97,12 +97,14 @@ final class Loan
             throw new DomainException('inactive_loan', 'El préstamo no está activo');
         }
 
-        $monthlyInterest = $this->interestRate->calculateInterest($this->capital);
+        $currentCapital = $this->capital;
 
         if ($this->isInDefault()) {
-            $this->capital = $this->capital->add($monthlyInterest);
-            $monthlyInterest = $this->interestRate->calculateInterest($this->capital);
+            $defaultInterest = $this->interestRate->calculateInterest($currentCapital);
+            $currentCapital = $currentCapital->add($defaultInterest);
         }
+
+        $monthlyInterest = $this->interestRate->calculateInterest($currentCapital);
 
         $newPaidInterest = $this->paidInterest->add($monthlyInterest);
         $remainingAfterInterest = $amount->subtract($monthlyInterest);
@@ -110,7 +112,7 @@ final class Loan
         if ($remainingAfterInterest->getAmount() > 0) {
             $capitalReduction = $remainingAfterInterest;
             $newPaidCapital = $this->paidCapital->add($capitalReduction);
-            $newCapital = $this->capital->subtract($capitalReduction);
+            $newCapital = $currentCapital->subtract($capitalReduction);
             $newRemainingDebt = $newCapital;
             $newNextPaymentDate = $this->nextPaymentDate->addMonths(1);
             $newStatus = $newCapital->isZero() ? LoanStatus::PAID : LoanStatus::ACTIVE;
@@ -132,10 +134,21 @@ final class Loan
             );
         }
 
-        $this->paidInterest = $newPaidInterest;
-        $this->nextPaymentDate = $this->nextPaymentDate->addMonths(1);
-
-        return $this;
+        return new self(
+            $this->id,
+            $this->customerId,
+            $this->originalCapital,
+            $this->interestRate,
+            $this->startDate,
+            $this->dueDate,
+            $this->createdAt,
+            $this->status,
+            $newPaidInterest,
+            $this->paidCapital,
+            $currentCapital,
+            $currentCapital,
+            $this->nextPaymentDate->addMonths(1)
+        );
     }
 
     public function isInDefault(): bool

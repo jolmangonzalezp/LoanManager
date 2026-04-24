@@ -24,7 +24,7 @@ final class AddressVO
             throw new InvalidAddressException('La dirección es requerida');
         }
 
-        if (strlen($address) < 10) {
+        if (strlen($address) < 5) {
             throw new InvalidAddressException('La dirección invalida: La dirección es muy corta');
         }
 

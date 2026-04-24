@@ -22,12 +22,12 @@ const loanInfo = computed(() => {
   <Modal :open="open" :title="`Pago #${payment?.id?.slice(0, 8) || ''}`" @close="emit('close')">
     <div class="detail">
       <div class="info-grid">
-        <GCard>
-          <CardTitle>Cliente</CardTitle>
-          <div class="info-value">{{ payment?.customer_name || '-' }}</div>
-        </GCard>
-        <GCard>
-          <CardTitle>Préstamo</CardTitle>
+      <GCard>
+        <CardTitle>Cliente</CardTitle>
+        <div class="info-value">{{ payment?.customer_name || '-' }}</div>
+      </GCard>
+      <GCard>
+        <CardTitle>Préstamo</CardTitle>
           <div class="info-value"><Ref>#{{ payment?.loan_id?.slice(0, 8) }}</Ref></div>
         </GCard>
       </div>

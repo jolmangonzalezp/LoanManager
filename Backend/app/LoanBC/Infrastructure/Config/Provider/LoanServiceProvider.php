@@ -6,6 +6,7 @@ namespace App\LoanBC\Infrastructure\Config\Provider;
 
 use App\LoanBC\Application\UseCase\CreateLoanUseCase;
 use App\LoanBC\Application\UseCase\GetAllLoansUseCase;
+use App\LoanBC\Application\UseCase\GetLoansByCustomerUseCase;
 use App\LoanBC\Application\UseCase\GetLoanByIdUseCase;
 use App\LoanBC\Application\UseCase\GetLoanReportUseCase;
 use App\LoanBC\Application\UseCase\MakePaymentUseCase;
@@ -51,6 +52,7 @@ final class LoanServiceProvider extends ServiceProvider
         $this->app->bind(CreateLoanUseCase::class);
         $this->app->bind(GetLoanByIdUseCase::class);
         $this->app->bind(GetAllLoansUseCase::class);
+        $this->app->bind(GetLoansByCustomerUseCase::class);
         $this->app->bind(GetLoanReportUseCase::class);
         $this->app->bind(MakePaymentUseCase::class);
         $this->app->bind(UpdateLoanUseCase::class);

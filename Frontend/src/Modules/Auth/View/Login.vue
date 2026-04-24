@@ -1,46 +1,9 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import GCard from '@/Shared/Components/GCard.vue'
 import Btn from '@/Shared/Components/Btn.vue'
-import { useApi } from '@/Shared/Composable/useApi'
+import { useLoginView } from '@/Modules/Auth'
 
-const router = useRouter()
-const api = useApi()
-
-const loading = ref(false)
-const error = ref(null)
-
-const form = ref({
-  email: '',
-  password: ''
-})
-
-async function login() {
-  loading.value = true
-  error.value = null
-  
-  console.log('Intentando login...')
-  console.log('Email:', form.value.email)
-  console.log('Password:', form.value.password)
-  
-  try {
-    const data = await api.post('/auth/login', {
-      email: form.value.email,
-      password: form.value.password
-    })
-    
-    console.log('Response:', data)
-    
-    api.setToken(data.token)
-    router.push('/')
-  } catch (e) {
-    console.error('Login error:', e)
-    error.value = e.message || 'Credenciales inválidas'
-  } finally {
-    loading.value = false
-  }
-}
+const { loading, error, form, login } = useLoginView()
 </script>
 
 <template>

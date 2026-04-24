@@ -30,23 +30,23 @@ final class LoanController
 
     public function store(Request $request): JsonResponse
     {
-        $command = CreateLoanRequest::fromArray($request->all());
+        $command = CreateLoanRequest::fromArray($request);
         $response = $this->createLoanUseCase->execute($command);
 
         $this->auditLogger->created('loan', $response->id, [
-            'loan_number' => $response->loanNumber,
-            'customer_id' => $response->customerId,
-            'capital' => $response->capital['amount'],
+            'loan_number' => $response->getLoanNumber(),
+            'customer_id' => $response->getCustomerId(),
+            'capital' => $response->capital,
         ]);
 
-        return response()->json($response->toArray(), 201);
+        return response()->json($response->toArray($response->getCustomerId()), 201);
     }
 
     public function show(string $id): JsonResponse
     {
         $response = $this->getLoanByIdUseCase->execute($id);
 
-        return response()->json($response->toArray());
+        return response()->json($response);
     }
 
     public function index(): JsonResponse
@@ -85,6 +85,6 @@ final class LoanController
 
         $this->auditLogger->updated('loan', $id, $request->all());
 
-        return response()->json($response->toArray());
+        return response()->json($response->toArray($response->getCustomerId()));
     }
 }
