@@ -60,11 +60,11 @@ final class UpdateLoanUseCase
         $updatedLoan = $this->finder->findById(LoanIdVO::fromString($id));
         $response = LoanResponse::fromEntity($updatedLoan);
 
-        $response->loanNumber = $loanModel->loan_number;
+        $response->setLoanNumber($loanModel->loan_number);
 
         $namesMap = $this->customerNameProvider->getNamesMap([$loanModel->customer_id]);
         if (isset($namesMap[$loanModel->customer_id])) {
-            $response->customerName = $namesMap[$loanModel->customer_id];
+            $response->setCustomerName($namesMap[$loanModel->customer_id]);
         }
 
         return $response;

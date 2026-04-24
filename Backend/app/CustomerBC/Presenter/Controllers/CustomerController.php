@@ -8,6 +8,7 @@ use App\CustomerBC\Application\UseCase\CreateCustomerUseCase;
 use App\CustomerBC\Application\UseCase\GetAllCustomersSummaryUseCase;
 use App\CustomerBC\Application\UseCase\GetAllCustomersUseCase;
 use App\CustomerBC\Application\UseCase\GetCustomerByIdUseCase;
+use App\LoanBC\Application\UseCase\GetLoansByCustomerUseCase;
 use App\CustomerBC\Application\UseCase\UpdateCustomerUseCase;
 use App\CustomerBC\Infrastructure\Request\CreateCustomerRequest;
 use App\CustomerBC\Infrastructure\Request\UpdateCustomerRequest;
@@ -22,20 +23,21 @@ final class CustomerController
         private readonly GetCustomerByIdUseCase $getByIdUseCase,
         private readonly GetAllCustomersUseCase $getAllUseCase,
         private readonly GetAllCustomersSummaryUseCase $getAllSummaryUseCase,
+        private readonly GetLoansByCustomerUseCase $getLoansByCustomerUseCase,
         private readonly UpdateCustomerUseCase $updateUseCase,
         private readonly AuditLogger $auditLogger
     ) {}
 
     public function store(Request $request): JsonResponse
     {
-        $command = CreateCustomerRequest::fromArray($request->all());
+        $command = CreateCustomerRequest::fromArray($request);
         $response = $this->createUseCase->execute($command);
 
-        $this->auditLogger->created('customer', $response['id'], [
-            'name' => $response['first_name'].' '.$response['last_name'],
-        ]);
+        $this->auditLogger->created('customer', $response->id, [
+            'name' => $request->input('first_name').' '.$request->input('last_name'),
+            ]);
 
-        return response()->json($response, 201);
+        return response()->json($response->toArray(), 201);
     }
 
     public function show(string $id): JsonResponse
@@ -43,6 +45,13 @@ final class CustomerController
         $response = $this->getByIdUseCase->execute($id);
 
         return response()->json($response);
+    }
+
+    public function loans(string $id): JsonResponse
+    {
+        $loans = $this->getLoansByCustomerUseCase->execute($id);
+
+        return response()->json($loans);
     }
 
     public function index(): JsonResponse
@@ -61,12 +70,10 @@ final class CustomerController
 
     public function update(Request $request, string $id): JsonResponse
     {
-        $data = $request->all();
-        $data['id'] = $id;
-        $command = UpdateCustomerRequest::fromArray($data);
+        $command = UpdateCustomerRequest::fromArray($id, $request);
         $response = $this->updateUseCase->execute($command);
 
-        $this->auditLogger->updated('customer', $id, $data);
+        $this->auditLogger->updated('customer', $id, $request->toArray());
 
         return response()->json($response);
     }

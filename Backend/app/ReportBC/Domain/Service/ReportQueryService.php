@@ -6,11 +6,13 @@ namespace App\ReportBC\Domain\Service;
 
 use App\LoanBC\Domain\Repository\CustomerNameProvider;
 use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
+use App\CustomerBC\Infrastructure\Persistence\Model\CustomerModel;
 use App\PaymentBC\Infrastructure\Persistence\Model\PaymentModel;
 use App\ReportBC\Application\DTO\ActiveLoansReportDTO;
 use App\ReportBC\Application\DTO\AuditEntryDTO;
 use App\ReportBC\Application\DTO\AuditReportDTO;
 use App\ReportBC\Application\DTO\CashFlowReportDTO;
+use App\ReportBC\Application\DTO\CustomerKpiReportDTO;
 use App\ReportBC\Application\DTO\DelinquencyReportDTO;
 use App\ReportBC\Application\DTO\KpiReportDTO;
 use App\ReportBC\Application\DTO\LoanDelinquencyDTO;
@@ -244,6 +246,33 @@ final class ReportQueryService
             totalPrestamos: $totalPrestamos,
             totalClientes: $totalClientes,
             totalPrestamosCerrados: $prestamosCerrados
+        );
+    }
+
+    public function getCustomerKpiReport(): CustomerKpiReportDTO
+    {
+        $customers = CustomerModel::all();
+        $loans = LoanModel::all();
+
+        $totalCustomers = $customers->count();
+        $customerIdsWithLoans = $loans->pluck('customer_id')->unique()->toArray();
+        $customersWithLoans = count($customerIdsWithLoans);
+        $customersWithoutLoans = $totalCustomers - $customersWithLoans;
+
+        $customerIdsWithActiveLoans = $loans
+            ->where('status', 'active')
+            ->pluck('customer_id')
+            ->unique()
+            ->count();
+
+        $activeCustomers = $customers->where('enabled', true)->count();
+
+        return new CustomerKpiReportDTO(
+            totalCustomers: $totalCustomers,
+            customersWithActiveLoans: $customerIdsWithActiveLoans,
+            customersWithLoans: $customersWithLoans,
+            customersWithoutLoans: $customersWithoutLoans,
+            activeCustomers: $activeCustomers
         );
     }
 

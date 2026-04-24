@@ -1,118 +1,53 @@
-<script setup>
-import { ref, onMounted, computed } from 'vue'
-import { PageHeader, KPI, TableWrap, Ref } from '@/Shared'
-import { useCustomerApi, CustomerFormModal, CustomerDetailModal } from '@/Modules/Customer'
-import { useLoanApi } from '@/Modules/Loan'
-import { useDataLoader, useModalState } from '@/Shared'
+<script setup lang="ts">
+import {PageHeader, KPI, TableWrap, Ref, useModal} from '@/Shared'
+import {useCustomer} from '@/Modules/Customer'
+import DataTableComponent from "@Shared/Components/DataTableComponent.vue";
+import {onMounted} from "vue";
+import QuickActionsComponent from "@Shared/Components/QuickActionsComponent.vue";
+import CustomerDetailComponent from "@Modules/Customer/Component/CustomerDetailComponent.vue";
 
-const customerApi = useCustomerApi()
-const loanApi = useLoanApi()
+const {
+  columns,
+  customers,
+  customerKPI,loans,
+  getAll,
+  getById,
+  getLoans,
+  getCustomerKPI
+} = useCustomer()
 
-const { loading, data: customers, load: loadCustomers } = useDataLoader(() => customerApi.getAll())
-const { data: loansData, load: loadLoans } = useDataLoader(() => loanApi.getAll())
+const {open} = useModal()
 
-const detailLoading = ref(false)
-const detailCustomer = ref(null)
-const detailLoans = ref([])
 
-const summary = computed(() => {
-  const customerIdsWithLoans = new Set(loansData.value?.map(l => l.customer_id) || [])
-  const active = customers.value?.filter(c => customerIdsWithLoans.has(c.id)).length || 0
-  return {
-    total: customers.value?.length || 0,
-    active: active,
-    inactive: (customers.value?.length || 0) - active
-  }
-})
-
-const { showForm, showDetail, editing, selected, openForm, closeForm, openDetail, closeDetail } = useModalState()
-
-function editCustomer() {
-  closeDetail()
-  openForm(detailCustomer.value)
-}
-
-async function openCustomer(c) {
-  detailLoading.value = true
-  try {
-    const [unmaskedCustomer, loans] = await Promise.all([
-      customerApi.getById(c.id),
-      loanApi.getAll()
-    ])
-    detailCustomer.value = unmaskedCustomer
-    detailLoans.value = loans.filter(l => l.customer_id === c.id)
-    openDetail(unmaskedCustomer)
-  } catch (e) {
-    console.error('Error loading customer detail:', e)
-  } finally {
-    detailLoading.value = false
-  }
-}
-
-function openNewLoan() {
-  closeDetail()
-  window.location.href = '/prestamos?new=true'
-}
-
-async function saveCustomer(data) {
-  if (editing.value?.id) {
-    await customerApi.update(editing.value.id, data)
-  } else {
-    await customerApi.create(data)
-  }
-  closeForm()
-  await loadCustomers()
-}
-
-function maskDni(dni) {
-  return dni ? '****' + dni.number?.slice(-4) : ''
+const handleRowClick = async (id: string) => {
+  getById(id);
+  getLoans(id);
+  open(
+      CustomerDetailComponent, {
+        size: 'lg',
+      }
+  );
 }
 
 onMounted(async () => {
-  await Promise.all([loadCustomers(), loadLoans()])
+  getCustomerKPI();
+  getAll();
 })
 </script>
 
 <template>
+  <QuickActionsComponent />
   <div class="page pu">
     <PageHeader title="Clientes" />
 
-    <div v-if="loading" class="loading">Cargando...</div>
+    <div class="kpi-grid" v-if="customerKPI">
+      <KPI label="Total Clientes" :value="customerKPI.activeCustomers" sub="Registrados" :goldValue="true" />
+      <KPI label="Con préstamos activos" :value="customerKPI.customersWithActiveLoans" sub="Activos" :goldValue="true" />
+      <KPI label="Sin préstamos" :value="customerKPI.customersWithoutLoans" sub="Sin actividad" :goldValue="true" />
+    </div>
 
-    <template v-else>
-      <div class="kpi-grid">
-        <KPI label="Total Clientes" :value="summary.total" sub="Registrados" :goldValue="true" />
-        <KPI label="Con préstamos activos" :value="summary.active" sub="Activos" :goldValue="true" />
-        <KPI label="Sin préstamos" :value="summary.inactive" sub="Sin actividad" :goldValue="true" />
-      </div>
+    <DataTableComponent :columns="columns" :rows="customers" @row-click="handleRowClick"/>
 
-      <TableWrap :headers="['Primer Nombre', 'Primer Apellido', 'Documento', 'Email', 'Teléfono']">
-        <tr v-for="c in customers" :key="c.id" class="trow" @click="openCustomer(c)">
-          <td>{{ c.first_name || '' }}</td>
-          <td>{{ c.last_name || '' }}</td>
-          <td><Ref>{{ maskDni(c.dni) }}</Ref></td>
-          <td>{{ c.email || '' }}</td>
-          <td>{{ c.phone || '' }}</td>
-        </tr>
-      </TableWrap>
-    </template>
-
-    <CustomerFormModal 
-      :open="showForm" 
-      :customer="editing"
-      @close="closeForm" 
-      @save="saveCustomer"
-    />
-
-    <CustomerDetailModal 
-      :open="showDetail" 
-      :customer="detailCustomer"
-      :loans="detailLoans"
-      :loading="detailLoading"
-      @close="closeDetail"
-      @edit="editCustomer"
-      @new-loan="openNewLoan"
-    />
   </div>
 </template>
 

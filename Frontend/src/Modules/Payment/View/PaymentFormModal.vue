@@ -1,6 +1,5 @@
-<script setup>
+ <script setup>
 import { ref, watch } from 'vue'
-import Modal from '@/Shared/Components/Modal.vue'
 import Btn from '@/Shared/Components/Btn.vue'
 import { formatCurrency } from '@/Shared/Composable/useApi'
 
@@ -68,43 +67,41 @@ async function save() {
 </script>
 
 <template>
-  <Modal :open="open" :title="'Registrar Pago'" @close="emit('close')">
-    <div class="form">
-      <div v-if="error" class="error">{{ error }}</div>
+  <div class="form">
+    <div v-if="error" class="error">{{ error }}</div>
 
-      <div class="loan-info">
-        <div class="info-row">
-          <span>Cliente</span>
-          <span>{{ loan?.customer_name }}</span>
-        </div>
-        <div class="info-row">
-          <span>Préstamo</span>
-          <span>{{ loan?.loan_number || loan?.id?.slice(0, 8) }}</span>
-        </div>
-        <div class="info-row">
-          <span>Saldo</span>
-          <span>{{ formatCurrency(loan?.remaining_debt?.amount) }}</span>
-        </div>
+    <div class="loan-info">
+      <div class="info-row">
+        <span>Cliente</span>
+        <span>{{ loan?.customer_name }}</span>
       </div>
-
-      <div class="field">
-        <label>Monto ($)</label>
-        <input type="number" v-model.number="form.amount" min="1" placeholder="0" />
+      <div class="info-row">
+        <span>Préstamo</span>
+        <span>{{ loan?.loan_number || loan?.id?.slice(0, 8) }}</span>
       </div>
-
-      <div class="field">
-        <label>Fecha de Pago</label>
-        <input type="date" v-model="form.payment_date" />
-      </div>
-
-      <div class="actions">
-        <Btn @click="save" :disabled="loading">
-          {{ loading ? 'Procesando...' : 'Confirmar Pago' }}
-        </Btn>
-        <Btn variant="ghost" @click="emit('close')">Cancelar</Btn>
+      <div class="info-row">
+        <span>Saldo</span>
+        <span>{{ formatCurrency(loan?.remaining_debt?.amount) }}</span>
       </div>
     </div>
-  </Modal>
+
+    <div class="field">
+      <label>Monto ($)</label>
+      <input type="number" v-model.number="form.amount" min="1" placeholder="0" />
+    </div>
+
+    <div class="field">
+      <label>Fecha de Pago</label>
+      <input type="date" v-model="form.payment_date" />
+    </div>
+
+    <div class="actions">
+      <Btn @click="save" :disabled="loading">
+        {{ loading ? 'Procesando...' : 'Confirmar Pago' }}
+      </Btn>
+      <Btn variant="ghost" @click="emit('close')">Cancelar</Btn>
+    </div>
+  </div>
 </template>
 
 <style scoped>

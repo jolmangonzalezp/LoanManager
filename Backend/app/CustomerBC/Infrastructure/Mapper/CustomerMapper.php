@@ -79,16 +79,21 @@ final class CustomerMapper
 
         $phone = PhoneVO::create(
             $this->encryption->decrypt($model->phone_number),
-            $model->phone_country_code ?? '57'
+            $model->phone_country_code ? '+'.ltrim($model->phone_country_code, '+') : '+57'
         );
 
         $address = AddressVO::create(
             $this->encryption->decrypt($model->address)
         );
 
-        $email = $model->email
-            ? EmailVO::create($model->email)
-            : null;
+        $email = null;
+        if ($model->email) {
+            try {
+                $email = EmailVO::create($this->encryption->decrypt($model->email));
+            } catch (\Throwable) {
+                $email = EmailVO::create($model->email);
+            }
+        }
 
         return PersonVO::create($name, $dni, $phone, $address, $email);
     }

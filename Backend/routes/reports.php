@@ -11,6 +11,7 @@ Route::middleware('handle.exceptions')->group(function () {
     Route::get('/reports/delinquency', [ReportController::class, 'delinquency']);
     Route::get('/reports/monthly-collection', [ReportController::class, 'monthlyCollection']);
     Route::get('/reports/kpis', [ReportController::class, 'kpis']);
+    Route::get('/reports/kpis/customers', [ReportController::class, 'customerKpis']);
     Route::get('/reports/audit', [ReportController::class, 'audit']);
     Route::get('/reports/active-loans', [ReportController::class, 'activeLoans']);
     Route::get('/reports/payment-history', [ReportController::class, 'paymentHistory']);

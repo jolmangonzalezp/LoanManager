@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\PaymentBC\Application\DTO;
 
 use App\PaymentBC\Domain\Aggregate\Payment;
-use App\SharedKernel\Domain\ValueObject\MoneyVO;
 
 final class PaymentResponse
 {
@@ -14,11 +13,11 @@ final class PaymentResponse
     public function __construct(
         public readonly string $id,
         public readonly string $loanId,
-        public readonly array $amount,
+        public readonly int $amount,
         public readonly string $paymentDate,
         public readonly string $status,
-        public readonly ?array $interestPaid,
-        public readonly ?array $capitalPaid,
+        public readonly ?int $interestPaid,
+        public readonly ?int $capitalPaid,
         public readonly string $createdAt
     ) {}
 
@@ -27,24 +26,13 @@ final class PaymentResponse
         return new self(
             id: $payment->getId()->getValue(),
             loanId: $payment->getLoanId()->getValue(),
-            amount: self::moneyToArray($payment->getAmount()),
+            amount: $payment->getAmount()->getAmount(),
             paymentDate: $payment->getPaymentDate()->getFormatted(),
             status: $payment->getStatus()->value,
-            interestPaid: $payment->getInterestPaid()
-                ? self::moneyToArray($payment->getInterestPaid())
-                : null,
-            capitalPaid: $payment->getCapitalPaid()
-                ? self::moneyToArray($payment->getCapitalPaid())
-                : null,
+            interestPaid: $payment->getInterestPaid()?->getAmount(),
+            capitalPaid: $payment->getCapitalPaid()?->getAmount(),
             createdAt: $payment->getCreatedAt()->getFormatted('Y-m-d H:i:s')
         );
-    }
-
-    private static function moneyToArray(MoneyVO $money): array
-    {
-        return [
-            'amount' => $money->getAmount(),
-        ];
     }
 
     public function toArray(): array

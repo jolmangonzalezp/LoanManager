@@ -2,9 +2,8 @@
 import { computed, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Sidebar from '@/Shared/Components/Sidebar.vue'
-import { useGlobalModals } from '@/Shared/Composable/useGlobalModals'
-import { CustomerFormModal } from '@/Modules/Customer'
-import { LoanFormModal } from '@/Modules/Loan'
+import ModalHost from '@/Shared/Components/ModalHost.vue'
+import { useModal } from '@/Shared/Composable/useModal'
 import { PaymentFormModal } from '@/Modules/Payment'
 import { useCustomerApi } from '@/Modules/Customer'
 import { useLoanApi } from '@/Modules/Loan'
@@ -12,33 +11,9 @@ import { useAlert } from '@/Shared/Composable/useAlert'
 
 const router = useRouter()
 const route = useRoute()
-
-const customerApi = useCustomerApi()
-const loanApi = useLoanApi()
-const alert = useAlert()
-
-const { showNewLoan, showNewCustomer, showNewPayment, openNewLoan, openNewCustomer, openNewPayment, closeAll } = useGlobalModals()
+const modal = useModal()
 const fabOpen = ref(false)
 const sidebarCollapsed = ref(false)
-
-const customers = ref([])
-const loans = ref([])
-
-async function loadCustomers() {
-  try {
-    customers.value = await customerApi.getAll() || []
-  } catch (e) {
-    customers.value = []
-  }
-}
-
-async function loadLoans() {
-  try {
-    loans.value = await loanApi.getAll() || []
-  } catch (e) {
-    loans.value = []
-  }
-}
 
 const showSidebar = computed(() => route.path !== '/login')
 
@@ -58,68 +33,6 @@ const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
 }
 
-function handleNewLoan() {
-  loadCustomers()
-  loadLoans()
-  openNewLoan()
-}
-
-function handleNewCustomer() {
-  loadCustomers()
-  openNewCustomer()
-}
-
-function handleNewPayment() {
-  loadCustomers()
-  loadLoans()
-  openNewPayment()
-}
-
-async function saveCustomer(data) {
-  try {
-    alert.showLoading('Guardando cliente...')
-    await customerApi.create(data)
-    alert.close()
-    closeAll()
-    alert.showSuccess('Cliente creado exitosamente')
-  } catch (e) {
-    alert.close()
-    alert.showError(e.message || 'Error al crear cliente')
-  }
-}
-
-async function saveLoan(data) {
-  console.log('Sending loan data:', data)
-  try {
-    alert.showLoading('Guardando préstamo...')
-    const result = await loanApi.create(data)
-    console.log('Loan created:', result)
-    alert.close()
-    closeAll()
-    alert.showSuccess('Préstamo creado exitosamente')
-  } catch (e) {
-    console.error('Loan error:', e)
-    alert.close()
-    alert.showError(e.message || 'Error al crear préstamo')
-  }
-}
-
-async function savePayment(data) {
-  try {
-    alert.showLoading('Procesando pago...')
-    await fetch('http://localhost:8000/api/payments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
-      body: JSON.stringify(data)
-    })
-    alert.close()
-    closeAll()
-    alert.showSuccess('Pago registrado exitosamente')
-  } catch (e) {
-    alert.close()
-    alert.showError(e.message || 'Error al registrar pago')
-  }
-}
 </script>
 
 <template>
@@ -128,9 +41,6 @@ async function savePayment(data) {
       :current-route="currentRoute" 
       :collapsed="sidebarCollapsed"
       @navigate="navigate"
-      @newLoan="handleNewLoan"
-      @newCustomer="handleNewCustomer"
-      @newPayment="handleNewPayment"
       @toggle="toggleSidebar"
     />
 
@@ -148,18 +58,7 @@ async function savePayment(data) {
       <router-view />
     </main>
 
-    <div v-if="showSidebar" class="fab" @click="fabOpen = !fabOpen">
-      +
-      <div v-if="fabOpen" class="fab-menu">
-        <div class="fab-item" @click="handleNewLoan">Nuevo Préstamo</div>
-        <div class="fab-item" @click="handleNewCustomer">Nuevo Cliente</div>
-        <div class="fab-item" @click="handleNewPayment">Nuevo Pago</div>
-      </div>
-    </div>
-
-    <CustomerFormModal :open="showNewCustomer" @close="closeAll" @save="saveCustomer" />
-    <LoanFormModal :open="showNewLoan" :customers="customers" @close="closeAll" @save="saveLoan" />
-    <PaymentFormModal :open="showNewPayment" :customers="customers" :loans="loans" @close="closeAll" @save="savePayment" />
+    <ModalHost />
   </div>
 </template>
 

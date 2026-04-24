@@ -62,6 +62,13 @@ final class ReportController
         return response()->json($report->toArray());
     }
 
+    public function customerKpis(): JsonResponse
+    {
+        $report = $this->reportService->getCustomerKpiReport();
+
+        return response()->json($report->toArray());
+    }
+
     public function audit(Request $request): JsonResponse
     {
         $entidad = $request->get('entidad');

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\LoanBC\Application\UseCase;
 
 use App\LoanBC\Application\DTO\LoanResponse;
@@ -36,13 +38,14 @@ final class GetAllLoansUseCase
             $loanId = $loan->getId()->getValue();
 
             if (isset($namesMap[$cid])) {
-                $response->customerName = $namesMap[$cid];
-            }
-            if (isset($loanNumbersMap[$loanId])) {
-                $response->loanNumber = $loanNumbersMap[$loanId];
+                $response->setCustomerName($namesMap[$cid]);
             }
 
-            return $response->toArray();
+            if (isset($loanNumbersMap[$loanId])) {
+                $response->setLoanNumber($loanNumbersMap[$loanId]);
+            }
+
+            return $response->toArray($cid);
         }, $loans);
     }
 }

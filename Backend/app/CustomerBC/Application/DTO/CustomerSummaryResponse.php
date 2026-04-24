@@ -34,10 +34,12 @@ final class CustomerSummaryResponse
     {
         return [
             'id' => $this->id,
-            'first_name' => $masking->mask($this->firstName),
-            'middle_name' => $this->middleName ? $masking->mask($this->middleName) : null,
-            'last_name' => $masking->mask($this->lastName),
-            'second_last_name' => $masking->mask($this->secondLastName),
+            'name' => [
+                'first_name' => $this->firstName,
+                'middle_name' => $this->middleName,
+                'last_name' => $this->lastName,
+                'second_last_name' => $this->secondLastName
+            ],
         ];
     }
 }

@@ -16,6 +16,6 @@ final class CreateLoanCommand
         public readonly MoneyVO $capital,
         public readonly InterestRateVO $interestRate,
         public readonly DateVO $startDate,
-        public readonly DateVO $dueDate
+        public readonly int $term
     ) {}
 }

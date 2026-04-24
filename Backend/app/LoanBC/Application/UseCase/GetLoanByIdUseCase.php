@@ -18,7 +18,7 @@ final class GetLoanByIdUseCase
         private readonly CustomerNameProvider $customerNameProvider
     ) {}
 
-    public function execute(string $id): LoanResponse
+    public function execute(string $id): array
     {
         $loan = $this->finder->findById(LoanIdVO::fromString($id));
 
@@ -30,14 +30,14 @@ final class GetLoanByIdUseCase
         $response = LoanResponse::fromEntity($loan);
 
         if ($loanModel) {
-            $response->loanNumber = $loanModel->loan_number;
+            $response->setLoanNumber($loanModel->loan_number);
 
             $namesMap = $this->customerNameProvider->getNamesMap([$loanModel->customer_id]);
             if (isset($namesMap[$loanModel->customer_id])) {
-                $response->customerName = $namesMap[$loanModel->customer_id];
+                $response->setCustomerName($namesMap[$loanModel->customer_id]);
             }
         }
 
-        return $response;
+        return $response->toArray($loan->getCustomerId()->getValue());
     }
 }

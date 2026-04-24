@@ -1,4 +1,13 @@
-export { useCustomerApi } from './Api'
-export type { Customer, CustomerSummary, CreateCustomerCommand } from './Types'
-export { default as CustomerFormModal } from './View/CustomerFormModal.vue'
-export { default as CustomerDetailModal } from './View/CustomerDetailModal.vue'
+export { CustomerApi } from './Api/Customer.Api'
+export { CustomerService } from './Service/Customer.Service'
+export { CustomerMapper } from './mapper/Customer.Mapper'
+export { useCustomer } from './Composable/useCustomer'
+export { useCustomer as useCustomerView } from './Composable/useCustomer'
+export { useCustomer as useCustomerApi } from './Composable/useCustomer'
+
+
+export type { 
+  Customer,
+  CustomerName, 
+  CustomerSummary,
+} from './types/Customer.Type'

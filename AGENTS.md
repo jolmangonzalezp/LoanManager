@@ -1,130 +1,73 @@
-# LoanManager Development Context
+# LoanManager
 
-## Goal
+## Architecture
 
-Continuar desarrollando y mejorando la aplicación Laravel LoanManager con arquitectura DDD. El trabajo actual se centra en el módulo de Reportes y asegurar que todos los endpoints funcionen correctamente.
+- **DDD with Bounded Contexts**: `CustomerBC`, `LoanBC`, `PaymentBC`, `ReportBC`
+- **CQRS pattern**: Commands (writes) separated from Queries (reads)
+- **Backend**: Laravel PHP (`Backend/`)
+- **Frontend**: Vue.js 3 (`Frontend/`)
 
-## Instructions
+## Running the App
 
-- Seguir el patrón DDD con Bounded Contexts separados
-- Mantener segregación de interfaces (ISP) en repositorios
-- Usar CQRS pattern para escrituras
-- Trabajar tanto en backend (PHP/Laravel) como frontend (Vue.js)
+```bash
+# Backend (Laravel)
+cd Backend && php artisan serve --host=0.0.0.0 --port=8000
 
-## Discoveries
-
-1. **MoneyVO maneja valores en pesos COP** - No en centavos (se removió multiplicación x100)
-2. **El campo `loan_number`** - Identificador alfanumérico único (formato L-YYYY-####) para buscar/préstamos
-3. **La tasa de interés es mensual**, no anual
-4. **Customer names están encriptados en DB** - Usar CustomerNameProvider para desencriptar
-5. **Los DTOs requieren archivos separados** - PHP autoloader PSR-4 no soporta múltiples clases por archivo
-6. **Los DTOs de Carbon/DateTime deben convertirse a string** - Para serialización JSON correcta
-
-## Accomplished
-
-**Backend - Reports Module:**
-- ✅ ReportQueryService usa CustomerNameProvider para nombres desencriptados
-- ✅ Creados archivos separados para DTOs (LoanProfitabilityDTO, LoanSummaryDTO, LoanDelinquencyDTO, PaymentDetailDTO, AuditEntryDTO)
-- ✅ PaymentDetailDTO::fechaPago convertida a string (Carbon → format)
-- ✅ Todos los endpoints de reportes funcionando: summary, portfolio, profitability, delinquency, active-loans, payment-history, kpis, monthly-collection, cash-flow
-
-**Backend:**
-- ✅ Corregido DniVO::create() - parámetros invertidos en CreateCustomerRequest y UpdateCustomerRequest
-- ✅ Corregido DateVO::create() → DateVO::fromString() en LoanMapper
-- ✅ Corregido InterestRateVO - removido uso de getCurrency()
-- ✅ Corregido InterestCalculatorService - métodos faltantes (diffInDays, getYear, getMonth)
-- ✅ Corregido LoanResponse::moneyToArray() - retorno correcto
-- ✅ Corregido EloquentCustomerRepository - is_active → enabled
-- ✅ Agregado campo loan_number con migración
-- ✅ Creado LoanNumberGenerator - genera formato L-YYYY-####
-- ✅ Migración para cambiar interest_rate de decimal(5,4) a decimal(6,4)
-- ✅ Removido plazo (term) de la respuesta API
-- ✅ Fixed PaymentServiceProvider namespace (Domain\Repositories → Domain\Repository)
-- ✅ Fixed ProcessPaymentUseCase namespace y DateVO::create() → DateVO::fromString()
-- ✅ Fixed PaymentController - removido *100 para conversiones de montos
-- ✅ Added loan() relationship a PaymentModel
-- ✅ Added customer() relationship a LoanModel
-- ✅ Fixed PaymentResponse::moneyToArray() - removido getCurrency()
-- ✅ Fixed EloquentPaymentCreator - inject PaymentMapper via constructor
-
-**Frontend:**
-- ✅ Customer detail muestra datos sin enmascarar (llama GetById separately)
-- ✅ Customer summary KPIs se calculan en frontend
-- ✅ Loan detail modal simplificado - encabezado solo con nombre + badge
-- ✅ Grid 2x2: Monto | Saldo | Tasa | Progreso
-- ✅ Removido campo plazo del formulario
-- ✅ Campo monto solo acepta enteros
-- ✅ Modal de edición cierra detalle antes de abrir formulario
-- ✅ Fixed PaymentFormModal - removido /100 y referencias a term
-- ✅ Fixed PaymentFormModal - customer name access (c.first_name en vez de c.name?.first_name)
-- ✅ ReportsView con KPIs de summary, profitability y delinquency
-
-## Relevant files / directories
-
-```
-Backend/
-├── app/
-│   ├── ReportBC/
-│   │   ├── Application/DTO/
-│   │   │   ├── PortfolioReportDTO.php
-│   │   │   ├── ProfitabilityReportDTO.php
-│   │   │   ├── LoanProfitabilityDTO.php
-│   │   │   ├── DelinquencyReportDTO.php
-│   │   │   ├── LoanDelinquencyDTO.php
-│   │   │   ├── ActiveLoansReportDTO.php
-│   │   │   ├── LoanSummaryDTO.php
-│   │   │   ├── PaymentHistoryReportDTO.php
-│   │   │   ├── PaymentDetailDTO.php
-│   │   │   ├── KpiReportDTO.php
-│   │   │   ├── MonthlyCollectionReportDTO.php
-│   │   │   ├── CashFlowReportDTO.php
-│   │   │   ├── AuditReportDTO.php
-│   │   │   └── AuditEntryDTO.php
-│   │   ├── Domain/Service/
-│   │   │   └── ReportQueryService.php
-│   │   └── Presenter/Controllers/
-│   │       └── ReportController.php
-│   └── LoanBC/
-│       └── Domain/Repository/
-│           └── CustomerNameProvider.php
-├── routes/
-│   └── reports.php
+# Frontend (Vite)
+cd Frontend && npm run dev
 ```
 
-## Pending work
+## Critical Discoveries (would likely be missed)
 
-- Pruebas E2E: Create Customer → Create Loan → Register Payment → Verify Reports
-- Add search/filter functionality by loan_number
+1. **MoneyVO**: valores en pesos COP, NO centavos (no multiply by 100)
+2. **Tasa de interés**: es mensual, NO anual
+3. **Customer names**: encriptados en DB → usar `CustomerNameProvider` para desencriptar
+4. **DTOs**: cada clase en archivo separado (PSR-4 autoloader)
+5. **loan_number**: formato `L-YYYY-####`
 
-## Frontend - Reports Module (2026-04-17)
+## Backend Patterns
 
-**Reports Layout:**
-- ✅ ReportsLayout.vue - sidebar con menú de navegación
-- ✅ Routes anidadas para reportes
+### Request → Command Flow
 
-**Report Views:**
-- ✅ SummaryReport.vue - Resumen general (KPIs principales)
-- ✅ PortfolioReport.vue - Métricas de cartera
-- ✅ ProfitabilityReport.vue - Rentabilidad con tabla detallada
-- ✅ DelinquencyReport.vue - Mora con tabla y alertas
-- ✅ ActiveLoansReport.vue - Tabla de préstamos activos
-- ✅ CashFlowReport.vue - Flujo de caja con selector de fechas
-- ✅ PaymentHistoryReport.vue - Historial de pagos
-- ✅ AuditReport.vue - Registro de auditoría
-
-**Layout:**
-- ✅ ReportsLayout.vue - Overlay submenu con botón de cerrar
-- ✅ Header con logo centrado y botón de menú
-- ✅ Sidebar colapsable con toggle
-
-**Rutas:**
 ```
-/reportes → Resumen
-/reportes/cartera → Cartera
-/reportes/rentabilidad → Rentabilidad
-/reportes/mora → Mora
-/reportes/prestamos-activos → Préstamos Activos
-/reportes/flujo-caja → Flujo de Caja
-/reportes/historial-pagos → Historial de Pagos
-/reportes/auditoria → Auditoría
+Frontend payload → CreateLoanRequest::fromArray() → CreateLoanCommand → CreateLoanUseCase → Response
 ```
+
+**Mapeo de campos requerido**:
+- `customer_id` → `CustomerIdVO::fromString()`
+- `capital` → `MoneyVO::create(int)`
+- `interest_rate` → `InterestRateVO::createMonthly(int)`
+- `start_date` → `DateVO::fromString()`
+- `term` (meses) → `dueDate = startDate.addMonths(term)`
+
+### LoanResponse Properties
+
+```php
+$response->setLoanNumber(string)     // setter
+$response->getLoanNumber()         // getter
+$response->setCustomerName(string) // pasa string, NO array
+$response->toArray(customerId)     // requiere customerId como arg
+```
+
+### Routes
+
+```
+POST   /api/loans        → store()
+GET    /api/loans        → index()
+GET    /api/loans/{id}   → show()
+PUT    /api/loans/{id}   → update()
+POST   /api/loans/{id}/payments → makePayment()
+GET    /api/reports/*     → ReportController
+```
+
+## Frontend Notes
+
+- `useApi` composable para HTTP
+- `formatCurrency` para display COP
+- PaymentForm: monto en enteros (no /100)
+
+## Recent Fixes
+
+- `CreateLoanRequest`: corrige keys (`customer_id`, `interest_rate`)
+- `UpdateLoanUseCase`: usa `setLoanNumber()`, `setCustomerName()`
+- `LoanController`: pasa `getCustomerId()` a `toArray()`

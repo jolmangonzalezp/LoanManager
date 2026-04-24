@@ -1,11 +1,11 @@
 <script setup>
+import { useReportsView } from '@/Modules/Report'
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
+const { redirect } = useReportsView()
 
 onMounted(() => {
-  router.replace('/reportes/cartera')
+  redirect()
 })
 </script>
 
