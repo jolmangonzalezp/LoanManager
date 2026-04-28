@@ -1,24 +1,46 @@
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 import { ReportService } from '../Service/Report.Service'
 
+const porfolioReport = ref<{
+  capital_pendiente: number
+  intereses_cobrados: number
+  intereses_generados: number
+  numero_prestamos_activos: number
+  tasa_interes_promedio: number
+  total_clientes: number
+  total_prestado: number
+} | null>(null)
+
+const profitabilityReport = ref<{
+  ratio_intereses_capital: number
+  roi_global: number
+  roi_por_prestamo: {
+    capital: number
+    customer_name: string
+    dias_activo: number
+    intereses_cobrados: number
+    loan_id: string
+    loan_number: string
+    roi: number
+  }[]
+  total_capital: number
+  total_intereses: number
+  total_prestamos: number
+} | null>(null)
+
 export function useReports() {
-  const router = useRouter()
-
-  const loading = ref(false)
-  const error = ref<string | null>(null)
-
-  const redirect = () => {
-    router.replace('/reportes/cartera')
+  const getPortfolio = async (): Promise<void> => {
+    porfolioReport.value = await ReportService.getPortfolio()
   }
 
-  onMounted(() => {
-    redirect()
-  })
+  const getProfitability = async (): Promise<void> => {
+    profitabilityReport.value = await ReportService.getProfitability()
+  }
 
   return {
-    loading,
-    error,
-    redirect
+    porfolioReport,
+    profitabilityReport,
+    getPortfolio,
+    getProfitability
   }
 }

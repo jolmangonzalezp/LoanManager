@@ -1,12 +1,13 @@
 <script setup>
-import { onMounted } from 'vue'
-import { useReportApi } from '@/Modules/Report'
-import { useDataLoader, formatCurrency } from '@/Shared'
+import { ref, onMounted } from 'vue'
+import { useReports } from '@/Modules/Report'
+import { formatCurrency } from '@/Shared'
 
-const reportApi = useReportApi()
-const { loading, data, load } = useDataLoader(() => reportApi.getPortfolio())
+const { porfolioReport, getPortfolio } = useReports()
 
-onMounted(() => load())
+onMounted(async () => {
+  await getPortfolio()
+})
 </script>
 
 <template>
@@ -16,50 +17,49 @@ onMounted(() => load())
       <span class="subtitle">Estado actual de la cartera</span>
     </header>
 
-    <div v-if="loading" class="loading">Cargando...</div>
+    <div v-if="!porfolioReport" class="loading">Cargando...</div>
 
-    <template v-else-if="data">
+    <template v-else>
       <section class="report-section">
         <h3 class="section-title">Métricas Principales</h3>
         <div class="kpi-grid">
           <div class="kpi-card highlight">
             <div class="kpi-label">Total Prestado</div>
-            <div class="kpi-value gold">{{ formatCurrency(data.total_prestado) }}</div>
+            <div class="kpi-value gold">{{ formatCurrency(porfolioReport.total_prestado) }}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Capital Pendiente</div>
-            <div class="kpi-value">{{ formatCurrency(data.capital_pendiente) }}</div>
+            <div class="kpi-value">{{ formatCurrency(porfolioReport.capital_pendiente) }}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Intereses Generados</div>
-            <div class="kpi-value">{{ formatCurrency(data.intereses_generados) }}</div>
+            <div class="kpi-value">{{ formatCurrency(porfolioReport.intereses_generados) }}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Intereses Cobrados</div>
-            <div class="kpi-value success">{{ formatCurrency(data.intereses_cobrados) }}</div>
+            <div class="kpi-value success">{{ formatCurrency(porfolioReport.intereses_cobrados) }}</div>
           </div>
         </div>
       </section>
-
       <section class="report-section">
         <h3 class="section-title">Distribución</h3>
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-label">Préstamos Activos</div>
-            <div class="kpi-value">{{ data.numero_prestamos_activos }}</div>
+            <div class="kpi-value">{{ porfolioReport.numero_prestamos_activos }}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Total Clientes</div>
-            <div class="kpi-value">{{ data.total_clientes }}</div>
+            <div class="kpi-value">{{ porfolioReport.total_clientes }}</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Tasa Interés Promedio</div>
-            <div class="kpi-value">{{ data.tasa_interes_promedio }}%</div>
+            <div class="kpi-value">{{ porfolioReport.tasa_interes_promedio }}%</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">% Recuperado</div>
             <div class="kpi-value success">
-              {{ data.total_prestado > 0 ? ((1 - data.capital_pendiente / data.total_prestado) * 100).toFixed(1) : 0 }}%
+              {{ porfolioReport.total_prestado > 0 ? ((1 - porfolioReport.capital_pendiente / porfolioReport.total_prestado) * 100).toFixed(1) : 0 }}%
             </div>
           </div>
         </div>

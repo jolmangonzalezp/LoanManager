@@ -213,12 +213,12 @@ const handleRowClick = async (id: string) => {
 }
 
 .loan-id {
-  //font-family: 'Share Tech Mono', monospace;
+  /* font-family: 'Share Tech Mono', monospace; */
   font-size: 14px;
 }
 
 .loan-amount {
-  //font-family: 'Share Tech Mono', monospace;
+  /* font-family: 'Share Tech Mono', monospace; */
   font-weight: 700;
   color: #fff;
   font-size: 14px;

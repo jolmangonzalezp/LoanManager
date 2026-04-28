@@ -7,21 +7,25 @@ namespace App\LoanBC\Infrastructure\Persistence\Repository;
 use App\LoanBC\Domain\Aggregate\Loan;
 use App\LoanBC\Domain\Repository\LoanUpdater;
 use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
-use App\LoanBC\Infrastructure\Mapper\LoanMapper;
 
 final class EloquentLoanUpdater implements LoanUpdater
 {
-    public function __construct(
-        private readonly LoanMapper $mapper
-    ) {}
-
     public function update(Loan $loan): void
     {
-        $data = $this->mapper->toPersistence($loan);
+        $model = LoanModel::where('id', $loan->getId()->getValue())->first();
 
-        LoanModel::updateOrCreate(
-            ['id' => $data['id']],
-            $data
-        );
+        if ($model === null) {
+            return;
+        }
+
+        $model->remaining_debt = $loan->getRemainingDebt()->getAmount();
+        $model->paid_capital = $loan->getPaidCapital()->getAmount();
+        $model->paid_interest = $loan->getPaidInterest()->getAmount();
+        $model->pending_interest = $loan->getPendingInterest()->getAmount();
+        $model->interest_period = $loan->getInterestPeriod();
+        $model->next_payment_date = $loan->getNextPaymentDate()->getFormatted();
+        $model->status = $loan->getStatus()->value;
+
+        $model->save();
     }
 }

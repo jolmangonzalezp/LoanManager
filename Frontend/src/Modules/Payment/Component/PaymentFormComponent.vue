@@ -1,7 +1,7 @@
  <script setup lang="ts">
  import { formatCurrency } from '@/Shared/Composable/useApi';
  import {Btn, InputComponent, useModal} from "@Shared";
- import {onMounted} from "vue";
+ import {onMounted, ref} from "vue";
  import {usePayment} from "@Modules/Payment";
 
 interface Props {
@@ -17,13 +17,15 @@ const props = defineProps<Props>();
 
 const { paymentForm, initForm, create } = usePayment();
 const { close } = useModal();
-
+const loading = ref(false);
 const save = async () => {
+  loading.value = true;
   if (props.isEditing) {
     console.log()
   }else {
     await create(paymentForm.value)
   }
+  loading.value = false;
   close();
 }
 
@@ -68,7 +70,7 @@ onMounted( () => {
           class="payment-form__input"
       />
       <div class="actions">
-        <Btn @click="save">
+        <Btn>
           {{ props.isEditing === true ? "Actualizar" : "Pagar"}}
         </Btn>
       </div>

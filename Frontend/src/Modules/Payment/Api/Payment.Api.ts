@@ -13,7 +13,7 @@ export const PaymentApi = {
   },
 
   async getMonthlyReport(): Promise {
-    return httpClient.get(`${BASE}/monthly-report`)
+    return httpClient.get(`${BASE}/monthly`)
   },
 
   async create(data: PaymentFormDTO): Promise<string> {

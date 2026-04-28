@@ -1,19 +1,26 @@
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useReportApi } from '@/Modules/Report'
-import { useDataLoader, formatCurrency } from '@/Shared'
+import { formatCurrency } from '@/Shared'
 
 const reportApi = useReportApi()
-const { loading, data, load } = useDataLoader(() => reportApi.getProfitability())
+const data = ref(null)
+const loading = ref(true)
 
-onMounted(() => load())
+const load = async () => {
+  loading.value = true
+  data.value = await reportApi.getProfitability()
+  loading.value = false
+}
+
+onMounted(load)
 </script>
 
 <template>
   <div class="profitability-report">
     <header class="report-header">
       <h2>Rentabilidad</h2>
-      <span class="subtitle">Análisis de ingresos y ROI</span>
+      <span class="subtitle">Análisis de ingresos y ROI mensual</span>
     </header>
 
     <div v-if="loading" class="loading">Cargando...</div>
@@ -35,8 +42,8 @@ onMounted(() => load())
             <div class="kpi-value">{{ (data.ratio_intereses_capital * 100).toFixed(2) }}%</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">ROI Global</div>
-            <div class="kpi-value success">{{ (data.roi_global * 100).toFixed(2) }}%</div>
+            <div class="kpi-label">ROI Global (mensual)</div>
+            <div class="kpi-value success">{{ data.roi_global.toFixed(2) }}</div>
           </div>
         </div>
       </section>
@@ -52,7 +59,7 @@ onMounted(() => load())
                 <th>Capital</th>
                 <th>Intereses</th>
                 <th>Días</th>
-                <th>ROI</th>
+                <th>ROI Mensual</th>
               </tr>
             </thead>
             <tbody>
@@ -62,7 +69,7 @@ onMounted(() => load())
                 <td class="mono">{{ formatCurrency(loan.capital) }}</td>
                 <td class="mono">{{ formatCurrency(loan.intereses_cobrados) }}</td>
                 <td class="mono">{{ loan.dias_activo }}</td>
-                <td class="mono" :class="loan.roi > 0.1 ? 'success' : ''">{{ (loan.roi * 100).toFixed(2) }}%</td>
+                <td class="mono" :class="loan.roi > 0.1 ? 'success' : ''">{{ loan.roi.toFixed(2) }}</td>
               </tr>
             </tbody>
           </table>

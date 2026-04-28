@@ -13,7 +13,7 @@ final class LoanResponse
 
     public function __construct(
         public readonly string $id,
-        public readonly int $capital,
+        public readonly int $originalCapital,
         public readonly int $remainingDebt,
         public readonly float $interestRate,
         public readonly string $startDate,
@@ -21,7 +21,11 @@ final class LoanResponse
         public readonly ?string $nextPaymentDate,
         public readonly string $status,
         public readonly string $createdAt,
-        public readonly string $customerId = ''
+        public readonly string $customerId = '',
+        public readonly int $paidInterest = 0,
+        public readonly int $paidCapital = 0,
+        public readonly int $pendingInterest = 0,
+        public readonly string $interestPeriod = ''
     ) {
         $this->customerName = [
             'first_name' => '',
@@ -35,7 +39,7 @@ final class LoanResponse
     {
         return new self(
             id: $loan->getId()->getValue(),
-            capital: $loan->getOriginalCapital()->getAmount(),
+            originalCapital: $loan->getOriginalCapital()->getAmount(),
             remainingDebt: $loan->getRemainingDebt()->getAmount(),
             interestRate: $loan->getInterestRate()->getMonthlyRate(),
             startDate: $loan->getStartDate()->getFormatted(),
@@ -43,7 +47,11 @@ final class LoanResponse
             nextPaymentDate: $loan->getNextPaymentDate()->getFormatted(),
             status: $loan->getStatus()->value,
             createdAt: $loan->getCreatedAt()->getFormatted('Y-m-d'),
-            customerId: $loan->getCustomerId()->getValue()
+            customerId: $loan->getCustomerId()->getValue(),
+            paidInterest: $loan->getPaidInterest()->getAmount(),
+            paidCapital: $loan->getPaidCapital()->getAmount(),
+            pendingInterest: $loan->getPendingInterest()->getAmount(),
+            interestPeriod: $loan->getInterestPeriod()
         );
     }
 
@@ -102,7 +110,7 @@ final class LoanResponse
                 'id' => $customerId,
                 'name' => $this->customerName,
             ],
-            'capital' => $this->capital,
+            'capital' => $this->originalCapital,
             'remaining_debt' => $this->remainingDebt,
             'interest_rate' => $this->interestRate,
             'start_date' => $this->startDate,
@@ -110,6 +118,10 @@ final class LoanResponse
             'next_payment_date' => $this->nextPaymentDate,
             'status' => $this->status,
             'created_at' => $this->createdAt,
+            'paid_interest' => $this->paidInterest,
+            'paid_capital' => $this->paidCapital,
+            'pending_interest' => $this->pendingInterest,
+            'interest_period' => $this->interestPeriod,
         ];
     }
 }

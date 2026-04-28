@@ -7,6 +7,7 @@ namespace App\PaymentBC\Presenter\Controllers;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
 use App\PaymentBC\Application\CQRS\Command\ProcessPaymentCommand;
 use App\PaymentBC\Application\UseCase\GetAllPaymentsUseCase;
+use App\PaymentBC\Application\UseCase\GetMonthlyReportUseCase;
 use App\PaymentBC\Application\UseCase\GetPaymentByIdUseCase;
 use App\PaymentBC\Application\UseCase\ProcessPaymentUseCase;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
@@ -18,7 +19,8 @@ final class PaymentController
     public function __construct(
         private readonly ProcessPaymentUseCase $processPaymentUseCase,
         private readonly GetAllPaymentsUseCase $getAllPaymentsUseCase,
-        private readonly GetPaymentByIdUseCase $getPaymentByIdUseCase
+        private readonly GetPaymentByIdUseCase $getPaymentByIdUseCase,
+        private readonly GetMonthlyReportUseCase $getMonthlyReportUseCase
     ) {}
 
     public function store(Request $request): JsonResponse
@@ -50,5 +52,12 @@ final class PaymentController
         $response = $this->getPaymentByIdUseCase->execute($id);
 
         return response()->json($response);
+    }
+
+    public function monthly(): JsonResponse
+    {
+        $response = $this->getMonthlyReportUseCase->execute();
+
+        return response()->json($response->toArray());
     }
 }

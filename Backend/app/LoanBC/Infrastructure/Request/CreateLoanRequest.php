@@ -19,11 +19,11 @@ final class CreateLoanRequest
         $interestRate = InterestRateVO::createMonthly((int) ($request['interest_rate'] ?? 0));
 
         return new CreateLoanCommand(
-            CustomerIdVO::fromString((string) $request['customer']),
+            CustomerIdVO::fromString((string) ($request['customer'] ?? $request['customer_id'])),
             $capital,
             $interestRate,
-            DateVO::fromString($request['date_start']),
-            24
+            DateVO::fromString($request['date_start'] ?? $request['start_datez']),
+            (int) ($request['term'] ?? 24)
         );
     }
 }

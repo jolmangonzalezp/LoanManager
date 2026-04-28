@@ -36,7 +36,7 @@ final class LoanController
         $this->auditLogger->created('loan', $response->id, [
             'loan_number' => $response->getLoanNumber(),
             'customer_id' => $response->getCustomerId(),
-            'capital' => $response->capital,
+            'capital' => $response->originalCapital,
         ]);
 
         return response()->json($response->toArray($response->getCustomerId()), 201);
@@ -73,7 +73,7 @@ final class LoanController
         $this->auditLogger->payment($id, [
             'amount' => $request->input('amount'),
             'payment_date' => $request->input('payment_date'),
-            'new_remaining_debt' => $response->remainingDebt['amount'],
+            'new_remaining_debt' => $response->remainingDebt,
         ]);
 
         return response()->json($response->toArray());
