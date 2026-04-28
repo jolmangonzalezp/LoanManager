@@ -7,11 +7,11 @@ import type {Payment, PaymentForm} from '../types/Payment.Type'
 const payments = ref<Payment[]>([])
 const payment = ref<Payment>()
 const paymentForm = ref<PaymentForm>()
+const monthlyReport = ref(null)
 
 export function usePayment() {
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const monthlyReport = ref(null)
   const loans = ref<any[]>([])
 
   const columns = [
@@ -45,6 +45,14 @@ export function usePayment() {
     }
   }
 
+  const fillForm = (): void => {
+    paymentForm.value = {
+      loanId: payment.value.loan.id,
+      amount: payment.value.amount,
+      paymentDate: payment.value.paymentDate,
+    }
+  }
+
   const getAll = async () => {
     try {
       payments.value = await PaymentService.getAll()
@@ -59,7 +67,6 @@ export function usePayment() {
   const getById = async (id: string): void => {
     try {
       payment.value = await PaymentService.getById(id);
-      console.log(payment.value)
     } catch (e: any) {
       error.value = e.message
     } finally {
@@ -69,8 +76,8 @@ export function usePayment() {
 
   const getMonthlyReport = async () => {
     try {
-      // monthlyReport.value = await PaymentService.getMonthlyReport()
-      console.log()
+      monthlyReport.value = await PaymentService.getMonthlyReport()
+      console.log(monthlyReport.value)
     } catch (e) {
       console.error(e)
     }
@@ -78,7 +85,15 @@ export function usePayment() {
   const create = async (data: PaymentForm): void => {
     try {
       await PaymentService.create(data)
-      // await Promise.all([getAll(), getMonthlyReport()])
+      await Promise.all([getAll(), getMonthlyReport()])
+    } catch (e: any) {
+      throw e
+    }
+  }
+
+  const update = async (id:string, data: PaymentForm): void => {
+    try {
+      console.log(data)
     } catch (e: any) {
       throw e
     }
@@ -104,6 +119,8 @@ export function usePayment() {
     getById,
     getMonthlyReport,
     create,
+    update,
     initForm,
+    fillForm,
   }
 }

@@ -47,6 +47,7 @@ Route::middleware(['handle.exceptions', 'handle.cors'])->group(function () {
 
     Route::post('/payments', [PaymentController::class, 'store']);
     Route::get('/payments', [PaymentController::class, 'index']);
+    Route::get('/payments/monthly', [PaymentController::class, 'monthly']);
     Route::get('/payments/{id}', [PaymentController::class, 'show']);
 });
 

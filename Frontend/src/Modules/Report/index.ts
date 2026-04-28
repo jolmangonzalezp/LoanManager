@@ -1,9 +1,13 @@
-export { ReportApi } from './Api/Report.Api'
-export { ReportService } from './Service/Report.Service'
-export { useReports } from './Composable/useReports'
-export { useReports as useReportsView } from './Composable/useReports'
+import { ReportService } from './Service/Report.Service'
+import { useReports } from './Composable/useReports'
+import { useReports as useReportsView } from './Composable/useReports'
+import { ReportApi } from './Api/Report.Api'
 
-// Alias for backward compatibility
+export { ReportApi }
+export { ReportService }
+export { useReports }
+export { useReportsView }
+
 export const useReportApi = () => ({
   getSummary: ReportService.getSummary,
   getPortfolio: ReportService.getPortfolio,
@@ -17,7 +21,6 @@ export const useReportApi = () => ({
   getAudit: ReportService.getAudit
 })
 
-// Components
 import ReportsView from './View/ReportsView.vue'
 export { ReportsView }
 

@@ -48,9 +48,9 @@ final class DateVO
         return $this->value;
     }
 
-    public function getFormatted(): string
+    public function getFormatted(string $format = 'Y-m-d'): string
     {
-        return $this->value->format('Y-m-d');
+        return $this->value->format($format);
     }
 
     public function isAfter(self $other): bool

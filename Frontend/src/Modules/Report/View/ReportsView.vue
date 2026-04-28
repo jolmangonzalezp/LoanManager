@@ -1,26 +1,28 @@
-<script setup>
-import { useReportsView } from '@/Modules/Report'
-import { onMounted } from 'vue'
+<script setup lang="ts">
+import { ref } from 'vue'
+import SummaryReport from './reports/SummaryReport.vue'
 
-const { redirect } = useReportsView()
+const activeReport = ref('summary')
 
-onMounted(() => {
-  redirect()
-})
+const reports = [
+  { id: 'summary', label: 'Resumen' },
+]
+const activeComponent = ref(SummaryReport)
+
+const selectReport = (report: any) => {
+  activeReport.value = report.id
+}
 </script>
 
 <template>
-  <div class="reports-redirect">
-    <p>Redirigiendo...</p>
+  <div class="reports-container">
+    <component :is="activeComponent" />
   </div>
 </template>
 
 <style scoped>
-.reports-redirect {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #94a3b8;
+.reports-container {
+  padding: 20px;
+  height: calc(100vh - 100px);
 }
 </style>

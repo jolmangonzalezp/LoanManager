@@ -72,15 +72,15 @@ const makePayment = () => {
         <CardTitle>Pagado</CardTitle>
         <div class="info-row">
           <span>Capital</span>
-          <span>{{ formatCurrency(loan) }}</span>
+          <span>{{ formatCurrency(loan.paidCapital) }}</span>
         </div>
         <div class="info-row">
           <span>Interés</span>
-          <span>{{ formatCurrency(loan) }}</span>
+          <span>{{ formatCurrency(loan.paidInterest) }}</span>
         </div>
         <div class="info-row total">
           <span>Total Pagado</span>
-          <span class="success">{{ formatCurrency(12) }}</span>
+          <span class="success">{{ formatCurrency(loan.paidCapital + loan.paidInterest) }}</span>
         </div>
       </GCard>
       <GCard class="grid-card">

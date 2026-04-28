@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\LoanBC\Domain\Aggregate;
 
 use App\CustomerBC\Domain\ValueObject\CustomerIdVO;
+use App\LoanBC\Domain\DTO\PaymentDistributionResult;
 use App\LoanBC\Domain\ValueObject\InterestRateVO;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
 use App\LoanBC\Domain\ValueObject\LoanStatus;
@@ -25,8 +26,9 @@ final class Loan
         private LoanStatus $status,
         private MoneyVO $paidInterest,
         private MoneyVO $paidCapital,
-        private MoneyVO $capital,
         private MoneyVO $remainingDebt,
+        private MoneyVO $pendingInterest,
+        private string $interestPeriod,
         private DateVO $nextPaymentDate
     ) {}
 
@@ -37,10 +39,10 @@ final class Loan
         DateVO $startDate,
         DateVO $dueDate
     ): self {
-        $interest = $interestRate->calculateInterest($capital);
-
+        $monthlyInterest = $interestRate->calculateInterest($capital);
         $startDateVO = $startDate->isFuture() ? DateVO::now() : $startDate;
         $nextPaymentDate = $startDateVO->addMonths(1);
+        $interestPeriod = $startDateVO->getFormatted('Y-m');
 
         return new self(
             LoanIdVO::generate(),
@@ -54,7 +56,8 @@ final class Loan
             MoneyVO::zero(),
             MoneyVO::zero(),
             $capital,
-            $capital,
+            $monthlyInterest,
+            $interestPeriod,
             $nextPaymentDate
         );
     }
@@ -70,8 +73,9 @@ final class Loan
         LoanStatus $status,
         MoneyVO $paidInterest,
         MoneyVO $paidCapital,
-        MoneyVO $capital,
         MoneyVO $remainingDebt,
+        MoneyVO $pendingInterest,
+        string $interestPeriod,
         DateVO $nextPaymentDate
     ): self {
         return new self(
@@ -85,56 +89,53 @@ final class Loan
             $status,
             $paidInterest,
             $paidCapital,
-            $capital,
             $remainingDebt,
+            $pendingInterest,
+            $interestPeriod,
             $nextPaymentDate
         );
     }
 
-    public function makePayment(MoneyVO $amount): self
+    public function makePayment(MoneyVO $amount): PaymentDistributionResult
     {
         if ($this->status !== LoanStatus::ACTIVE) {
             throw new DomainException('inactive_loan', 'El préstamo no está activo');
         }
 
-        $currentCapital = $this->capital;
+        $currentPeriod = DateVO::now()->getFormatted('Y-m');
 
-        if ($this->isInDefault()) {
-            $defaultInterest = $this->interestRate->calculateInterest($currentCapital);
-            $currentCapital = $currentCapital->add($defaultInterest);
+        if ($currentPeriod === $this->interestPeriod) {
+            if ($amount->getAmount() >= $this->pendingInterest->getAmount()) {
+                $interestPortion = $this->pendingInterest;
+                $remainingAfterInterest = $amount->subtract($this->pendingInterest);
+                $capitalPortion = $remainingAfterInterest;
+                $newPendingInterest = MoneyVO::zero();
+            } else {
+                $interestPortion = $amount;
+                $capitalPortion = MoneyVO::zero();
+                $newPendingInterest = $this->pendingInterest->subtract($amount);
+            }
+        } else {
+            $newMonthlyInterest = $this->interestRate->calculateInterest($this->remainingDebt);
+
+            if ($amount->getAmount() >= $newMonthlyInterest->getAmount()) {
+                $interestPortion = $newMonthlyInterest;
+                $remainingAfterInterest = $amount->subtract($newMonthlyInterest);
+                $capitalPortion = $remainingAfterInterest;
+                $newPendingInterest = MoneyVO::zero();
+            } else {
+                $interestPortion = $amount;
+                $capitalPortion = MoneyVO::zero();
+                $newPendingInterest = $newMonthlyInterest->subtract($amount);
+            }
         }
 
-        $monthlyInterest = $this->interestRate->calculateInterest($currentCapital);
+        $newPaidInterest = $this->paidInterest->add($interestPortion);
+        $newPaidCapital = $this->paidCapital->add($capitalPortion);
+        $newRemainingDebt = $this->remainingDebt->subtract($capitalPortion);
+        $newStatus = $newRemainingDebt->isZero() ? LoanStatus::PAID : LoanStatus::ACTIVE;
 
-        $newPaidInterest = $this->paidInterest->add($monthlyInterest);
-        $remainingAfterInterest = $amount->subtract($monthlyInterest);
-
-        if ($remainingAfterInterest->getAmount() > 0) {
-            $capitalReduction = $remainingAfterInterest;
-            $newPaidCapital = $this->paidCapital->add($capitalReduction);
-            $newCapital = $currentCapital->subtract($capitalReduction);
-            $newRemainingDebt = $newCapital;
-            $newNextPaymentDate = $this->nextPaymentDate->addMonths(1);
-            $newStatus = $newCapital->isZero() ? LoanStatus::PAID : LoanStatus::ACTIVE;
-
-            return new self(
-                $this->id,
-                $this->customerId,
-                $this->originalCapital,
-                $this->interestRate,
-                $this->startDate,
-                $this->dueDate,
-                $this->createdAt,
-                $newStatus,
-                $newPaidInterest,
-                $newPaidCapital,
-                $newCapital,
-                $newRemainingDebt,
-                $newNextPaymentDate
-            );
-        }
-
-        return new self(
+        $updatedLoan = new self(
             $this->id,
             $this->customerId,
             $this->originalCapital,
@@ -142,27 +143,16 @@ final class Loan
             $this->startDate,
             $this->dueDate,
             $this->createdAt,
-            $this->status,
+            $newStatus,
             $newPaidInterest,
-            $this->paidCapital,
-            $currentCapital,
-            $currentCapital,
-            $this->nextPaymentDate->addMonths(1)
+            $newPaidCapital,
+            $newRemainingDebt,
+            $newPendingInterest,
+            $this->interestPeriod,
+            $this->nextPaymentDate
         );
-    }
 
-    public function isInDefault(): bool
-    {
-        return DateVO::now()->isAfter($this->nextPaymentDate);
-    }
-
-    public function calculateCurrentInterest(): MoneyVO
-    {
-        if ($this->status !== LoanStatus::ACTIVE) {
-            return MoneyVO::zero();
-        }
-
-        return $this->interestRate->calculateInterest($this->capital);
+        return new PaymentDistributionResult($updatedLoan, $interestPortion, $capitalPortion);
     }
 
     public function getId(): LoanIdVO
@@ -178,11 +168,6 @@ final class Loan
     public function getOriginalCapital(): MoneyVO
     {
         return $this->originalCapital;
-    }
-
-    public function getCapital(): MoneyVO
-    {
-        return $this->capital;
     }
 
     public function getRemainingDebt(): MoneyVO
@@ -218,6 +203,16 @@ final class Loan
     public function getPaidCapital(): MoneyVO
     {
         return $this->paidCapital;
+    }
+
+    public function getPendingInterest(): MoneyVO
+    {
+        return $this->pendingInterest;
+    }
+
+    public function getInterestPeriod(): string
+    {
+        return $this->interestPeriod;
     }
 
     public function getNextPaymentDate(): DateVO

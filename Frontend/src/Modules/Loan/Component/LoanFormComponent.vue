@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onMounted} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {Btn, InputComponent, useModal} from "@Shared";
 import SelectComponent from "@Shared/Components/SelectComponent.vue";
 import {useLoan} from "@Modules/Loan";
@@ -15,7 +15,7 @@ const props = defineProps<Props>();
 
 const {customers, loanForm, emptyForm, fillFromCustomer, getCustomers, create, update} = useLoan();
 const {close} = useModal();
-
+const loading = ref(false);
 const options = computed(() =>
     customers.value.map(cn => ({
       label: `${cn.name.firstName} ${cn.name.lastName}`,
@@ -24,11 +24,13 @@ const options = computed(() =>
 );
 
 const save = async () => {
+  loading.value = true;
   if (props.isEditing) {
     await update(props.id, loanForm.value)
   }else {
     await create(loanForm.value);
   }
+  loading.value = false;
   close();
 }
 
@@ -79,7 +81,7 @@ onMounted(() => {
         class="loan-form__input"
     />
     <div class="actions">
-      <Btn>
+      <Btn v-if="!loading">
         {{ props.isEditing === true ? "Actualizar" : "Crear"}}
       </Btn>
     </div>

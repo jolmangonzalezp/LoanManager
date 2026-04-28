@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\PaymentBC\Infrastructure\Config\Provider;
 
+use App\LoanBC\Domain\Repository\LoanFinderById;
+use App\LoanBC\Domain\Repository\LoanUpdater;
+use App\LoanBC\Infrastructure\Persistence\Repository\EloquentLoanFinderById;
+use App\LoanBC\Infrastructure\Persistence\Repository\EloquentLoanUpdater;
+use App\LoanBC\Infrastructure\Mapper\LoanMapper;
 use App\PaymentBC\Application\UseCase\GetAllPaymentsUseCase;
 use App\PaymentBC\Application\UseCase\GetMonthlyReportUseCase;
 use App\PaymentBC\Application\UseCase\GetPaymentByIdUseCase;
@@ -23,10 +28,14 @@ final class PaymentServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(PaymentMapper::class);
+        $this->app->singleton(LoanMapper::class);
         $this->app->bind(PaymentCreator::class, EloquentPaymentCreator::class);
         $this->app->bind(PaymentFinderAll::class, EloquentPaymentFinderAll::class);
         $this->app->bind(PaymentFinderById::class, EloquentPaymentFinderById::class);
         $this->app->bind(PaymentFinderByLoanId::class, EloquentPaymentFinderByLoanId::class);
+
+        $this->app->bind(LoanFinderById::class, EloquentLoanFinderById::class);
+        $this->app->bind(LoanUpdater::class, EloquentLoanUpdater::class);
 
         $this->app->bind(ProcessPaymentUseCase::class);
         $this->app->bind(GetAllPaymentsUseCase::class);

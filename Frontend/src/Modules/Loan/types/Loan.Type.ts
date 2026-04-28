@@ -21,6 +21,8 @@ export interface Loan {
   status: 'active' | 'paid' | 'defaulted'
   createdAt: string
   progress?: number
+  paidCapital: number
+  paidInterest: number
 }
 
 export interface LoanForm {

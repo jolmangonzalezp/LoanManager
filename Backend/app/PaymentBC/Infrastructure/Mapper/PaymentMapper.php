@@ -45,6 +45,7 @@ final class PaymentMapper
             'interest_paid' => $payment->getInterestPaid()?->getAmount() ?? 0,
             'capital_paid' => $payment->getCapitalPaid()?->getAmount() ?? 0,
             'status' => $payment->getStatus()->value,
+            'created_at' => $payment->getCreatedAt()->getFormatted(),
         ];
     }
 }

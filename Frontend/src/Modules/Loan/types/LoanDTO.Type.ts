@@ -18,7 +18,8 @@ export interface LoanDTO {
   next_payment_date?: string
   status: 'active' | 'paid' | 'defaulted'
   created_at: string
-
+  paid_capital: number
+  paid_interest: number
 }
 
 export interface LoanFormDTO {

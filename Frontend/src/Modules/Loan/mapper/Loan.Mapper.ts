@@ -25,7 +25,9 @@ export const LoanMapper = {
       nextPaymentDate: dto.next_payment_date,
       status: dto.status,
       createdAt: dto.created_at,
-      progress: ((dto.capital - dto.remaining_debt) / dto.capital) * 100
+      progress: ((dto.capital - dto.remaining_debt) / dto.capital) * 100,
+      paidCapital: dto.paid_capital,
+      paidInterest: dto.paid_interest
     }
   },
 

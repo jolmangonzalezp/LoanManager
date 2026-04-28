@@ -103,7 +103,9 @@ final class ReportQueryService
         $roiPorPrestamo = [];
         foreach ($loans as $loan) {
             $diasActivo = (int) Carbon::parse($loan->start_date)->diffInDays(now());
-            $roi = $diasActivo > 0 ? ($loan->paid_interest / $loan->original_capital) * (365 / $diasActivo) : 0;
+            $mesesActivo = max(1, $diasActivo / 30);
+            $interesMensualEsperado = (int) ($loan->original_capital * ($loan->interest_rate / 100));
+            $roiMensual = $interesMensualEsperado > 0 ? ($loan->paid_interest / $interesMensualEsperado) : 0;
 
             $roiPorPrestamo[] = (new LoanProfitabilityDTO(
                 loanId: $loan->id,
@@ -112,7 +114,7 @@ final class ReportQueryService
                 capital: (int) $loan->original_capital,
                 interesesCobrados: (int) $loan->paid_interest,
                 diasActivo: $diasActivo,
-                roi: (float) $roi
+                roi: (float) $roiMensual
             ))->toArray();
         }
 
@@ -120,7 +122,7 @@ final class ReportQueryService
             totalIntereses: (int) $totalIntereses,
             totalCapital: (int) $totalCapital,
             ratioInteresesCapital: (float) $ratioInteresesCapital,
-            roiGlobal: (float) $roiGlobal,
+            roiGlobal: (float) ($loans->count() > 0 ? array_sum(array_column($roiPorPrestamo, 'roi')) / count($roiPorPrestamo) : 0),
             roiPorPrestamo: $roiPorPrestamo,
             totalPrestamos: $loans->count()
         );
@@ -184,18 +186,16 @@ final class ReportQueryService
             ->where('status', 'applied')
             ->get();
 
-        $montoEsperado = $loans->count() * ($loans->avg('original_capital') * $loans->avg('interest_rate') / 100);
+        $montoEsperado = $loans->sum(fn ($l) => (int) ($l->original_capital * ($l->interest_rate / 100)));
         $montoCobrado = $payments->sum('amount');
 
         $porcentajeCumplimiento = $montoEsperado > 0 ? ($montoCobrado / $montoEsperado) * 100 : 0;
 
-        $numeroCuotasVencidas = $loans->filter(function ($loan) use ($month, $year) {
-            $nextPayment = Carbon::parse($loan->next_payment_date);
-
-            return $nextPayment->lt(now()) &&
-                   $nextPayment->month === $month &&
-                   $nextPayment->year === $year;
-        })->count();
+        $numeroCuotasVencidas = PaymentModel::whereMonth('payment_date', $month)
+            ->whereYear('payment_date', $year)
+            ->where('status', 'applied')
+            ->distinct('loan_id')
+            ->count('loan_id');
 
         return new MonthlyCollectionReportDTO(
             montoEsperado: (int) $montoEsperado,

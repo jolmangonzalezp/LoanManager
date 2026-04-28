@@ -68,6 +68,32 @@ final class CustomerController
         return response()->json($responses);
     }
 
+    public function report(): JsonResponse
+    {
+        $responses = $this->getAllUseCase->execute();
+
+        $totalCustomers = count($responses);
+        $customersWithLoans = 0;
+        $totalDebt = 0;
+
+        foreach ($responses as $customer) {
+            $loans = $this->getLoansByCustomerUseCase->execute($customer['id']);
+            if (!empty($loans)) {
+                $customersWithLoans++;
+                foreach ($loans as $loan) {
+                    $totalDebt += $loan['balance'] ?? 0;
+                }
+            }
+        }
+
+        return response()->json([
+            'total_customers' => $totalCustomers,
+            'customers_with_loans' => $customersWithLoans,
+            'customers_without_loans' => $totalCustomers - $customersWithLoans,
+            'total_debt' => $totalDebt,
+        ]);
+    }
+
     public function update(Request $request, string $id): JsonResponse
     {
         $command = UpdateCustomerRequest::fromArray($id, $request);
