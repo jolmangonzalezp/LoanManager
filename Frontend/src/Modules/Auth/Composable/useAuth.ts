@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { AuthService } from '../Service/Auth.Service'
-import type { LoginForm } from '../types/Auth.Type'
+import type {LoginForm, User} from '../types/Auth.Type'
 
 export function useAuth() {
   const router = useRouter()
@@ -13,6 +13,8 @@ export function useAuth() {
     email: '',
     password: ''
   })
+
+  const user = ref<User>({})
 
   const login = async () => {
     loading.value = true
@@ -28,6 +30,25 @@ export function useAuth() {
     }
   }
 
+  const getName = ()=> {
+    let i;
+    let j = 0;
+    let name;
+    while (user.value.name.length){
+      if (user.value.name[i] !== ""){
+        name += user.value.name[i];
+      } else {
+        j++;
+        i++;
+      }
+      console.log(name);
+    }
+  }
+
+  const me = async () => {
+    user.value = await AuthService.me();
+  }
+
   const logout = () => {
     AuthService.logout()
   }
@@ -38,8 +59,11 @@ export function useAuth() {
     loading,
     error,
     form,
+    user,
     login,
+    me,
     logout,
-    isAuthenticated
+    isAuthenticated,
+    getName
   }
 }

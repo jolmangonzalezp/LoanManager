@@ -1,5 +1,6 @@
 import httpClient from '@/Infrastructure/http/Client'
 import type { LoginForm, AuthResponse } from '../types/Auth.Type'
+import {UserDTO} from "../types/AuthDTO.Type";
 
 const BASE = '/auth'
 
@@ -12,7 +13,7 @@ export const AuthApi = {
     return httpClient.post(`${BASE}/logout`)
   },
 
-  async me(): Promise<any> {
-    return httpClient.get(`${BASE}/me`)
+  async me(): Promise<UserDTO> {
+    return httpClient.get<UserDTO>(`${BASE}/me`)
   }
 }

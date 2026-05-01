@@ -2,17 +2,15 @@
 import { PageHeader, KPI, GCard, CardTitle, Btn, useDataLoader } from '@/Shared'
 import { useDashboardView } from '@/Modules/Dashboard'
 import { formatCurrency } from '@/Shared'
+import QuickActionsComponent from "@Shared/Components/QuickActionsComponent.vue";
 
-const { loading, summary, navigateToLoans } = useDashboardView()
+const { loading, summary } = useDashboardView()
 </script>
 
 <template>
+  <QuickActionsComponent />
   <div class="dashboard pu">
-    <PageHeader title="Resumen de Activos">
-      <template #action>
-        <Btn @click="navigateToLoans">Nueva Operación</Btn>
-      </template>
-    </PageHeader>
+    <PageHeader title="Resumen de Activos"></PageHeader>
 
     <div v-if="loading" class="loading">Cargando...</div>
 
