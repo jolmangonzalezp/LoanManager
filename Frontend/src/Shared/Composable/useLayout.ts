@@ -1,4 +1,4 @@
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {
     faChartBar, faChartLine,
     faChartPie, faClipboardList, faExclamationTriangle, faFileAlt, faFileInvoiceDollar,
@@ -10,11 +10,11 @@ import {
 import {useRoute} from "vue-router";
 
 const isMenuOpened = ref<boolean>(false);
-const isReportActive = ref<boolean>(false);
 
 export const useLayout = () => {
 
     const route = useRoute();
+    const isReport = computed(() => route.path.startsWith('/reportes'));
 
     const routes = [
         { id:1, label:'Dashboard', icon:faHome, to:'/' },
@@ -39,6 +39,13 @@ export const useLayout = () => {
         isMenuOpened.value = !isMenuOpened.value;
     }
 
+    const layoutHandler = computed(() => {
+        const size = isMenuOpened.value ? 'wide' : 'slim';
+        const drawer = isReport.value ? '-drawer' : '';
+
+        return `layout-${size}${drawer}`;
+    })
+
     const menuHandle = (item: any) => {
         const isActive = route.path.startsWith(item.to);
         const isExpanded = isMenuOpened;
@@ -55,7 +62,7 @@ export const useLayout = () => {
         routes,
         subroutes,
         isMenuOpened,
-        isReportActive,
+        layoutHandler,
         toggleIconMenu,
         menuHandle,
     }

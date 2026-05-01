@@ -1,17 +1,34 @@
 <script setup lang="ts">
-import {useRoute} from "vue-router";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {
-  faAngleRight,
+  faAngleRight, faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
 import {useLayout} from "@Shared/Composable/useLayout";
+import {useAuth} from "@Modules/Auth";
+import {computed, onMounted} from "vue";
+import {Ava} from "@Shared";
 
 
-const { isMenuOpened, routes, subroutes, menuHandle } = useLayout()
+const { routes, subroutes, layoutHandler } = useLayout()
+const { user, me, logout, getName } = useAuth()
+
+const initials = computed(() => {
+  if (!user.value) return "??"
+  const parts = [
+    user.value.name?.[0] || '',
+    user.value.lastname?.[0] || ''
+  ].filter(Boolean)
+  return parts.slice(0,2).join('').toUpperCase() || '??'
+})
+
+onMounted(async () => {
+  await me();
+
+})
 </script>
 
 <template>
-<nav :class="{ 'nav-open' : isMenuOpened }">
+<nav :class="layoutHandler">
   <ul class="nav-menu">
     <li v-for="routeItem in routes" :key="routeItem.id" class="nav-item">
       <RouterLink
@@ -28,11 +45,9 @@ const { isMenuOpened, routes, subroutes, menuHandle } = useLayout()
           <FontAwesomeIcon v-if="isActive"  :icon="faAngleRight" class="nav-link-active"/>
         </div>
       </RouterLink>
-      <div
+      <ul
           v-if="routeItem.label === 'Reportes'"
           class="submenu"
-          :class="menuHandle(routeItem)"
-
       >
         <li
             v-for="subroute in subroutes"
@@ -54,10 +69,23 @@ const { isMenuOpened, routes, subroutes, menuHandle } = useLayout()
             </div>
           </RouterLink>
         </li>
-      </div>
+      </ul>
     </li>
   </ul>
-  <nav-footer></nav-footer>
+  <div class="nav-footer">
+    <div class="nav-footer-item">
+      <div class="nav-footer-icon">
+        <Ava :initials="initials"></Ava>
+      </div>
+      <p class="nav-footer-label">{{ user.name }}</p>
+    </div>
+    <div class="nav-footer-item">
+      <div class="nav-footer-icon">
+        <FontAwesomeIcon :icon="faRightFromBracket" />
+      </div>
+      <p class="nav-footer-label">Salir</p>
+    </div>
+  </div>
 </nav>
 </template>
 
@@ -66,12 +94,18 @@ nav
   position: fixed
   top: 60px
   left: 0
-  width: 60px
+  padding: 0
+  margin: 0
   height: calc(100vh - 60px)
   background: #0a1f1a
-  transition: width 0.3s ease-in-out
+  transition: width 0.3s ease
   z-index: 250
+  display: flex
+  flex-direction: column
+  justify-content: space-between
+  align-items: flex-start
   .nav-menu
+    max-width: 220px
     padding: 16px 0
     margin: 0
     list-style: none
@@ -87,93 +121,242 @@ nav
         color: #94a3b8
         text-decoration: none
         overflow: hidden
+        .nav-icon-container
+          width: 60px
+          display: flex
+          justify-content: center
+          align-items: center
+          font-size: 1.5rem
+        .nav-label
+          opacity: 1
+          width: 0
+          transform: translateX(-20px)
+          transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
+          white-space: nowrap
+          pointer-events: none
+        .nav-arrow
+          width: 30px
+          opacity: 1
+          transition: opacity 0.2s
         &:hover
           background: rgba(212, 175, 55, 0.08)
           color: #e8c84a
         &.router-link-active, &.router-link-exact-active
           background: rgba(212, 175, 55, 0.12)
           color: #d4af37
-        .nav-icon-container
-          min-width: 60px
-          display: flex
-          justify-content: center
-          align-items: center
-          font-size: 1.5rem
-          .nav-label
-            opacity: 1
-            width: 0
-            transform: translateX(-20px)
-            transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
-            white-space: nowrap
-            pointer-events: none
-          .nav-arrow
-            width: 30px
-            opacity: 0
-            transition: opacity 0.2s
-nav.nav-open
-  width: 220px
-  .nav-menu
-    .nav-item
-      .nav-link
-        .nav-label
-          opacity: 1
-          width: 135px
-          transform: translateX(0)
-          pointer-events: auto
-        .nav-arrow
-          opacity: 1
-.submenu
-  position: absolute
-  top: 0
-
-  width: 220px
-  height: calc(100vh - 60px)
-  background: #0a1f1a
-  box-shadow: 10px 0 15px rgba(0,0,0,0.3)
-  z-index: -1
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1)
-  .submenu-item
-    .submenu-link
+      .submenu
+        position: absolute
+        top: 0
+        left: 60px
+        height: calc(100vh - 60px)
+        background: #0a1f1a
+        box-shadow: 10px 0 15px rgba(0,0,0,0.3)
+        z-index: -1
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+        .submenu-item
+          list-style: none
+          .submenu-link
+            display: flex
+            align-items: center
+            width: 100%
+            height: 50px
+            color: #94a3b8
+            text-decoration: none
+            overflow: hidden
+            .submenu-icon-container
+              width: 60px
+              display: flex
+              justify-content: center
+              align-items: center
+              font-size: 1.5rem
+            .submenu-label
+              opacity: 1
+              width: 0
+              transform: translateX(-20px)
+              transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
+              white-space: nowrap
+              pointer-events: none
+            .submenu-arrow
+              width: 30px
+              opacity: 1
+              transition: opacity 0.2s
+            &:hover
+              background: rgba(212, 175, 55, 0.08)
+              color: #e8c84a
+            &.router-link-active, &.router-link-exact-active
+              background: rgba(212, 175, 55, 0.12)
+              color: #d4af37
+  .nav-footer
+    max-width: 220px
+    padding: 16px 0
+    margin: 0
+    list-style: none
+    display: flex
+    flex-direction: column
+    gap: 4px
+    .nav-footer-item
       display: flex
-      justify-content: space-between
       align-items: center
       width: 100%
       height: 50px
       color: #94a3b8
-      text-decoration: none
       overflow: hidden
-      &:hover
-        background: rgba(212, 175, 55, 0.08)
-        color: #e8c84a
-      &.router-link-active, &.router-link-exact-active
-        background: rgba(212, 175, 55, 0.12)
-        color: #d4af37
-      .submenu-icon-container
-        min-width: 60px
+      .nav-footer-icon
+        width: 60px
         display: flex
         justify-content: center
         align-items: center
         font-size: 1.5rem
-      .submenu-label
+      .nav-footer-label
         opacity: 1
-        width: 135px
+        width: 0
         transform: translateX(-20px)
         transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
         white-space: nowrap
         pointer-events: none
-      .submenu-arrow
-        width: 30px
-        opacity: 0
-        transition: opacity 0.2s
-.submenu-hidden
-  left: -300px
-  opacity: 0
-.submenu-expanded-active
-  left: 220px
-  opacity: 1
-.submenu-collapse-active
-  left: 60px
-  width: 60px;
-  opacity: 1
+      &:last-child
+        background: #dc2626
+        .nav-footer-icon
+          color: #fff
+        .nav-footer-label
+          color: #fff
 
+nav.layout-slim
+  width: 60px
+  .nav-menu
+    .nav-item
+      .nav-link
+        .nav-icon-container
+        .nav-label
+          opacity: 0
+          width: 0
+          transform: translateX(-20px)
+          transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
+          white-space: nowrap
+          pointer-events: none
+        .nav-arrow
+          width: 0
+          opacity: 0
+          transition: opacity 0.2s
+      .submenu
+        left: -220px
+  .nav-footer
+    .nav-footer-item
+      .nav-footer-icon
+      .nav-footer-label
+        opacity: 0
+        width: 0
+        transform: translateX(-20px)
+        transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
+        white-space: nowrap
+        pointer-events: none
+
+nav.layout-wide
+  width: 220px
+  .nav-menu
+    .nav-item
+      .nav-link
+        .nav-icon-container
+        .nav-label
+          opacity: 1
+          width: 130px
+          transform: translateX(0)
+          pointer-events: auto
+        .nav-arrow
+      .submenu
+        left: -220px
+        .submenu-item
+          .submenu-link
+            .submenu-icon-container
+            .submenu-label
+            .submenu-arrow
+  .nav-footer
+    .nav-footer-item
+      .nav-footer-icon
+      .nav-footer-label
+        opacity: 1
+        width: 160px
+        transform: translateX(0)
+        pointer-events: auto
+
+nav.layout-slim-drawer
+  width: 60px
+  .nav-menu
+    .nav-item
+      .nav-link
+        .nav-icon-container
+        .nav-label
+          opacity: 0
+          width: 0
+          transform: translateX(-20px)
+          transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
+          white-space: nowrap
+          pointer-events: none
+        .nav-arrow
+          width: 0
+          opacity: 0
+          transition: opacity 0.2s
+      .submenu
+        left: 60px
+        width: 220px
+        .submenu-item
+          .submenu-link
+            .submenu-icon-container
+            .submenu-label
+              opacity: 1
+              width: 130px
+              transform: translateX(0)
+              pointer-events: auto
+            .submenu-arrow
+  .nav-footer
+    .nav-footer-item
+      .nav-footer-icon
+      .nav-footer-label
+        opacity: 0
+        width: 0
+        transform: translateX(-20px)
+        transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
+        white-space: nowrap
+        pointer-events: none
+
+nav.layout-wide-drawer
+  width: 220px
+  .nav-menu
+    .nav-item
+      .nav-link
+        .nav-icon-container
+        .nav-label
+          opacity: 1
+          width: 130px
+          transform: translateX(0)
+          pointer-events: auto
+        .nav-arrow
+          width: 30px
+          opacity: 1
+          transition: opacity 0.2s
+      .submenu
+        left: 220px
+        width: 60px
+        .submenu-item
+          .submenu-link
+            .submenu-icon-container
+            .submenu-label
+              opacity: 0
+              width: 0
+              transform: translateX(-20px)
+              transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
+              white-space: nowrap
+              pointer-events: none
+            .submenu-arrow
+              width: 0
+              opacity: 0
+              transition: opacity 0.2s
+  .nav-footer
+    .nav-footer-item
+      .nav-footer-icon
+      .nav-footer-label
+        opacity: 1
+        width: 160px
+        transform: translateX(0)
+        pointer-events: auto
 </style>
