@@ -45,4 +45,29 @@ onMounted(async () => {
 .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
 .trow { cursor: pointer; }
 .trow:hover > td { background: rgba(212,175,55,0.04) !important; }
+
+@media screen and (max-width: 663px){
+  .kpi-grid{
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .kpi-grid-item:first-child{
+    grid-column: 1/3;
+  }
+  .kpi-grid-item:nth-child(2){
+    grid-column: 1/2;
+    grid-row: 2/2;
+  }
+  .kpi-grid-item:last-child{
+    grid-column: 2/2;
+    grid-row: 2/2;
+  }
+}
+
+@media screen and (max-width: 430px){
+  .kpi-grid{
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+  }
+}
 </style>

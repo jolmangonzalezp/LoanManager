@@ -129,6 +129,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  width: 100%;
+  max-width: 400px;
 }
 
 .customer-form__header {

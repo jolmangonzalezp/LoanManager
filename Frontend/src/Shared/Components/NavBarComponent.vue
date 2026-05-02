@@ -9,7 +9,7 @@ import {computed, onMounted} from "vue";
 import {Ava} from "@Shared";
 
 
-const { routes, subroutes, layoutHandler } = useLayout()
+const { isMenuOpened, routes, subroutes, layoutHandler, isReport } = useLayout()
 const { user, me, logout, getName } = useAuth()
 
 const initials = computed(() => {
@@ -21,16 +21,22 @@ const initials = computed(() => {
   return parts.slice(0,2).join('').toUpperCase() || '??'
 })
 
+const closeMenu = () => {
+  if (!isReport.value) {
+    isMenuOpened.value = false
+  }
+
+}
+
 onMounted(async () => {
   await me();
-
 })
 </script>
 
 <template>
-<nav :class="layoutHandler">
+<nav :class=" [layoutHandler, isMenuOpened ? 'open' : 'close']">
   <ul class="nav-menu">
-    <li v-for="routeItem in routes" :key="routeItem.id" class="nav-item">
+    <li v-for="routeItem in routes" :key="routeItem.id" class="nav-item" @click="closeMenu">
       <RouterLink
           :to="routeItem.to"
           :aria-label="routeItem.label"
@@ -53,6 +59,7 @@ onMounted(async () => {
             v-for="subroute in subroutes"
             :key="subroute.id"
             class="submenu-item"
+            @click="closeMenu"
         >
           <RouterLink
               :to="subroute.to"
@@ -79,7 +86,7 @@ onMounted(async () => {
       </div>
       <p class="nav-footer-label">{{ user.name }}</p>
     </div>
-    <div class="nav-footer-item">
+    <div class="nav-footer-item" @click="logout">
       <div class="nav-footer-icon">
         <FontAwesomeIcon :icon="faRightFromBracket" />
       </div>
@@ -216,6 +223,7 @@ nav
         pointer-events: none
       &:last-child
         background: #dc2626
+        cursor: pointer
         .nav-footer-icon
           color: #fff
         .nav-footer-label
@@ -226,7 +234,6 @@ nav.layout-slim
   .nav-menu
     .nav-item
       .nav-link
-        .nav-icon-container
         .nav-label
           opacity: 0
           width: 0
@@ -242,7 +249,6 @@ nav.layout-slim
         left: -220px
   .nav-footer
     .nav-footer-item
-      .nav-footer-icon
       .nav-footer-label
         opacity: 0
         width: 0
@@ -256,35 +262,25 @@ nav.layout-wide
   .nav-menu
     .nav-item
       .nav-link
-        .nav-icon-container
         .nav-label
           opacity: 1
           width: 130px
           transform: translateX(0)
           pointer-events: auto
-        .nav-arrow
       .submenu
         left: -220px
-        .submenu-item
-          .submenu-link
-            .submenu-icon-container
-            .submenu-label
-            .submenu-arrow
   .nav-footer
     .nav-footer-item
-      .nav-footer-icon
       .nav-footer-label
         opacity: 1
         width: 160px
         transform: translateX(0)
         pointer-events: auto
-
 nav.layout-slim-drawer
   width: 60px
   .nav-menu
     .nav-item
       .nav-link
-        .nav-icon-container
         .nav-label
           opacity: 0
           width: 0
@@ -301,16 +297,13 @@ nav.layout-slim-drawer
         width: 220px
         .submenu-item
           .submenu-link
-            .submenu-icon-container
             .submenu-label
               opacity: 1
               width: 130px
               transform: translateX(0)
               pointer-events: auto
-            .submenu-arrow
   .nav-footer
     .nav-footer-item
-      .nav-footer-icon
       .nav-footer-label
         opacity: 0
         width: 0
@@ -324,7 +317,6 @@ nav.layout-wide-drawer
   .nav-menu
     .nav-item
       .nav-link
-        .nav-icon-container
         .nav-label
           opacity: 1
           width: 130px
@@ -339,7 +331,6 @@ nav.layout-wide-drawer
         width: 60px
         .submenu-item
           .submenu-link
-            .submenu-icon-container
             .submenu-label
               opacity: 0
               width: 0
@@ -353,10 +344,58 @@ nav.layout-wide-drawer
               transition: opacity 0.2s
   .nav-footer
     .nav-footer-item
-      .nav-footer-icon
       .nav-footer-label
         opacity: 1
         width: 160px
         transform: translateX(0)
         pointer-events: auto
+
+@media (screen and max-width: 769px)
+  nav.close
+    height: auto
+    transform: translateY(-100vh)
+    transition: transform 0.3s ease
+  nav.open
+    height: auto
+    transform: translateY(0)
+    transition: transform 0.3s ease
+
+  nav.layout-slim-drawer.open, nav.layout-wide-drawer.open
+    width: 60px
+    .nav-menu
+      .nav-item
+        .nav-link
+          .nav-label
+            opacity: 0
+            width: 0
+            transform: translateX(-20px)
+            transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
+            white-space: nowrap
+            pointer-events: none
+          .nav-arrow
+            width: 0
+            opacity: 0
+            transition: opacity 0.2s
+        .submenu
+          left: 60px
+          width: 220px
+          height: auto
+          .submenu-item
+            .submenu-link
+              .submenu-label
+                opacity: 1
+                width: 130px
+                transform: translateX(0)
+                pointer-events: auto
+    .nav-footer
+      .nav-footer-item
+        .nav-footer-label
+          opacity: 0
+          width: 0
+          transform: translateX(-20px)
+          transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
+          white-space: nowrap
+          pointer-events: none
+
+
 </style>

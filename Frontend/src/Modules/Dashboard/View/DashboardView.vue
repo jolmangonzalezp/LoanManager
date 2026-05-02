@@ -20,24 +20,27 @@ const { loading, summary } = useDashboardView()
           label="Total Cartera" 
           :value="formatCurrency(summary?.portfolio?.capital_pendiente || 0)" 
           sub="En pesos" 
-          :goldValue="true" 
+          :goldValue="true"
+          class="kpi-grid-item"
         />
         <KPI 
           label="Préstamos Activos" 
           :value="summary?.portfolio?.numero_prestamos_activos || 0" 
           sub="En cartera" 
-          :goldValue="true" 
+          :goldValue="true"
+          class="kpi-grid-item"
         />
         <KPI 
           label="En Mora" 
           :value="formatCurrency(summary?.delinquency?.monto_en_mora || 0)" 
           sub="Cartera vencida" 
-          :goldValue="true" 
+          :goldValue="true"
+          class="kpi-grid-item"
         />
       </div>
 
       <div class="dashboard-grid">
-        <GCard>
+        <GCard class="dashboard-grid-item">
           <CardTitle>Resumen del Mes</CardTitle>
           <div class="stats-list">
             <div class="stat-item">
@@ -59,7 +62,7 @@ const { loading, summary } = useDashboardView()
           </div>
         </GCard>
 
-        <GCard>
+        <GCard class="dashboard-grid-item">
           <CardTitle>Intereses</CardTitle>
           <div class="stats-list">
             <div class="stat-item">
@@ -86,7 +89,7 @@ const { loading, summary } = useDashboardView()
 </template>
 
 <style scoped>
-.dashboard { animation: fadeUp 0.22s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.dashboard { animation: fadeUp 0.22s cubic-bezier(0.22, 1, 0.36, 1) both; overflow-y: auto}
 .loading { text-align: center; padding: 40px; color: #94a3b8; }
 .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 26px; }
 .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -94,4 +97,37 @@ const { loading, summary } = useDashboardView()
 .stat-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; }
 .stat-label { font-size: 12px; color: #94a3b8; }
 .stat-value { font-family: 'Share Tech Mono', monospace; font-weight: 700; color: #fff; }
+
+@media screen and (max-width: 663px){
+  .kpi-grid{
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .kpi-grid-item:first-child{
+    grid-column: 1/3;
+  }
+  .kpi-grid-item:nth-child(2){
+    grid-column: 1/2;
+    grid-row: 2/2;
+  }
+  .kpi-grid-item:last-child{
+    grid-column: 2/2;
+    grid-row: 2/2;
+  }
+  .dashboard-grid{
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .dashboard-grid-item {
+    grid-column: 1/3;
+  }
+}
+
+@media screen and (max-width: 430px){
+  .kpi-grid{
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+  }
+}
 </style>

@@ -32,7 +32,7 @@ header
   align-items: center
   justify-content: space-between
   background: #0a1f1a
-  z-index: 100
+  z-index: 300
   .toggle
     width: 60px
     height: 60px

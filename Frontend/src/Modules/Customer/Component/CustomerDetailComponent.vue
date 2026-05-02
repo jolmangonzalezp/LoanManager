@@ -120,7 +120,6 @@ const handleRowClick = async (id: string) => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: 400px;
 }
 
 .custumer-details__header {

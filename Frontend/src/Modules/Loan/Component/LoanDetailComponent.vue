@@ -102,7 +102,8 @@ const makePayment = () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
   margin-top: 1rem;
 }
 
@@ -226,5 +227,11 @@ const makePayment = () => {
   text-align: center;
   padding: 40px;
   color: #94a3b8;
+}
+
+@media screen and (max-width: 560px){
+  .main-grid{
+    grid-template-columns: 1fr;
+  }
 }
 </style>

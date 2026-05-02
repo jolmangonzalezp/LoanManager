@@ -220,4 +220,18 @@ onMounted(() => load())
   margin: 0;
   font-size: 14px;
 }
+
+@media screen and (max-width: 674px){
+  .kpi-grid{
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+@media screen and (max-width: 430px){
+  .kpi-grid{
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+  }
+}
 </style>

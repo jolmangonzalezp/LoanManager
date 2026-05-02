@@ -202,4 +202,18 @@ onMounted(() => loadData())
 
 .kpi-value.success { color: #10b981; }
 .kpi-value.danger { color: #ef4444; }
+
+@media screen and (max-width: 674px){
+  .kpi-grid{
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+@media screen and (max-width: 430px){
+  .kpi-grid{
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+  }
+}
 </style>

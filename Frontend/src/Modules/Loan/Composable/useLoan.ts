@@ -6,6 +6,7 @@ import { usePagination } from '@/Shared/Composable/usePagination'
 import { useAlert } from '@/Shared/Composable/useAlert'
 import type {LoanForm, LoanReport, Loan} from '../types/Loan.Type'
 import {CustomerName} from "../../Customer";
+import {useMask} from "../../../Shared/Composable/useMask";
 
 const loans = ref<Loan[]>([])
 const loan = ref<Loan>()
@@ -76,7 +77,12 @@ export function useLoan() {
 
   const getAll = async (): Promise<void> => {
     try {
-      loans.value = await LoanService.getAll()
+      const response = await LoanService.getAll()
+      response.map(r => {
+        r.partialName = useMask().maskStart(r.partialName)
+        r.progress = r.progress.toFixed(2)
+      })
+      loans.value = response
     } catch (e: any) {
       throw e;
     }
@@ -84,7 +90,10 @@ export function useLoan() {
 
   const getById = async (id: string): Promise<void> => {
     try {
-      loan.value = await LoanService.getById(id);
+      const response = await LoanService.getById(id);
+      response.partialName = useMask().maskStart(response.partialName)
+      response.progress = response.progress.toFixed(2)
+      loan.value = response
     }catch (e: any) {
       throw e;
     }

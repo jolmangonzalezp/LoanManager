@@ -118,4 +118,5 @@ onMounted(() => load())
 .mono {
   font-family: 'Share Tech Mono', monospace;
 }
+
 </style>
