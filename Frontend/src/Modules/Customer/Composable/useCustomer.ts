@@ -11,6 +11,7 @@ import {useModal} from "../../../Shared";
 import CustomerDetailComponent from "../Component/CustomerDetailComponent.vue";
 import {ReportService} from "../../Report";
 import {CustomerKPI} from "../../Report/types/Report.Type";
+import {useMask} from "../../../Shared/Composable/useMask";
 
 
 const customer = ref<Customer | null>(null)
@@ -23,6 +24,7 @@ const loans = ref<LoansByCustomer[]>([])
 export function useCustomer() {
   const alert = useAlert()
   const modal = useModal()
+  const mask = useMask()
 
   /******************/
   /*** Data state ***/
@@ -108,7 +110,21 @@ export function useCustomer() {
 
   const getAll = async (): void => {
     try {
-      customers.value = await CustomerService.getAll()
+      const response =  await CustomerService.getAll()
+      response.map(r => {
+        r.name.firstName = mask.maskStart(r.name.firstName)
+        r.name.middleName = mask.maskStart(r.name.middleName)
+        r.name.lastName = mask.maskStart(r.name.lastName)
+        r.name.secondLastName = mask.maskStart(r.name.secondLastName)
+        r.partialName = mask.maskStart(r.partialName)
+        r.email = mask.maskEmail(r.email)
+        r.dni.number = mask.maskEnd(r.dni.number)
+        r.fullDni = mask.maskEnd(r.fullDni)
+        r.phone = mask.maskEnd(r.phone)
+        r.address = mask.maskEnd(r.address)
+      })
+      customers.value = response
+
       alert.loading("Cargando", "Cargando datos")
     } catch (e: any) {
       error.value = e.message || 'Error al cargar clientes'
@@ -120,7 +136,16 @@ export function useCustomer() {
   const getById = async (id: string): void => {
     loading.value = true
     try {
-      customer.value = await CustomerService.getById(id);
+      const response = await CustomerService.getById(id);
+      response.name.firstName = mask.maskStart(response.name.firstName)
+      response.name.middleName = mask.maskStart(response.name.middleName)
+      response.name.lastName = mask.maskStart(response.name.lastName)
+      response.name.secondLastName = mask.maskStart(response.name.secondLastName)
+      response.email = mask.maskEmail(response.email)
+      response.dni.number = mask.maskEnd(response.dni.number)
+      response.phone = mask.maskEnd(response.phone)
+      response.address = mask.maskEnd(response.address)
+      customer.value = response
     } catch (e: any) {
       error.value = e.message || 'Error al cargar cliente'
     } finally {

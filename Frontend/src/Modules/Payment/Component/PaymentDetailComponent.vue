@@ -77,7 +77,8 @@ const updatePayment = () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
   margin-top: 1rem;
 }
 
@@ -130,5 +131,11 @@ const updatePayment = () => {
   width: 100%;
   display: flex;
   justify-content: space-between;
+}
+
+@media screen and (max-width: 560px){
+  .main-grid{
+    grid-template-columns: 1fr;
+  }
 }
 </style>

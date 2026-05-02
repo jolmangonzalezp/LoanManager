@@ -10,11 +10,13 @@ import {
 import {useRoute} from "vue-router";
 
 const isMenuOpened = ref<boolean>(false);
+const login = ref<boolean>(false);
 
 export const useLayout = () => {
 
     const route = useRoute();
     const isReport = computed(() => route.path.startsWith('/reportes'));
+    const login = computed(() => route.path.startsWith('/login'));
 
     const routes = [
         { id:1, label:'Dashboard', icon:faHome, to:'/' },
@@ -46,16 +48,6 @@ export const useLayout = () => {
         return `layout-${size}${drawer}`;
     })
 
-    const menuHandle = (item: any) => {
-        const isActive = route.path.startsWith(item.to);
-        const isExpanded = isMenuOpened;
-
-        return {
-            'submenu-expanded-active': isExpanded && isActive,
-            'submenu-collapse-active': !isExpanded && isActive,
-            'submenu-hidden': !isActive
-        };
-    }
 
 
     return {
@@ -63,7 +55,8 @@ export const useLayout = () => {
         subroutes,
         isMenuOpened,
         layoutHandler,
-        toggleIconMenu,
-        menuHandle,
+        login,
+        isReport,
+        toggleIconMenu
     }
 }

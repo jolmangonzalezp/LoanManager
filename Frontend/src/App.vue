@@ -1,18 +1,21 @@
 <script setup>
-import {ref} from "vue";
+import {onMounted} from "vue";
 import ModalHost from '@/Shared/Components/ModalHost.vue'
 import HeaderComponent from "@Shared/Components/HeaderComponent.vue";
 import NavBarComponent from "@Shared/Components/NavBarComponent.vue";
 import {useLayout} from "@Shared/Composable/useLayout.ts";
 
-const { layoutHandler } = useLayout()
+const { isMenuOpened, layoutHandler, login } = useLayout()
+
 </script>
 
 <template>
   <div class="app">
-    <HeaderComponent />
-    <NavBarComponent/>
-    <main class="main" :class="layoutHandler">
+    <div v-if="!login">
+      <HeaderComponent />
+      <NavBarComponent />
+    </div>
+    <main class="main" :class="[layoutHandler, isMenuOpened ? 'open' : 'close']">
       <router-view />
       <ModalHost />
     </main>
@@ -41,12 +44,9 @@ main.layout-slim-drawer, main.layout-wide-drawer
   margin-left: 280px
 
 /* Responsive */
-@media screen and (max-width: 1024px)
-  .main
-    margin-left: 80px
-
-@media screen and (max-width: 768px)
-  .main
+@media screen and (max-width: 769px)
+  main, main.layout-slim, main.layout-wide, main.layout-slim-drawer, main.layout-wide-drawer
     margin-left: 0
-    padding: 0
+    width: 100%
+    height: 100%;
 </style>
