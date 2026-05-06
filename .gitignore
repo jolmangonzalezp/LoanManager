@@ -49,3 +49,5 @@ LoanManagerFrontend/.svelte-kit/
 LoanManagerFrontend/.next/
 LoanManagerFrontend/npm-debug.log*
 LoanManagerFrontend/yarn-error.log*
+
+/RestoFlow-Prototype
