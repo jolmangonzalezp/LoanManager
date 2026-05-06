@@ -1,53 +1,67 @@
-# ====================================================================
-# CONFIGURACIÓN GLOBAL (Seguridad y Entorno)
-# ====================================================================
+# -----------------------------
+# Laravel core
+# -----------------------------
+/vendor
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# -----------------------------
+# Environment
+# -----------------------------
 .env
 .env.*
+!.env.example
+
+# -----------------------------
+# Build frontend (IMPORTANTE)
+# -----------------------------
+# ❌ NO ignores esto si haces build local
+# 👉 necesitas subirlo para producción estable
+# /public/build   ← NO ignorar
+
+# -----------------------------
+# Vite / frontend
+# -----------------------------
+/node_modules
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# -----------------------------
+# IDE / OS
+# -----------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
 .DS_Store
 Thumbs.db
+
+# -----------------------------
+# Testing
+# -----------------------------
+/phpunit.result.cache
+
+# -----------------------------
+# Composer
+# -----------------------------
+/composer.lock
+# 👉 OPCIONAL:
+# si trabajas en equipo, NO ignores composer.lock
+
+# -----------------------------
+# Docker (si luego usas)
+/docker-compose.override.yml
+
+# -----------------------------
+# Misc
+# -----------------------------
 *.log
-*.sqlite
-*.sqlite-journal
-
-# IDEs y Editores
-.idea/
-.vscode/
-.zed/
-.fleet/
-.nova/
-
-# ====================================================================
-# BACKEND (Backend)
-# ====================================================================
-Backend/vendor/
-Backend/auth.json
-Backend/.phpunit.cache/
-Backend/.phpunit.result.cache
-
-# Laravel Storage & Cache
-Backend/storage/logs/*
-Backend/storage/framework/cache/data/*
-Backend/storage/framework/sessions/*
-Backend/storage/framework/views/*
-Backend/storage/app/public/*
-Backend/storage/app/private/*
-Backend/storage/*.key
-Backend/bootstrap/cache/*
-
-# Frontend Assets en Backend
-Backend/public/build/
-Backend/public/hot
-Backend/public/storage
-
-# ====================================================================
-# FRONTEND (LoanManagerFrontend - Preparación)
-# ====================================================================
-LoanManagerFrontend/node_modules/
-LoanManagerFrontend/dist/
-LoanManagerFrontend/build/
-LoanManagerFrontend/.svelte-kit/
-LoanManagerFrontend/.next/
-LoanManagerFrontend/npm-debug.log*
-LoanManagerFrontend/yarn-error.log*
-
-/RestoFlow-Prototype
+*.cache
+*.tmp
