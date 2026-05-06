@@ -1,0 +1,131 @@
+services:
+  # Laravel Application (PHP-FPM)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: loanmanager_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - ./storage:/var/www/html/storage
+    networks:
+      - loanmanager_network
+    depends_on:
+      - redis
+      - mariadb
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost
+      - DB_CONNECTION=mariadb
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_DATABASE=loan_manager
+      - DB_USERNAME=laravel
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - QUEUE_CONNECTION=redis
+      - CACHE_STORE=redis
+      - SESSION_DRIVER=redis
+
+  # Nginx Web Server
+  nginx:
+    image: nginx:alpine
+    container_name: loanmanager_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx:/etc/nginx/conf.d
+    networks:
+      - loanmanager_network
+    depends_on:
+      - app
+
+  # MariaDB Database
+  mariadb:
+    image: mariadb:10.11
+    container_name: loanmanager_mariadb
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: loan_manager
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - loanmanager_network
+
+  # Redis Server
+  redis:
+    image: redis:7-alpine
+    container_name: loanmanager_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - loanmanager_network
+    command: redis-server --appendonly yes
+
+  # Queue Worker
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: loanmanager_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - loanmanager_network
+    depends_on:
+      - redis
+      - mariadb
+    command: php artisan queue:work --timeout=60 --tries=3
+    environment:
+      - APP_ENV=production
+      - REDIS_HOST=redis
+      - DB_HOST=mariadb
+
+  # Scheduler (Cron for Laravel Schedule)
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: loanmanager_scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - loanmanager_network
+    depends_on:
+      - redis
+      - mariadb
+    command: >
+      sh -c "while true; do
+        php artisan schedule:run;
+        sleep 60;
+      done"
+    environment:
+      - APP_ENV=production
+      - REDIS_HOST=redis
+      - DB_HOST=mariadb
+
+networks:
+  loanmanager_network:
+    driver: bridge
+
+volumes:
+  mariadb_data:
+  redis_data:
