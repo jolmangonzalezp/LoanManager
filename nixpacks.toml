@@ -3,7 +3,7 @@ nixPkgs = ["nodejs_20", "php83", "composer"]
 
 [phases.install]
 cmds = [
-  "npm ci --no-audit --no-fund",
+  "npm ci --include=dev",
   "composer install --no-dev --optimize-autoloader --no-interaction"
 ]
 
