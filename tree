@@ -1,0 +1,276 @@
+.
+├── app
+│   ├── CustomerBC
+│   │   ├── Application
+│   │   │   ├── CQRS
+│   │   │   │   ├── Command
+│   │   │   │   └── Query
+│   │   │   ├── DTO
+│   │   │   ├── Exceptions
+│   │   │   ├── Services
+│   │   │   └── UseCase
+│   │   ├── Domain
+│   │   │   ├── Aggregate
+│   │   │   ├── Exceptions
+│   │   │   ├── Repository
+│   │   │   └── ValueObject
+│   │   ├── Infrastructure
+│   │   │   ├── Config
+│   │   │   │   └── Provider
+│   │   │   ├── Exception
+│   │   │   ├── Mapper
+│   │   │   ├── Persistence
+│   │   │   │   ├── Migration
+│   │   │   │   ├── Model
+│   │   │   │   └── Repository
+│   │   │   └── Request
+│   │   ├── Presentation
+│   │   │   ├── Mappers
+│   │   │   └── Requests
+│   │   └── Presenter
+│   │       └── Controllers
+│   ├── LoanBC
+│   │   ├── Application
+│   │   │   ├── CQRS
+│   │   │   │   ├── Command
+│   │   │   │   └── Query
+│   │   │   ├── DTO
+│   │   │   ├── Jobs
+│   │   │   ├── Services
+│   │   │   └── UseCase
+│   │   ├── Documentation
+│   │   ├── Domain
+│   │   │   ├── Aggregate
+│   │   │   ├── DTO
+│   │   │   ├── Interfaces
+│   │   │   ├── Ports
+│   │   │   ├── Repository
+│   │   │   ├── Services
+│   │   │   └── ValueObject
+│   │   ├── Infrastructure
+│   │   │   ├── Config
+│   │   │   │   └── Provider
+│   │   │   ├── Exception
+│   │   │   ├── Mapper
+│   │   │   ├── Persistence
+│   │   │   │   ├── Migration
+│   │   │   │   ├── Model
+│   │   │   │   └── Repository
+│   │   │   ├── Repositories
+│   │   │   ├── Request
+│   │   │   └── Services
+│   │   └── Presenter
+│   │       └── Controllers
+│   ├── PaymentBC
+│   │   ├── Application
+│   │   │   ├── CQRS
+│   │   │   │   ├── Command
+│   │   │   │   └── Query
+│   │   │   ├── Commands
+│   │   │   ├── DTO
+│   │   │   ├── DTOs
+│   │   │   ├── Exceptions
+│   │   │   ├── Services
+│   │   │   ├── UseCase
+│   │   │   └── UseCases
+│   │   ├── Documentation
+│   │   ├── Domain
+│   │   │   ├── Aggregate
+│   │   │   ├── Entities
+│   │   │   ├── Interfaces
+│   │   │   ├── Repositories
+│   │   │   ├── Repository
+│   │   │   ├── ValueObject
+│   │   │   └── ValueObjects
+│   │   ├── Infrastructure
+│   │   │   ├── Config
+│   │   │   │   └── Provider
+│   │   │   ├── Exception
+│   │   │   ├── Mapper
+│   │   │   ├── Migrations
+│   │   │   ├── Models
+│   │   │   ├── Persistence
+│   │   │   │   ├── Migration
+│   │   │   │   ├── Model
+│   │   │   │   └── Repository
+│   │   │   ├── Providers
+│   │   │   ├── Repositories
+│   │   │   └── Request
+│   │   └── Presenter
+│   │       └── Controllers
+│   ├── ReportBC
+│   │   ├── Application
+│   │   │   ├── CQRS
+│   │   │   │   ├── Command
+│   │   │   │   └── Query
+│   │   │   ├── DTO
+│   │   │   ├── DTOs
+│   │   │   ├── Exceptions
+│   │   │   ├── UseCase
+│   │   │   └── UseCases
+│   │   ├── Documentation
+│   │   ├── Domain
+│   │   │   ├── Aggregate
+│   │   │   ├── Repository
+│   │   │   ├── Service
+│   │   │   └── ValueObject
+│   │   ├── Infrastructure
+│   │   │   ├── Config
+│   │   │   │   └── Provider
+│   │   │   ├── Exception
+│   │   │   ├── Mapper
+│   │   │   ├── Persistence
+│   │   │   │   ├── Migration
+│   │   │   │   ├── Model
+│   │   │   │   └── Repository
+│   │   │   ├── Providers
+│   │   │   └── Request
+│   │   └── Presenter
+│   │       └── Controllers
+│   ├── SharedKernel
+│   │   ├── Application
+│   │   │   ├── DTO
+│   │   │   ├── Exception
+│   │   │   ├── Services
+│   │   │   └── UseCase
+│   │   ├── Domain
+│   │   │   ├── Aggregate
+│   │   │   ├── Exception
+│   │   │   ├── Ports
+│   │   │   ├── Repository
+│   │   │   └── ValueObject
+│   │   ├── Infrastructure
+│   │   │   ├── Config
+│   │   │   │   └── Provider
+│   │   │   ├── Exception
+│   │   │   ├── Logger
+│   │   │   ├── Mapper
+│   │   │   ├── Persistence
+│   │   │   │   ├── Migration
+│   │   │   │   ├── Model
+│   │   │   │   └── Repository
+│   │   │   ├── Repositories
+│   │   │   ├── Request
+│   │   │   └── Services
+│   │   ├── Presentation
+│   │   │   ├── Mappers
+│   │   │   └── Middleware
+│   │   └── Presenter
+│   │       └── Controllers
+│   └── UserBC
+│       ├── Application
+│       │   ├── CQRS
+│       │   │   ├── Command
+│       │   │   └── Query
+│       │   ├── Commands
+│       │   ├── Config
+│       │   ├── DTO
+│       │   ├── DTOs
+│       │   ├── Exceptions
+│       │   ├── Services
+│       │   └── UseCase
+│       ├── Domain
+│       │   ├── Aggregate
+│       │   ├── Interfaces
+│       │   ├── Repositories
+│       │   ├── Repository
+│       │   └── ValueObject
+│       ├── Infrastructure
+│       │   ├── Config
+│       │   │   └── Provider
+│       │   ├── Exception
+│       │   ├── Mapper
+│       │   ├── Migrations
+│       │   ├── Models
+│       │   ├── Persistence
+│       │   │   ├── Migration
+│       │   │   ├── Model
+│       │   │   └── Repository
+│       │   ├── Providers
+│       │   └── Request
+│       └── Presentation
+│           └── Controllers
+├── bootstrap
+│   └── cache
+├── config
+├── database
+│   ├── factories
+│   ├── migrations
+│   └── seeders
+├── node_modules
+├── public
+│   └── build
+│       └── assets
+├── resources
+│   ├── css
+│   ├── js
+│   │   ├── Infrastructure
+│   │   │   └── http
+│   │   ├── Modules
+│   │   │   ├── Auth
+│   │   │   │   ├── Api
+│   │   │   │   ├── Composable
+│   │   │   │   ├── Mapper
+│   │   │   │   ├── Service
+│   │   │   │   ├── Types
+│   │   │   │   └── View
+│   │   │   ├── Customer
+│   │   │   │   ├── Api
+│   │   │   │   ├── Components
+│   │   │   │   ├── Composable
+│   │   │   │   ├── Service
+│   │   │   │   ├── Types
+│   │   │   │   ├── View
+│   │   │   │   └── mapper
+│   │   │   ├── Dashboard
+│   │   │   │   ├── Composable
+│   │   │   │   └── View
+│   │   │   ├── Loan
+│   │   │   │   ├── Api
+│   │   │   │   ├── Component
+│   │   │   │   ├── Composable
+│   │   │   │   ├── Mapper
+│   │   │   │   ├── Service
+│   │   │   │   ├── View
+│   │   │   │   └── types
+│   │   │   ├── Payment
+│   │   │   │   ├── Api
+│   │   │   │   ├── Component
+│   │   │   │   ├── Composable
+│   │   │   │   ├── Mapper
+│   │   │   │   ├── Service
+│   │   │   │   ├── Types
+│   │   │   │   └── View
+│   │   │   └── Report
+│   │   │       ├── Api
+│   │   │       ├── Composable
+│   │   │       ├── Mapper
+│   │   │       ├── Service
+│   │   │       ├── View
+│   │   │       │   └── reports
+│   │   │       └── types
+│   │   ├── Shared
+│   │   │   ├── Assets
+│   │   │   ├── Components
+│   │   │   └── Composable
+│   │   └── routes
+│   └── views
+├── routes
+├── storage
+│   ├── app
+│   │   ├── private
+│   │   └── public
+│   ├── framework
+│   │   ├── cache
+│   │   │   └── data
+│   │   ├── sessions
+│   │   ├── testing
+│   │   └── views
+│   ├── logs
+│   └── pail
+├── tests
+│   ├── Feature
+│   └── Unit
+└── vendor
+
+274 directories
