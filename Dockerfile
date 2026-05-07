@@ -22,18 +22,23 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# 5. Copiar código (Asegúrate de haber hecho 'npm run build' localmente)
+# 5. Copiar código
 COPY . .
 
-# 6. Dependencias de PHP
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# 6. Dependencias de PHP y OPTIMIZACIÓN EN BUILD
+# Ejecutamos las cachés aquí para que el contenedor arranque más rápido
+RUN composer install --no-dev --optimize-autoloader --no-interaction && \
+    php artisan config:clear && \
+    php artisan route:clear
 
-# 7. Permisos de carpetas (Crucial para Laravel)
+# 7. Permisos de carpetas
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
 
-# 8. Entrypoint Embebido: Ejecutamos los comandos directamente en el shell
-# Esto evita el error de "Permission denied" del archivo .sh
-ENTRYPOINT ["/bin/sh", "-c", "php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan migrate --force && apache2-foreground"]
+# 8. CMD en lugar de ENTRYPOINT
+# Usamos el formato de lista para que Apache sea el proceso principal (PID 1)
+# Si necesitas correr migraciones, Sevalla permite ejecutarlas como un "Pre-deploy command"
+# Si no, las ejecutaremos aquí de la forma más simple posible:
+CMD ["sh", "-c", "php artisan migrate --force && apache2-foreground"]
