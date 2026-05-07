@@ -8,3 +8,4 @@ echo "Ejecutando migraciones en la base de datos..."
 php artisan migrate --force
 
 exec apache2-foreground
+
