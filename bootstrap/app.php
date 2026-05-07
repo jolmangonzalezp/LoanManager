@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Esto permite que Laravel detecte correctamente el protocolo HTTPS
         // que viene desde el balanceador de Sevalla.
         $middleware->trustProxies(at: '*');
-        
+
         $middleware->web(append: [
             // HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
