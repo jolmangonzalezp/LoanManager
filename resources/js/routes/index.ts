@@ -8,17 +8,17 @@ import { CashFlow, DelinquencyReport, PortfolioReport, ProfitbilityReport, Repor
 
 
 const routes = [
-    {path: '/', name: 'Dashboard', component: () => DashboardPage},
-    {path: '/login', name: 'Login', component: () => AuthPage},
-    { path: '/clientes', name: 'clientes', component: () => CustomerPage },
-    { path: '/prestamos', name: 'prestamos', component: () => LoanPage },
-    { path: '/pagos', name: 'pagos', component: () => PaymentPage },
-    { path: '/reportes', name: 'reportes', component: () => ReportPage },
-    { path: '/reportes/cartera', name: 'reportes-cartera', component: () => PortfolioReport },
-    { path: '/reportes/rentabilidad', name: 'reportes-rentabilidad', component: () => ProfitbilityReport },
-    { path: '/reportes/mora', name: 'reportes-mora', component: () => DelinquencyReport },
+    {path: '/', name: 'Dashboard', component: DashboardPage},
+    {path: '/login', name: 'Login', component: AuthPage},
+    { path: '/clientes', name: 'clientes', component: CustomerPage },
+    { path: '/prestamos', name: 'prestamos', component: LoanPage },
+    { path: '/pagos', name: 'pagos', component: PaymentPage },
+    { path: '/reportes', name: 'reportes', component: ReportPage },
+    { path: '/reportes/cartera', name: 'reportes-cartera', component: PortfolioReport },
+    { path: '/reportes/rentabilidad', name: 'reportes-rentabilidad', component: ProfitbilityReport },
+    { path: '/reportes/mora', name: 'reportes-mora', component: DelinquencyReport },
     // { path: '/reportes/prestamos-activos', name: 'reportes-prestamos-activos', component: () => import('@/Modules/Report/View/reports/ActiveLoansReport.vue') },
-    { path: '/reportes/flujo-caja', name: 'reportes-flujo-caja', component: () => CashFlow },
+    { path: '/reportes/flujo-caja', name: 'reportes-flujo-caja', component: CashFlow },
     // { path: '/reportes/historial-pagos', name: 'reportes-historial-pagos', component: () => import('@/Modules/Report/View/reports/PaymentHistoryReport.vue') },
     // { path: '/reportes/auditoria', name: 'reportes-auditoria', component: () => import('@/Modules/Report/View/reports/AuditReport.vue') },
 ]
