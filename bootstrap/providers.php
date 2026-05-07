@@ -12,4 +12,5 @@ return [
     PaymentServiceProvider::class,
     ReportServiceProvider::class,
     UserServiceProvider::class,
+    App\SharedKernel\Infrastructure\Config\Provider\InfrastructureServiceProvider::class,
 ];
