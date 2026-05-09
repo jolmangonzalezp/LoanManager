@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 const props = defineProps({
   label: String,
-  value: String,
+  value: [String, Number],
   sub: String,
   trend: String,
   trendUp: Boolean,

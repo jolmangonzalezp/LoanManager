@@ -3,7 +3,7 @@ import {computed} from "vue";
 
 import { useAuth } from '@/Modules/Auth';
 import { CustomerForms, useCustomer } from '@/Modules/Customer';
-import { Btn, GCard, CardTitle, useModal, formatCurrency, useMask } from '@/Shared';
+import { Ava, Btn, GCard, CardTitle, useModal, formatCurrency, useMask } from '@/Shared';
 import { LoanDetail, LoanForms, useLoan } from '@/Modules/Loan';
 
 const { can } = useAuth()

@@ -6,7 +6,7 @@ import { useLayout, Ava } from '@/Shared';
 import { useAuth } from '@/Modules/Auth';
 
 
-const { routes, subroutes, layoutHandler, isMenuOpened, toggleIconMenu } = useLayout()
+const { routes, subroutes, layoutHandler, isMenuOpened } = useLayout()
 const { user, me, logout, can, hasRole } = useAuth()
 
 const permissionMap: Record<string, string> = {
@@ -269,7 +269,7 @@ nav
 
       &:last-child
         background: #dc2626
-        cursor: pointer;
+        cursor: pointer
         .nav-footer-icon
           color: #fff
 

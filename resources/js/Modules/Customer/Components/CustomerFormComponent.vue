@@ -27,9 +27,10 @@ const options = computed(() =>
 );
 
 const save = async () => {
+  if (!customerForm.value) return
   if (props.isEditing) {
     await update(props.id, customerForm.value)
-  }else {
+  } else {
     await create(customerForm.value);
   }
 }

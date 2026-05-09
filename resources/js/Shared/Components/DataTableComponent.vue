@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { faChevronLeft, faChevronRight, faCircleNotch } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { Button } from '@/Shared';
+import { Btn } from '@/Shared';
 
 interface Column {
   key: string
@@ -75,27 +75,27 @@ function nextPage() {
 
       <!-- Pagination -->
       <div v-if="totalPages && totalPages > 1" class="pagination">
-        <Button
+        <Btn
           :disabled="currentPage === 1"
           variant="primary"
           size="sm"
           @click="prevPage"
         >
           <FontAwesomeIcon :icon="faChevronLeft" />
-        </Button>
+        </Btn>
 
         <span class="page-info">
           {{ currentPage }} / {{ totalPages }}
         </span>
 
-        <Button
+        <Btn
           :disabled="currentPage === totalPages"
           variant="primary"
           size="sm"
           @click="nextPage"
         >
           <FontAwesomeIcon :icon="faChevronRight" />
-        </Button>
+        </Btn>
       </div>
     </template>
   </div>

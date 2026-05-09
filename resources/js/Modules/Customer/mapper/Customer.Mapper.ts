@@ -14,11 +14,11 @@ export const CustomerMapper = {
         id: dto.id,
         name: {
           firstName: dto.name.first_name,
-          middleName: dto.name.middle_name,
+          middleName: dto.name.middle_name ?? undefined,
           lastName: dto.name.last_name,
           secondLastName: dto.name.second_last_name,
         },
-        fullName: dto.name.first_name + " " + dto.name.middle_name + " " + dto.name.last_name + " " + dto.name.second_last_name,
+        fullName: [dto.name.first_name, dto.name.middle_name, dto.name.last_name, dto.name.second_last_name].filter(Boolean).join(' '),
         partialName: dto.name.first_name + " " + dto.name.last_name,
         dni: {
           type: dto.dni.type,
@@ -29,7 +29,7 @@ export const CustomerMapper = {
         address: dto.address,
         email: dto.email || "",
         createdAt: dto.created_at || "",
-        enabled: dto.enabled,
+        enabled: dto.enabled ?? false,
       }
   },
 
@@ -37,7 +37,7 @@ export const CustomerMapper = {
     return {
       name: {
         firstName: dto.name.first_name,
-        middleName: dto.name.middle_name,
+        middleName: dto.name.middle_name ?? undefined,
         lastName: dto.name.last_name,
         secondLastName: dto.name.second_last_name,
       },
@@ -56,9 +56,9 @@ export const CustomerMapper = {
       id: dto.id,
       name: {
         firstName: dto.name.first_name,
-        middleName: dto.name.middle_name,
+        middleName: dto.name.middle_name ?? undefined,
         lastName: dto.name.last_name,
-        secondLastName: dto.name.second_last_name,
+        secondLastName: dto.name.second_last_name ?? undefined,
       }
     }
   },
@@ -75,7 +75,7 @@ export const CustomerMapper = {
     return {
       name: {
         first_name: domain.name.firstName,
-        middle_name: domain.name.middleName,
+        middle_name: domain.name.middleName ?? null,
         last_name: domain.name.lastName,
         second_last_name: domain.name.secondLastName
       },

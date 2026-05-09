@@ -50,6 +50,7 @@ final class DniVO implements \Stringable
             if (!preg_match('/^[A-Z0-9]+$/', $number)) {
                 throw new InvalidDniException('Formato de pasaporte inválido');
             }
+            return;
         }
 
         if (!ctype_digit($number)) {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\LoanBC\Application\UseCase;
 
-use App\CustomerBC\Application\Exceptions\CustomerNotFoundException;
 use App\LoanBC\Application\CQRS\Command\MakePaymentCommand;
 use App\LoanBC\Application\DTO\LoanResponse;
+use App\LoanBC\Application\Exception\LoanNotFoundException;
 use App\LoanBC\Domain\Repository\LoanFinderById;
 use App\LoanBC\Domain\Repository\LoanUpdater;
 
@@ -22,7 +22,7 @@ final class MakePaymentUseCase
         $loan = $this->finder->findById($command->loanId);
 
         if ($loan === null) {
-            throw new CustomerNotFoundException($command->loanId->getValue());
+            throw new LoanNotFoundException($command->loanId->getValue());
         }
 
         $updatedLoan = $loan->makePayment($command->amount);

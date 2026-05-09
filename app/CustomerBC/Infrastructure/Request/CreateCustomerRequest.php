@@ -29,7 +29,7 @@ final class CreateCustomerRequest
             ),
             PhoneVO::create($request['phone'] ?? ''),
             AddressVO::create($request['address'] ?? ''),
-            ! empty($request['email']) ? EmailVO::create($request['email']) : ""
+            ! empty($request['email']) ? EmailVO::create($request['email']) : null
         );
 
         return new CreateCustomerCommand($person);

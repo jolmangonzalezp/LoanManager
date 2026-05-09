@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 const props = defineProps({
   variant: { type: String, default: 'primary' },
   size: { type: String, default: 'md' },
@@ -14,10 +14,15 @@ const variants = {
     color: '#06090f',
     border: 'none'
   },
+  secondary: {
+    background: 'transparent',
+    color: '#d4af37',
+    border: '1px solid rgba(212,175,55,0.28)'
+  },
   ghost: {
     background: 'transparent',
     color: '#94a3b8',
-    border: `1px solid rgba(255,255,255,0.07)`
+    border: '1px solid rgba(255,255,255,0.07)'
   },
   danger: {
     background: '#ef4444',
@@ -68,6 +73,18 @@ const sizes = {
   background: linear-gradient(135deg, #d4af37, #b89150);
   color: #06090f;
   border: none;
+}
+
+.btn.secondary {
+  background: transparent;
+  color: #d4af37;
+  border: 1px solid rgba(212,175,55,0.28);
+}
+
+.btn.secondary:hover {
+  background: rgba(212,175,55,0.08);
+  color: #e8c84a;
+  border-color: #d4af37;
 }
 
 .btn.ghost {

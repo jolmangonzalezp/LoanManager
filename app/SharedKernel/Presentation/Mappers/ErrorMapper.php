@@ -17,6 +17,8 @@ use App\UserBC\Application\Exceptions\UserAlreadyExistsException;
 use App\UserBC\Application\Exceptions\UserDisabledException;
 use App\UserBC\Application\Exceptions\UserNotFoundException;
 use App\SharedKernel\Application\Exception\ApplicationException;
+use App\SharedKernel\Application\Exception\NotFoundException;
+use App\SharedKernel\Domain\Exception\BusinessRuleViolationException;
 use App\SharedKernel\Domain\Exception\DomainException;
 use App\SharedKernel\Domain\Exception\InvalidAddressException;
 use App\SharedKernel\Domain\Exception\InvalidDateException;
@@ -102,6 +104,7 @@ final class ErrorMapper
             InvalidNameException::class => 422,
             InvalidPhoneException::class => 422,
             InvalidUuidException::class => 422,
+            BusinessRuleViolationException::class => 422,
             DomainException::class => 400,
 
             // Application
@@ -117,6 +120,7 @@ final class ErrorMapper
             RoleSlugAlreadyExistsException::class => 409,
             RoleCannotBeDeletedException::class => 400,
             LoanNotFoundException::class => 404,
+            NotFoundException::class => 404,
             ApplicationException::class => 409,
 
             // Infrastructure

@@ -29,11 +29,15 @@ final class PaymentController
 
     public function store(Request $request): JsonResponse
     {
-        $data = $request->all();
+        $data = $request->validate([
+            'loan_id' => 'required|string',
+            'amount' => 'required|numeric|min:1',
+            'payment_date' => 'sometimes|date',
+        ]);
 
         $command = new ProcessPaymentCommand(
             LoanIdVO::fromString($data['loan_id']),
-            MoneyVO::create((int) ($data['amount'] ?? 0)),
+            MoneyVO::create((int) $data['amount']),
             isset($data['payment_date']) ? DateVO::fromString($data['payment_date']) : null
         );
 
