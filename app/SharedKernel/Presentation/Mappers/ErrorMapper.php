@@ -8,6 +8,11 @@ use App\CustomerBC\Application\Exceptions\CustomerAlreadyExistsException;
 use App\CustomerBC\Application\Exceptions\CustomerNotFoundException;
 use App\LoanBC\Application\Exception\LoanNotFoundException;
 use App\UserBC\Application\Exceptions\InvalidCredentialsException;
+use App\UserBC\Application\Exceptions\PermissionNotFoundException;
+use App\UserBC\Application\Exceptions\PermissionSlugAlreadyExistsException;
+use App\UserBC\Application\Exceptions\RoleCannotBeDeletedException;
+use App\UserBC\Application\Exceptions\RoleNotFoundException;
+use App\UserBC\Application\Exceptions\RoleSlugAlreadyExistsException;
 use App\UserBC\Application\Exceptions\UserAlreadyExistsException;
 use App\UserBC\Application\Exceptions\UserDisabledException;
 use App\UserBC\Application\Exceptions\UserNotFoundException;
@@ -106,6 +111,11 @@ final class ErrorMapper
             UserAlreadyExistsException::class => 409,
             InvalidCredentialsException::class => 401,
             UserDisabledException::class => 403,
+            PermissionNotFoundException::class => 404,
+            PermissionSlugAlreadyExistsException::class => 409,
+            RoleNotFoundException::class => 404,
+            RoleSlugAlreadyExistsException::class => 409,
+            RoleCannotBeDeletedException::class => 400,
             LoanNotFoundException::class => 404,
             ApplicationException::class => 409,
 

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import {computed} from "vue";
 
+import { useAuth } from '@/Modules/Auth';
 import { CustomerForms, useCustomer } from '@/Modules/Customer';
 import { Btn, GCard, CardTitle, useModal, formatCurrency, useMask } from '@/Shared';
 import { LoanDetail, LoanForms, useLoan } from '@/Modules/Loan';
+
+const { can } = useAuth()
 
 
 const { customer, loans, fillCustomer } = useCustomer();
@@ -109,8 +112,8 @@ const handleRowClick = async (id: string) => {
       </GCard>
     </section>
     <div class="btns">
-      <Btn variant="secondary" @click="updateCustomer">Actualizar</Btn>
-      <Btn @click="newLoanHandler">Nuevo Prestamo</Btn>
+      <Btn v-if="can('customers.update')" variant="secondary" @click="updateCustomer">Actualizar</Btn>
+      <Btn v-if="can('loans.create')" @click="newLoanHandler">Nuevo Prestamo</Btn>
     </div>
   </div>
 </template>

@@ -1,5 +1,5 @@
 export interface LoginForm {
-  email: string
+  login: string
   password: string
 }
 
@@ -10,8 +10,12 @@ export interface AuthResponse {
 
 export interface User {
   id: string
-  email: string
+  username: string
   name: string
-  lastname: string
+  email: string
+  phone: string
   createdAt: string
+  enabled: boolean
+  roles: string[]
+  permissions: string[]
 }

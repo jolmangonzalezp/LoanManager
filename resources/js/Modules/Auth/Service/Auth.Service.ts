@@ -14,8 +14,8 @@ export const AuthService = {
   },
 
   async logout(): Promise<void> {
-      Http.setToken(null);
       await AuthApi.logout();
+      Http.setToken(null);
   },
 
   isAuthenticated(): boolean {

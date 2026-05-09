@@ -1,11 +1,23 @@
 <script setup lang="ts">
-import {ref} from "vue";
-import {faUserPlus, faCalendarPlus, faPlus} from "@fortawesome/free-solid-svg-icons";
+import {computed, ref} from "vue";
+import {useRoute} from "vue-router";
+import {faUserPlus, faCalendarPlus, faPlus, faUserGear} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 import { CustomerForms } from '@/Modules/Customer';
+import { UserForms } from '@/Modules/User';
 import { Btn, useModal } from '@/Shared';
 import { LoanForms } from '@/Modules/Loan';
+import { useAuth } from '@/Modules/Auth';
+
+const route = useRoute()
+const { can, hasRole } = useAuth()
+const isUserPage = computed(() => route.path === '/usuarios')
+
+const showCreate = computed(() => {
+  if (isUserPage.value) return hasRole('admin')
+  return can('customers.create') || can('loans.create')
+})
 
 const {open} = useModal()
 
@@ -31,25 +43,42 @@ const openForm = (form: string) => {
         }
     )
   }
+  if (form === 'user') {
+    open(
+        UserForms,
+        {
+          size: 'lg',
+          props: { isEditing: false, id: '' }
+        }
+    )
+  }
 }
 
 </script>
 
 <template>
-  <div class="quick-actions">
+  <div v-if="showCreate" class="quick-actions">
     <Btn variant="primary" circle @click="toggle">
       <FontAwesomeIcon :icon="faPlus" />
     </Btn>
     <transition name="fab-menu">
       <div v-if="openMenu" class="quick-actions__menu">
-        <span class="quick-actions__item-menu" @click="openForm('loan')">
-          <FontAwesomeIcon :icon="faCalendarPlus"></FontAwesomeIcon>
-          Nuevo Prestamo
-        </span>
-        <span class="quick-actions__item-menu" @click="openForm('customer')">
-          <FontAwesomeIcon :icon="faUserPlus"></FontAwesomeIcon>
-          Nuevo Cliente
-        </span>
+        <template v-if="isUserPage">
+          <span v-if="hasRole('admin')" class="quick-actions__item-menu" @click="openForm('user')">
+            <FontAwesomeIcon :icon="faUserGear"></FontAwesomeIcon>
+            Nuevo Usuario
+          </span>
+        </template>
+        <template v-else>
+          <span v-if="can('loans.create')" class="quick-actions__item-menu" @click="openForm('loan')">
+            <FontAwesomeIcon :icon="faCalendarPlus"></FontAwesomeIcon>
+            Nuevo Prestamo
+          </span>
+          <span v-if="can('customers.create')" class="quick-actions__item-menu" @click="openForm('customer')">
+            <FontAwesomeIcon :icon="faUserPlus"></FontAwesomeIcon>
+            Nuevo Cliente
+          </span>
+        </template>
       </div>
     </transition>
   </div>

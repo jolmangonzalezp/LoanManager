@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace App\UserBC\Infrastructure\Mapper;
 
-use App\SharedKernel\Domain\ValueObject\AddressVO;
 use App\SharedKernel\Domain\ValueObject\DateVO;
-use App\SharedKernel\Domain\ValueObject\DniType;
-use App\SharedKernel\Domain\ValueObject\DniVO;
 use App\SharedKernel\Domain\ValueObject\EmailVO;
 use App\SharedKernel\Domain\ValueObject\NameVO;
-use App\SharedKernel\Domain\ValueObject\PersonVO;
 use App\SharedKernel\Domain\ValueObject\PhoneVO;
 use App\UserBC\Domain\Aggregate\User;
 use App\UserBC\Domain\ValueObject\UserIdVO;
@@ -20,85 +16,69 @@ final class UserMapper
 {
     public function toDomain(UserModel $model): User
     {
-        $nameParts = $this->parseName($model->name);
-        
-        $name = NameVO::create(
-            $nameParts['firstName'],
-            $nameParts['lastName'],
-            $nameParts['secondLastName'],
-            $nameParts['middleName']
-        );
-        
-        $dni = DniVO::create('00000000', DniType::CC);
-        $phone = PhoneVO::create('3000000000', '+57');
-        $address = AddressVO::create('Calle 123, Bogota, Colombia');
-        $email = ! empty($model->email) ? EmailVO::create($model->email) : null;
-
-        $personalData = new PersonVO(
-            $name,
-            $dni,
-            $phone,
-            $address,
-            $email
-        );
-
-        $emailVerifiedAt = $model->email_verified_at
-            ? DateVO::fromDateTime($model->email_verified_at)
+        $name = $model->name
+            ? $this->parseName($model->name)
             : null;
-        $createdAt = DateVO::fromDateTime($model->created_at);
+
+        $email = $model->email
+            ? EmailVO::create($model->email)
+            : null;
+
+        $phone = $model->phone
+            ? PhoneVO::create($model->phone, '+57')
+            : null;
 
         return User::reconstitute(
-            UserIdVO::fromString($model->id),
-            $personalData,
-            $model->password,
-            $model->remember_token,
-            $emailVerifiedAt,
-            $createdAt,
-            (bool) $model->enabled
+            id: UserIdVO::fromString($model->id),
+            username: $model->username,
+            password: $model->password,
+            enabled: (bool) $model->enabled,
+            createdAt: DateVO::fromDateTime($model->created_at),
+            name: $name,
+            email: $email,
+            phone: $phone,
+            rememberToken: $model->remember_token,
         );
     }
 
-    private function parseName(string $fullName): array
+    public function toPersistence(User $user): array
+    {
+        return [
+            'id' => $user->getId()->getValue(),
+            'username' => $user->getUsername(),
+            'name' => $user->getName()?->getFullName(),
+            'email' => $user->getEmail()?->getValue(),
+            'phone' => $user->getPhone()?->getNumber(),
+            'password' => $user->getPassword(),
+            'remember_token' => $user->getRememberToken(),
+            'enabled' => $user->isEnabled(),
+        ];
+    }
+
+    private function parseName(string $fullName): NameVO
     {
         $parts = array_filter(explode(' ', trim($fullName)));
         $parts = array_values($parts);
         $count = count($parts);
 
         if ($count === 0) {
-            return ['firstName' => 'Unknown', 'lastName' => 'Unknown', 'secondLastName' => '', 'middleName' => null];
+            return NameVO::create('Unknown', 'Unknown', '');
         }
         if ($count === 1) {
-            return ['firstName' => $parts[0], 'lastName' => 'Unknown', 'secondLastName' => '', 'middleName' => null];
+            return NameVO::create($parts[0], 'Unknown', '');
         }
         if ($count === 2) {
-            return ['firstName' => $parts[0], 'lastName' => $parts[1], 'secondLastName' => '', 'middleName' => null];
+            return NameVO::create($parts[0], $parts[1], '');
         }
         if ($count === 3) {
-            return ['firstName' => $parts[0], 'lastName' => $parts[1], 'secondLastName' => $parts[2], 'middleName' => null];
+            return NameVO::create($parts[0], $parts[1], $parts[2]);
         }
-        
-        return [
-            'firstName' => $parts[0],
-            'middleName' => $parts[1],
-            'lastName' => $parts[$count - 2],
-            'secondLastName' => $parts[$count - 1],
-        ];
-    }
 
-    public function toPersistence(User $user): array
-    {
-        $personalData = $user->getPersonalData();
-        $name = $personalData->getName();
-        $email = $personalData->getEmail();
-
-        return [
-            'id' => $user->getId()->getValue(),
-            'name' => $name->getFullName(),
-            'email' => $email ? $email->getValue() : null,
-            'password' => $user->getPassword(),
-            'remember_token' => $user->getRememberToken(),
-            'email_verified_at' => $user->getEmailVerifiedAt()?->getFormatted(),
-            'enabled' => $user->isEnabled(),
-        ];
+        return NameVO::create(
+            $parts[0],
+            $parts[$count - 2],
+            $parts[$count - 1],
+            $parts[1],
+        );
     }
 }

@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { useAuth } from '@/Modules/Auth';
 import { PaymentForms, usePayment } from '@/Modules/Payment';
 import { LoanDetail, useLoan } from '@/Modules/Loan';
 import {Btn, CardTitle, formatCurrency, GCard, useModal} from "@/Shared";
+
+const { can } = useAuth()
 
 const {payment, fillForm} = usePayment();
 const {getById} = useLoan();
@@ -65,7 +68,7 @@ const updatePayment = () => {
       </div>
 
       <div class="btns">
-        <Btn variant="secondary" @click="updatePayment">Actualizar</Btn>
+        <Btn v-if="can('payments.update')" variant="secondary" @click="updatePayment">Actualizar</Btn>
         <Btn @click="goToLoan">Ir Préstamo</Btn>
       </div>
     </div>

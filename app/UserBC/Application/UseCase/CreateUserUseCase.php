@@ -4,37 +4,39 @@ declare(strict_types=1);
 
 namespace App\UserBC\Application\UseCase;
 
-use App\SharedKernel\Domain\ValueObject\EmailVO;
 use App\UserBC\Application\CQRS\Command\CreateUserCommand;
 use App\UserBC\Application\DTOs\CreatedUserResponse;
-use App\UserBC\Application\Exceptions\UserAlreadyExistsException;
+use App\UserBC\Application\Exceptions\UsernameAlreadyExistsException;
 use App\UserBC\Domain\Aggregate\User;
 use App\UserBC\Domain\Repository\UserCreator;
-use App\UserBC\Domain\Repository\UserFinderByEmail;
+use App\UserBC\Domain\Repository\UserFinderByUsername;
+use App\UserBC\Domain\Repository\UserRoleAssigner;
 
-final class CreateUserUseCase
+final readonly class CreateUserUseCase
 {
     public function __construct(
-        private readonly UserCreator $creator,
-        private readonly UserFinderByEmail $finder
+        private UserCreator $creator,
+        private UserFinderByUsername $userFinder,
+        private UserRoleAssigner $roleAssigner,
     ) {}
 
     public function execute(CreateUserCommand $command): CreatedUserResponse
     {
-        $personalData = $command->personalData;
-        $email = $personalData->getEmail();
-
-        if ($email !== null) {
-            $emailVO = EmailVO::create($email->getValue());
-            $existing = $this->finder->findByEmail($emailVO);
-            if ($existing !== null) {
-                throw new UserAlreadyExistsException;
-            }
+        $existing = $this->userFinder->findByUsername($command->username);
+        if ($existing !== null) {
+            throw new UsernameAlreadyExistsException;
         }
 
-        $user = User::create($personalData, $command->password);
+        $user = User::create(
+            username: $command->username,
+            password: $command->password,
+            name: $command->name,
+            email: $command->email,
+            phone: $command->phone,
+        );
 
         $this->creator->create($user);
+        $this->roleAssigner->assignRoles($user->getId()->getValue(), ['viewer']);
 
         return CreatedUserResponse::fromEntity($user);
     }

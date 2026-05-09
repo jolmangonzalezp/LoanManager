@@ -1,17 +1,21 @@
-import { User, UserDTO } from '@/Modules/Auth';
+import type { User, UserDTO } from '@/Modules/Auth'
 
 export const AuthMapper = {
-    toDomain(dto: UserDTO): User {
-        return {
-            id: dto.id,
-            email: dto.email,
-            name: dto.name,
-            lastname: dto.lastname,
-            createdAt: dto.created_at,
-        }
-    },
-
-    toDomainInList(dtos: UserDTO[]): User[] | void[] {
-        return dtos.map(dto => {this.toDomain(dto)})
+  toDomain(dto: UserDTO): User {
+    return {
+      id: dto.id,
+      username: dto.username,
+      name: dto.name || '',
+      email: dto.email || '',
+      phone: dto.phone || '',
+      createdAt: dto.created_at,
+      enabled: dto.enabled,
+      roles: dto.roles ?? [],
+      permissions: dto.permissions ?? [],
     }
+  },
+
+  toDomainInList(dtos: UserDTO[]): User[] {
+    return dtos.map(d => this.toDomain(d))
+  },
 }

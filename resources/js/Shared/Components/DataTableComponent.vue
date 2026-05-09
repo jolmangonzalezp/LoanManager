@@ -64,7 +64,7 @@ function nextPage() {
             :key="row.id ?? index"
             @click="emit('row-click', row.id)"
           >
-            <td v-for="column in columns" :key="column.key">
+            <td v-for="column in columns" :key="column.key" :data-label="column.label">
               <slot :name="`cell-${column.key}`" :row="row" :value="row[column.key]">
                 {{ row[column.key] }}
               </slot>
@@ -178,5 +178,51 @@ tbody td {
   color: #94a3b8;
   min-width: 60px;
   text-align: center;
+}
+
+@media screen and (max-width: 640px) {
+  thead {
+    display: none;
+  }
+
+  table, tbody, tr, td {
+    display: block;
+  }
+
+  table {
+    border-collapse: separate;
+    border-spacing: 0 8px;
+  }
+
+  tbody tr {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 8px;
+    padding: 8px 0;
+    margin-bottom: 8px;
+  }
+
+  tbody tr:hover {
+    background: rgba(212, 175, 55, 0.05);
+  }
+
+  tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    border-bottom: none;
+    gap: 12px;
+  }
+
+  tbody td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #d4af37;
+    flex-shrink: 0;
+  }
 }
 </style>

@@ -10,33 +10,35 @@ final class UserResponse
 {
     public function __construct(
         public readonly string $id,
-        public readonly string $name,
-        public readonly string $lastName,
+        public readonly string $username,
+        public readonly ?string $name,
         public readonly ?string $email,
+        public readonly ?string $phone,
         public readonly string $createdAt,
-        public readonly bool $enabled
+        public readonly bool $enabled,
     ) {}
 
     public static function fromEntity(User $user): self
     {
-        $personalData = $user->getPersonalData();
-
         return new self(
             $user->getId()->getValue(),
-            $personalData->getName()->getFirstName(),
-            $personalData->getName()->getLastName(),
-            $personalData->getEmail()?->getValue(),
+            $user->getUsername(),
+            $user->getName()?->getFullName(),
+            $user->getEmail()?->getValue(),
+            $user->getPhone()?->getNumber(),
             $user->getCreatedAt()->getFormatted(),
-            $user->isEnabled()
+            $user->isEnabled(),
         );
     }
+
     public function toArray(): array
     {
         return [
             'id' => $this->id,
+            'username' => $this->username,
             'name' => $this->name,
-            'lastname' => $this->lastName,
             'email' => $this->email,
+            'phone' => $this->phone,
             'created_at' => $this->createdAt,
             'enabled' => $this->enabled,
         ];

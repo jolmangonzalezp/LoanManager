@@ -53,7 +53,7 @@ class HandleExceptions
             return true;
         }
 
-        $publicRoutes = ['api/auth/login', 'api/auth/me'];
+        $publicRoutes = ['api/auth/login', 'api/auth/me', 'api/auth/forgot-password', 'api/auth/reset-password'];
 
         if (in_array($request->path(), $publicRoutes)) {
             return true;

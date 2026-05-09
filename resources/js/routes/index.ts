@@ -4,6 +4,7 @@ import { DashboardPage } from '@/Modules/Dashboard';
 import { CustomerPage } from '@/Modules/Customer';
 import { LoanPage } from '@/Modules/Loan';
 import { PaymentPage } from '@/Modules/Payment';
+import { UserPage } from '@/Modules/User';
 import { CashFlow, DelinquencyReport, PortfolioReport, ProfitbilityReport, ReportPage } from '@/Modules/Report';
 
 
@@ -13,6 +14,7 @@ const routes = [
     { path: '/clientes', name: 'clientes', component: CustomerPage },
     { path: '/prestamos', name: 'prestamos', component: LoanPage },
     { path: '/pagos', name: 'pagos', component: PaymentPage },
+    { path: '/usuarios', name: 'usuarios', component: UserPage },
     { path: '/reportes', name: 'reportes', component: ReportPage },
     { path: '/reportes/cartera', name: 'reportes-cartera', component: PortfolioReport },
     { path: '/reportes/rentabilidad', name: 'reportes-rentabilidad', component: ProfitbilityReport },

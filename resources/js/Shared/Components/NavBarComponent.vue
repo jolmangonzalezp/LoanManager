@@ -1,19 +1,32 @@
 <script setup lang="ts">
 import {computed, onMounted} from "vue";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import { faAngleRight, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { faAngleRight, faRightFromBracket, faUserGear } from "@fortawesome/free-solid-svg-icons";
 import { useLayout, Ava } from '@/Shared';
 import { useAuth } from '@/Modules/Auth';
 
 
 const { routes, subroutes, layoutHandler, isMenuOpened, toggleIconMenu } = useLayout()
-const { user, me, logout } = useAuth()
+const { user, me, logout, can, hasRole } = useAuth()
+
+const permissionMap: Record<string, string> = {
+  'Dashboard': '',
+  'Clientes': 'customers.view',
+  'Préstamo': 'loans.view',
+  'Pagos': 'payments.view',
+  'Reportes': 'reports.view',
+}
+
+const visibleRoutes = computed(() =>
+  routes.filter(r => !permissionMap[r.label] || can(permissionMap[r.label]))
+)
 
 const initials = computed(() => {
   if (!user.value) return "??"
+  const name = user.value.name || user.value.username
   const parts = [
-    user.value.name?.[0] || '',
-    user.value.lastname?.[0] || ''
+    name?.[0] || '',
+    name?.split(' ').pop()?.[0] || ''
   ].filter(Boolean)
   return parts.slice(0,2).join('').toUpperCase() || '??'
 })
@@ -26,7 +39,7 @@ onMounted(async () => {
 <template>
 <nav :class="[layoutHandler, { 'mobile-open': isMenuOpened }]">
   <ul class="nav-menu">
-    <li v-for="routeItem in routes" :key="routeItem.id" class="nav-item">
+    <li v-for="routeItem in visibleRoutes" :key="routeItem.id" class="nav-item">
       <RouterLink
           :to="routeItem.to"
           :aria-label="routeItem.label"
@@ -74,6 +87,14 @@ onMounted(async () => {
         <Ava :initials="initials"></Ava>
       </div>
       <p class="nav-footer-label">{{ user?.name }}</p>
+    </div>
+    <div v-if="hasRole('admin')" class="nav-footer-item">
+      <div class="nav-footer-icon">
+        <RouterLink to="/usuarios" class="nav-footer-link">
+          <FontAwesomeIcon :icon="faUserGear" />
+        </RouterLink>
+      </div>
+      <RouterLink to="/usuarios" class="nav-footer-link"><p class="nav-footer-label">Usuarios</p></RouterLink>
     </div>
     <div class="nav-footer-item">
       <div class="nav-footer-icon" @click="logout">
@@ -229,6 +250,22 @@ nav
         transition: opacity 0.2s ease, transform 0.3s ease, width 0.3s ease
         white-space: nowrap
         pointer-events: auto
+
+      .nav-footer-link
+        color: inherit
+        text-decoration: none
+        display: flex
+        align-items: center
+
+      .nav-footer-icon a
+        color: inherit
+      &.router-link-active, &.router-link-exact-active
+          background: rgba(212, 175, 55, 0.12)
+          color: #d4af37
+
+      &:nth-child(2):hover
+        background: rgba(212, 175, 55, 0.08)
+        color: #e8c84a
 
       &:last-child
         background: #dc2626

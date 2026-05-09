@@ -19,8 +19,8 @@ const { form, login } = useAuth()
                 <h1 class="title">Iniciar Sesión</h1>
 
                 <div class="field">
-                    <label>Email</label>
-                    <input type="email" v-model="form.email" placeholder="correo@ejemplo.com" />
+                    <label>Usuario o Email</label>
+                    <input type="text" v-model="form.login" placeholder="usuario o correo@ejemplo.com" />
                 </div>
 
                 <div class="field">
@@ -33,7 +33,7 @@ const { form, login } = useAuth()
                 </Btn>
 
                 <div class="hint">
-                    Demo: admin@loanmanager.com / admin123
+                    Demo: admin / admin123
                 </div>
             </GCard>
         </div>

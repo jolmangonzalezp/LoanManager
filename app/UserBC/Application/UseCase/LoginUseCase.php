@@ -8,35 +8,52 @@ use App\SharedKernel\Domain\ValueObject\EmailVO;
 use App\UserBC\Application\Exceptions\InvalidCredentialsException;
 use App\UserBC\Application\Exceptions\UserDisabledException;
 use App\UserBC\Domain\Repository\UserFinderByEmail;
+use App\UserBC\Domain\Repository\UserFinderByUsername;
+use App\UserBC\Domain\Repository\UserRoleFinder;
 use App\UserBC\Infrastructure\Persistence\Model\UserModel;
 
-final class LoginUseCase
+final readonly class LoginUseCase
 {
     public function __construct(
-        private readonly UserFinderByEmail $finder
+        private UserFinderByUsername $userFinderByUsername,
+        private UserFinderByEmail $userFinderByEmail,
+        private UserRoleFinder $roleFinder,
     ) {}
 
-    public function execute(string $email, string $password): array
+    public function execute(string $login, string $password): array
     {
-        $emailVO = EmailVO::create($email);
-        $user = $this->finder->findByEmail($emailVO);
-        
-        if (! $user || ! $user->verifyPassword($password)) {
+        $user = $this->userFinderByUsername->findByUsername($login);
+
+        if ($user === null) {
+            try {
+                $emailVO = EmailVO::create($login);
+                $user = $this->userFinderByEmail->findByEmail($emailVO);
+            } catch (\Throwable) {
+                $user = null;
+            }
+        }
+
+        if ($user === null || !$user->verifyPassword($password)) {
             throw new InvalidCredentialsException;
         }
 
-        if (! $user->isEnabled()) {
+        if (!$user->isEnabled()) {
             throw new UserDisabledException;
         }
 
         $userModel = UserModel::find($user->getId()->getValue());
         $token = $userModel->createToken('auth-token')->plainTextToken;
 
+        $userId = $user->getId()->getValue();
+        $roles = $this->roleFinder->findRoleSlugs($userId);
+
         return [
             'user' => [
-                'id' => $user->getId()->getValue(),
-                'name' => $user->getPersonalData()->getName()->getFullName(),
-                'email' => $user->getPersonalData()->getEmail()?->getValue(),
+                'id' => $userId,
+                'username' => $user->getUsername(),
+                'name' => $user->getName()?->getFullName(),
+                'email' => $user->getEmail()?->getValue(),
+                'roles' => $roles,
             ],
             'token' => $token,
         ];

@@ -6,7 +6,9 @@ namespace App\UserBC\Domain\Aggregate;
 
 use App\SharedKernel\Domain\Exception\DomainException;
 use App\SharedKernel\Domain\ValueObject\DateVO;
-use App\SharedKernel\Domain\ValueObject\PersonVO;
+use App\SharedKernel\Domain\ValueObject\EmailVO;
+use App\SharedKernel\Domain\ValueObject\NameVO;
+use App\SharedKernel\Domain\ValueObject\PhoneVO;
 use App\UserBC\Domain\ValueObject\UserIdVO;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,50 +16,65 @@ final class User
 {
     private function __construct(
         private readonly UserIdVO $id,
-        private readonly PersonVO $personalData,
+        private readonly string $username,
         private readonly string $password,
-        private readonly ?string $rememberToken,
-        private readonly ?DateVO $emailVerifiedAt,
+        private readonly bool $enabled,
         private readonly DateVO $createdAt,
-        private readonly bool $enabled
+        private readonly ?NameVO $name,
+        private readonly ?EmailVO $email,
+        private readonly ?PhoneVO $phone,
+        private readonly ?string $rememberToken,
     ) {}
 
     public static function create(
-        PersonVO $personalData,
-        string $password
+        string $username,
+        string $password,
+        ?NameVO $name = null,
+        ?EmailVO $email = null,
+        ?PhoneVO $phone = null,
     ): self {
+        if (empty($username) || strlen($username) < 3) {
+            throw new DomainException('invalid_username', 'El usuario debe tener al menos 3 caracteres');
+        }
+
         if (empty($password) || strlen($password) < 6) {
             throw new DomainException('weak_password', 'La contraseña debe tener al menos 6 caracteres');
         }
 
         return new self(
             UserIdVO::generate(),
-            $personalData,
+            $username,
             Hash::make($password),
-            null,
-            null,
+            true,
             DateVO::now(),
-            true
+            $name,
+            $email,
+            $phone,
+            null,
         );
     }
 
     public static function reconstitute(
         UserIdVO $id,
-        PersonVO $personalData,
+        string $username,
         string $password,
-        ?string $rememberToken,
-        ?DateVO $emailVerifiedAt,
+        bool $enabled,
         DateVO $createdAt,
-        bool $enabled
+        ?NameVO $name = null,
+        ?EmailVO $email = null,
+        ?PhoneVO $phone = null,
+        ?string $rememberToken = null,
     ): self {
         return new self(
             $id,
-            $personalData,
+            $username,
             $password,
-            $rememberToken,
-            $emailVerifiedAt,
+            $enabled,
             $createdAt,
-            $enabled
+            $name,
+            $email,
+            $phone,
+            $rememberToken,
         );
     }
 
@@ -70,12 +87,14 @@ final class User
     {
         return new self(
             $this->id,
-            $this->personalData,
+            $this->username,
             $this->password,
-            $token,
-            $this->emailVerifiedAt,
+            $this->enabled,
             $this->createdAt,
-            $this->enabled
+            $this->name,
+            $this->email,
+            $this->phone,
+            $token,
         );
     }
 
@@ -83,12 +102,14 @@ final class User
     {
         return new self(
             $this->id,
-            $this->personalData,
+            $this->username,
             $this->password,
-            $this->rememberToken,
-            $this->emailVerifiedAt,
+            true,
             $this->createdAt,
-            true
+            $this->name,
+            $this->email,
+            $this->phone,
+            $this->rememberToken,
         );
     }
 
@@ -96,12 +117,14 @@ final class User
     {
         return new self(
             $this->id,
-            $this->personalData,
+            $this->username,
             $this->password,
-            $this->rememberToken,
-            $this->emailVerifiedAt,
+            false,
             $this->createdAt,
-            false
+            $this->name,
+            $this->email,
+            $this->phone,
+            $this->rememberToken,
         );
     }
 
@@ -110,9 +133,9 @@ final class User
         return $this->id;
     }
 
-    public function getPersonalData(): PersonVO
+    public function getUsername(): string
     {
-        return $this->personalData;
+        return $this->username;
     }
 
     public function getPassword(): string
@@ -120,14 +143,9 @@ final class User
         return $this->password;
     }
 
-    public function getRememberToken(): ?string
+    public function isEnabled(): bool
     {
-        return $this->rememberToken;
-    }
-
-    public function getEmailVerifiedAt(): ?DateVO
-    {
-        return $this->emailVerifiedAt;
+        return $this->enabled;
     }
 
     public function getCreatedAt(): DateVO
@@ -135,13 +153,23 @@ final class User
         return $this->createdAt;
     }
 
-    public function isEnabled(): bool
+    public function getName(): ?NameVO
     {
-        return $this->enabled;
+        return $this->name;
     }
 
-    public function isVerified(): bool
+    public function getEmail(): ?EmailVO
     {
-        return $this->emailVerifiedAt !== null;
+        return $this->email;
+    }
+
+    public function getPhone(): ?PhoneVO
+    {
+        return $this->phone;
+    }
+
+    public function getRememberToken(): ?string
+    {
+        return $this->rememberToken;
     }
 }

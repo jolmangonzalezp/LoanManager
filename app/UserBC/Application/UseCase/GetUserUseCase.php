@@ -9,10 +9,10 @@ use App\UserBC\Application\Exceptions\UserNotFoundException;
 use App\UserBC\Domain\Repository\UserFinderById;
 use App\UserBC\Domain\ValueObject\UserIdVO;
 
-final class GetUserUseCase
+final readonly class GetUserUseCase
 {
     public function __construct(
-        private readonly UserFinderById $finder
+        private UserFinderById $finder,
     ) {}
 
     public function execute(string $id): array
@@ -21,7 +21,7 @@ final class GetUserUseCase
 
         $user = $this->finder->findById($userId);
 
-        if (! $user) {
+        if ($user === null) {
             throw new UserNotFoundException;
         }
 

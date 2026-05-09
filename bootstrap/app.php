@@ -22,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'handle.exceptions' => HandleExceptions::class,
+            'permission' => \App\UserBC\Presentation\Middleware\PermissionMiddleware::class,
+            'role' => \App\UserBC\Presentation\Middleware\RoleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

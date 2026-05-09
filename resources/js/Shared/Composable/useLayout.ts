@@ -1,7 +1,7 @@
 import {computed, ref, watch} from "vue";
 import {
     faChartBar, faChartLine,
-    faChartPie, faClipboardList, faExclamationTriangle, faFileAlt, faFileInvoiceDollar,
+    faChartPie, faExclamationTriangle, faFileAlt, faFileInvoiceDollar,
     faHandHoldingDollar, faHistory,
     faHome,
     faMoneyBillTransfer,
