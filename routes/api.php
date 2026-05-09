@@ -49,6 +49,7 @@ Route::middleware(['handle.exceptions'])->group(function () {
     Route::get('/payments', [PaymentController::class, 'index']);
     Route::get('/payments/monthly', [PaymentController::class, 'monthly']);
     Route::get('/payments/{id}', [PaymentController::class, 'show']);
+    Route::put('/payments/{id}', [PaymentController::class, 'update']);
 });
 
 require __DIR__.'/reports.php';

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\PaymentBC\Domain\Aggregate;
 
-use App\LoanBC\Domain\ValueObject\LoanIdVO;
+use App\PaymentBC\Domain\ValueObject\LoanIdVO;
 use App\PaymentBC\Domain\ValueObject\PaymentIdVO;
+use App\PaymentBC\Domain\Exception\InvalidPaymentUpdateException;
 use App\PaymentBC\Domain\ValueObject\PaymentStatus;
-use App\SharedKernel\Domain\Exception\DomainException;
 use App\SharedKernel\Domain\ValueObject\DateVO;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
 
@@ -17,13 +17,13 @@ final class Payment
 
     private function __construct(
         private readonly PaymentIdVO $id,
-        private readonly LoanIdVO $loanId,
-        private readonly MoneyVO $amount,
-        private readonly DateVO $paymentDate,
+        private LoanIdVO $loanId,
+        private MoneyVO $amount,
+        private DateVO $paymentDate,
         private readonly DateVO $createdAt,
+        PaymentStatus $status = PaymentStatus::PENDING,
         private ?MoneyVO $interestPaid = null,
         private ?MoneyVO $capitalPaid = null,
-        PaymentStatus $status = PaymentStatus::PENDING
     ) {
         $this->status = $status;
     }
@@ -31,21 +31,14 @@ final class Payment
     public static function create(
         LoanIdVO $loanId,
         MoneyVO $amount,
-        ?DateVO $paymentDate = null
+        ?DateVO $paymentDate
     ): self {
-        $amountValue = $amount->getAmount();
-        if ($amountValue <= 0) {
-            throw new DomainException('invalid_amount', 'El monto debe ser mayor a 0');
-        }
-
         return new self(
             PaymentIdVO::generate(),
             $loanId,
             $amount,
-            $paymentDate ?? DateVO::now(),
+            $paymentDate,
             DateVO::now(),
-            null,
-            null,
             PaymentStatus::PENDING
         );
     }
@@ -66,48 +59,39 @@ final class Payment
             $amount,
             $paymentDate,
             $createdAt,
+            $status,
             $interestPaid,
-            $capitalPaid,
-            $status
+            $capitalPaid
         );
     }
 
-    public function validate(): self
+    public function update(LoanIdVO $loanId, MoneyVO $amount, ?DateVO $paymentDate = null): void
     {
-        if ($this->status !== PaymentStatus::PENDING) {
-            throw new DomainException('invalid_status', 'El pago debe estar en estado pendiente');
+        if ($this->status === PaymentStatus::REJECTED || $this->status === PaymentStatus::REFUNDED) {
+            throw new InvalidPaymentUpdateException('Cannot update a rejected or refunded payment');
         }
 
-        $this->status = PaymentStatus::VALIDATED;
-
-        return $this;
+        $this->loanId = $loanId;
+        $this->amount = $amount;
+        if ($paymentDate !== null) {
+            $this->paymentDate = $paymentDate;
+        }
+        $this->status = PaymentStatus::PENDING;
+        $this->interestPaid = null;
+        $this->capitalPaid = null;
     }
 
     public function apply(
         MoneyVO $interestPortion,
         MoneyVO $capitalPortion
     ): self {
-        if ($this->status !== PaymentStatus::VALIDATED) {
-            throw new DomainException('not_validated', 'El pago debe estar validado antes de aplicar');
-        }
 
-        $appliedInterest = $interestPortion->getAmount() > 0 ? $interestPortion : MoneyVO::zero();
+        $appliedInterest = $interestPortion ? $interestPortion : MoneyVO::zero();
         $appliedCapital = $capitalPortion->getAmount() > 0 ? $capitalPortion : MoneyVO::zero();
 
         $this->interestPaid = $appliedInterest;
         $this->capitalPaid = $appliedCapital;
         $this->status = PaymentStatus::APPLIED;
-
-        return $this;
-    }
-
-    public function reject(string $reason = ''): self
-    {
-        if ($this->status !== PaymentStatus::PENDING) {
-            throw new DomainException('invalid_status', 'No se puede rechazar un pago ya procesado');
-        }
-
-        $this->status = PaymentStatus::REJECTED;
 
         return $this;
     }

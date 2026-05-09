@@ -22,7 +22,9 @@ export const CustomerApi = {
   },
 
   async create(data: CustomerFormDTO): Promise<string> {
-    return Http.post<string>(BASE, data)
+    const r = await Http.post<string>(BASE, data);
+      console.log(r);
+      return r;
   },
 
   async update(id: string, data: CustomerFormDTO): Promise<string> {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\PaymentBC\Infrastructure\Mapper;
 
-use App\LoanBC\Domain\ValueObject\LoanIdVO;
+use App\PaymentBC\Domain\ValueObject\LoanIdVO;
 use App\PaymentBC\Domain\Aggregate\Payment;
 use App\PaymentBC\Domain\ValueObject\PaymentIdVO;
 use App\PaymentBC\Domain\ValueObject\PaymentStatus;

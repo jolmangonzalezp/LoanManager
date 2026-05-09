@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\PaymentBC\Presenter\Controllers;
 
-use App\LoanBC\Domain\ValueObject\LoanIdVO;
+use App\PaymentBC\Domain\ValueObject\LoanIdVO;
 use App\PaymentBC\Application\CQRS\Command\ProcessPaymentCommand;
 use App\PaymentBC\Application\UseCase\GetAllPaymentsUseCase;
 use App\PaymentBC\Application\UseCase\GetMonthlyReportUseCase;
 use App\PaymentBC\Application\UseCase\GetPaymentByIdUseCase;
 use App\PaymentBC\Application\UseCase\ProcessPaymentUseCase;
+use App\PaymentBC\Application\UseCase\UpdatePaymentUseCase;
+use App\PaymentBC\Infrastructure\Request\UpdatePaymentRequest;
+use App\SharedKernel\Domain\ValueObject\DateVO;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,19 +23,18 @@ final class PaymentController
         private readonly ProcessPaymentUseCase $processPaymentUseCase,
         private readonly GetAllPaymentsUseCase $getAllPaymentsUseCase,
         private readonly GetPaymentByIdUseCase $getPaymentByIdUseCase,
-        private readonly GetMonthlyReportUseCase $getMonthlyReportUseCase
+        private readonly GetMonthlyReportUseCase $getMonthlyReportUseCase,
+        private readonly UpdatePaymentUseCase $updatePaymentUseCase
     ) {}
 
     public function store(Request $request): JsonResponse
     {
         $data = $request->all();
-        $amount = MoneyVO::create((int) ($data['amount'] ?? 0));
-        $loanId = LoanIdVO::fromString($data['loan_id']);
 
         $command = new ProcessPaymentCommand(
-            $loanId,
-            $amount,
-            $data['payment_date'] ?? null
+            LoanIdVO::fromString($data['loan_id']),
+            MoneyVO::create((int) ($data['amount'] ?? 0)),
+            isset($data['payment_date']) ? DateVO::fromString($data['payment_date']) : null
         );
 
         $response = $this->processPaymentUseCase->execute($command);
@@ -57,6 +59,14 @@ final class PaymentController
     public function monthly(): JsonResponse
     {
         $response = $this->getMonthlyReportUseCase->execute();
+
+        return response()->json($response->toArray());
+    }
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $command = UpdatePaymentRequest::toCommand($id, $request);
+
+        $response = $this->updatePaymentUseCase->execute($command);
 
         return response()->json($response->toArray());
     }

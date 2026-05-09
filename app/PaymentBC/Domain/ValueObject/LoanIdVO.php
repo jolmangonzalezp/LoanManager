@@ -6,4 +6,4 @@ namespace App\PaymentBC\Domain\ValueObject;
 
 use App\SharedKernel\Domain\ValueObject\UuidVO;
 
-final class PaymentIdVO extends UuidVO {}
+final class LoanIdVO extends UuidVO {}

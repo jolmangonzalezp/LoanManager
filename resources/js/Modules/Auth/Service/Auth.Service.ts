@@ -3,9 +3,9 @@ import { AuthApi, AuthMapper, AuthResponse, LoginForm, User, UserDTO } from '@/M
 
 export const AuthService = {
   async login(data: LoginForm): Promise<AuthResponse> {
-    const response = await AuthApi.login(data)
-    Http.setToken(response.token)
-    return response
+    const response = await AuthApi.login(data);
+    Http.setToken(response.token);
+    return response;
   },
 
   async me(): Promise<User> {
@@ -13,9 +13,9 @@ export const AuthService = {
     return AuthMapper.toDomain(response);
   },
 
-  logout() {
-    Http.setToken(null)
-    window.location.href = '/login'
+  async logout(): Promise<void> {
+      Http.setToken(null);
+      await AuthApi.logout();
   },
 
   isAuthenticated(): boolean {

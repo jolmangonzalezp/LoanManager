@@ -1,24 +1,25 @@
 import { ref } from 'vue'
 import { ReportService, ReportSummary } from '@/Modules/Report';
 import { useNotifier } from '@/Shared';
+import { useRouter } from 'vue-router';
 
 export function useDashboard() {
     const notify =  useNotifier();
-  const summary = ref<ReportSummary | null>(null);
-
-  const getSummary = async () => {
-      notify.loading("Cargando", "");
+    const router = useRouter();
+    const summary = ref<ReportSummary | null>(null);
+    const getSummary = async () => {
+        notify.loading("Cargando", "");
     try {
       summary.value = await ReportService.getSummary();
+      notify.closeLoading();
     } catch (e: any) {
-        notify.error("Error", e.message)
-    } finally {
-        notify.closeLoading()
+        notify.closeLoading();
+        notify.error("Error", e.message);
     }
   }
 
-  const navigateToLoans = () => {
-    window.location.href = '/prestamos'
+  const navigateToLoans = (): void => {
+    router.push('/prestamos')
   }
 
   return {

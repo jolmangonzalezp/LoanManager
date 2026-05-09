@@ -11,7 +11,6 @@ class InfrastructureServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        // Forzamos HTTPS si el entorno detectado por Laravel es producción
         if (config('app.env') === 'production') {
             URL::forceScheme('https');
         }

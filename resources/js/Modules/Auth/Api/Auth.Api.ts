@@ -5,7 +5,7 @@ const BASE = '/auth'
 
 export const AuthApi = {
   async login(data: LoginForm): Promise<AuthResponse> {
-    return  await Http.post<AuthResponse>(`${BASE}/login`, data);
+    return await Http.post<AuthResponse>(`${BASE}/login`, data);
   },
 
   async logout(): Promise<void> {

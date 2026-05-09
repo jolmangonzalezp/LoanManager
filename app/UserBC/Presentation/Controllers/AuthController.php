@@ -8,6 +8,7 @@ use App\UserBC\Application\UseCase\GetUserUseCase;
 use App\UserBC\Application\UseCase\LoginUseCase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 final class AuthController
 {
@@ -18,9 +19,10 @@ final class AuthController
 
     public function login(Request $request): JsonResponse
     {
+        Log::info('Request', (array) $request);
         $data = $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
         ]);
 
         $result = $this->loginUseCase->execute($data['email'], $data['password']);

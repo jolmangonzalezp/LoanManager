@@ -22,6 +22,7 @@ use App\SharedKernel\Domain\Exception\InvalidPhoneException;
 use App\SharedKernel\Domain\Exception\InvalidUuidException;
 use App\SharedKernel\Infrastructure\Exception\DatabaseException;
 use App\SharedKernel\Infrastructure\Exception\InfrastructureException;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -108,6 +109,7 @@ final class ErrorMapper
 
             // Infrastructure
             DatabaseException::class => 500,
+            DecryptException::class => 500,
             InfrastructureException::class => 503,
             
             // Laravel Native

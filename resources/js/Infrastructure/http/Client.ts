@@ -32,13 +32,19 @@ class HttpClient {
 
     this.client.interceptors.response.use(
       (response) => response,
-      (error: AxiosError) => {
+      (error: AxiosError<{error: string}>) => {
         if (error.response?.status === 401) {
           this.setToken(null)
           if (typeof window !== 'undefined' && window.location) {
             window.location.href = '/login'
           }
         }
+
+        const backendMessage = error.response?.data?.error
+        if (backendMessage) {
+          error.message = backendMessage
+        }
+
         return Promise.reject(error)
       }
     )

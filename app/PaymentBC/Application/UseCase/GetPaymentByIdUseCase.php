@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\PaymentBC\Application\UseCase;
 
-use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
 use App\PaymentBC\Application\DTO\PaymentResponse;
+use App\PaymentBC\Domain\Ports\LoanDataProvider;
 use App\PaymentBC\Domain\Repository\PaymentFinderById;
 use App\PaymentBC\Domain\ValueObject\PaymentIdVO;
 use App\SharedKernel\Application\Exception\NotFoundException;
@@ -13,7 +13,8 @@ use App\SharedKernel\Application\Exception\NotFoundException;
 final class GetPaymentByIdUseCase
 {
     public function __construct(
-        private readonly PaymentFinderById $finder
+        private readonly PaymentFinderById $finder,
+        private readonly LoanDataProvider $loanDataProvider
     ) {}
 
     public function execute(string $id): array
@@ -25,7 +26,6 @@ final class GetPaymentByIdUseCase
         }
 
         $loanId = $payment->getLoanId()->getValue();
-        $loan = LoanModel::where('id', $loanId)->first();
 
         $response = PaymentResponse::fromEntity($payment);
         $data = $response->toArray();
@@ -33,10 +33,10 @@ final class GetPaymentByIdUseCase
 
         $data['loan'] = [
             'id' => $loanId,
-            'loan_number' => $loan['loan_number'] ?? '',
-            'remaining_debt' => $loan['remaining_debt'] ?? 0,
+            'loan_number' => $this->loanDataProvider->getLoanNumber($loanId) ?? '',
+            'remaining_debt' => $this->loanDataProvider->getRemainingDebt($loanId) ?? 0,
         ];
-        $data['loan_number'] = $loan['loan_number'] ?? '';
+        $data['loan_number'] = $data['loan']['loan_number'];
 
         return $data;
     }

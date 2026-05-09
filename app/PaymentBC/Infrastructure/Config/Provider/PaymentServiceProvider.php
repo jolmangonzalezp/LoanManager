@@ -4,23 +4,27 @@ declare(strict_types=1);
 
 namespace App\PaymentBC\Infrastructure\Config\Provider;
 
-use App\LoanBC\Domain\Repository\LoanFinderById;
-use App\LoanBC\Domain\Repository\LoanUpdater;
-use App\LoanBC\Infrastructure\Persistence\Repository\EloquentLoanFinderById;
-use App\LoanBC\Infrastructure\Persistence\Repository\EloquentLoanUpdater;
-use App\LoanBC\Infrastructure\Mapper\LoanMapper;
 use App\PaymentBC\Application\UseCase\GetAllPaymentsUseCase;
+use App\PaymentBC\Application\UseCase\GetLoanBalanceReportUseCase;
 use App\PaymentBC\Application\UseCase\GetMonthlyReportUseCase;
 use App\PaymentBC\Application\UseCase\GetPaymentByIdUseCase;
 use App\PaymentBC\Application\UseCase\ProcessPaymentUseCase;
+use App\PaymentBC\Application\UseCase\UpdatePaymentUseCase;
+use App\PaymentBC\Domain\Ports\LoanDataProvider;
+use App\PaymentBC\Domain\Ports\LoanPaymentProcessor;
 use App\PaymentBC\Domain\Repository\PaymentCreator;
 use App\PaymentBC\Domain\Repository\PaymentFinderAll;
 use App\PaymentBC\Domain\Repository\PaymentFinderById;
 use App\PaymentBC\Domain\Repository\PaymentFinderByLoanId;
+use App\PaymentBC\Domain\Repository\PaymentUpdater;
+use App\PaymentBC\Infrastructure\Adapters\LoanDataProviderAdapter;
+use App\PaymentBC\Infrastructure\Adapters\LoanPaymentAdapter;
+use App\PaymentBC\Infrastructure\Mapper\PaymentMapper;
 use App\PaymentBC\Infrastructure\Persistence\Repository\EloquentPaymentCreator;
 use App\PaymentBC\Infrastructure\Persistence\Repository\EloquentPaymentFinderAll;
 use App\PaymentBC\Infrastructure\Persistence\Repository\EloquentPaymentFinderById;
 use App\PaymentBC\Infrastructure\Persistence\Repository\EloquentPaymentFinderByLoanId;
+use App\PaymentBC\Infrastructure\Persistence\Repository\EloquentPaymentUpdater;
 use Illuminate\Support\ServiceProvider;
 
 final class PaymentServiceProvider extends ServiceProvider
@@ -28,19 +32,21 @@ final class PaymentServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(PaymentMapper::class);
-        $this->app->singleton(LoanMapper::class);
+
         $this->app->bind(PaymentCreator::class, EloquentPaymentCreator::class);
         $this->app->bind(PaymentFinderAll::class, EloquentPaymentFinderAll::class);
         $this->app->bind(PaymentFinderById::class, EloquentPaymentFinderById::class);
         $this->app->bind(PaymentFinderByLoanId::class, EloquentPaymentFinderByLoanId::class);
+        $this->app->bind(PaymentUpdater::class, EloquentPaymentUpdater::class);
 
-        $this->app->bind(LoanFinderById::class, EloquentLoanFinderById::class);
-        $this->app->bind(LoanUpdater::class, EloquentLoanUpdater::class);
+        $this->app->bind(LoanPaymentProcessor::class, LoanPaymentAdapter::class);
+        $this->app->bind(LoanDataProvider::class, LoanDataProviderAdapter::class);
 
         $this->app->bind(ProcessPaymentUseCase::class);
         $this->app->bind(GetAllPaymentsUseCase::class);
         $this->app->bind(GetPaymentByIdUseCase::class);
         $this->app->bind(GetMonthlyReportUseCase::class);
         $this->app->bind(GetLoanBalanceReportUseCase::class);
+        $this->app->bind(UpdatePaymentUseCase::class);
     }
 }

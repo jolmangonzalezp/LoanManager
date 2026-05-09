@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\PaymentBC\Infrastructure\Persistence\Repository;
 
-use App\LoanBC\Domain\ValueObject\LoanIdVO;
+use App\PaymentBC\Domain\ValueObject\LoanIdVO;
 use App\PaymentBC\Domain\Repository\PaymentFinderByLoanId;
 use App\PaymentBC\Infrastructure\Mapper\PaymentMapper;
 use App\PaymentBC\Infrastructure\Persistence\Model\PaymentModel;

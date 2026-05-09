@@ -6,8 +6,8 @@ namespace App\PaymentBC\Application\UseCase;
 
 use App\LoanBC\Domain\Repository\CustomerNameProvider;
 use App\LoanBC\Domain\Repository\LoanFinderAll;
-use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
 use App\PaymentBC\Application\DTO\LoanBalanceReportResponse;
+use App\PaymentBC\Domain\Ports\LoanDataProvider;
 use App\PaymentBC\Domain\Repository\PaymentFinderAll;
 
 final class GetLoanBalanceReportUseCase
@@ -15,15 +15,13 @@ final class GetLoanBalanceReportUseCase
     public function __construct(
         private readonly LoanFinderAll $loanFinder,
         private readonly PaymentFinderAll $paymentFinder,
-        private readonly CustomerNameProvider $customerNameProvider
+        private readonly CustomerNameProvider $customerNameProvider,
+        private readonly LoanDataProvider $loanDataProvider
     ) {}
 
     public function execute(): array
     {
         $loans = $this->loanFinder->findAll();
-
-        $loanIds = array_map(fn ($l) => $l->getId()->getValue(), $loans);
-        $loanModels = LoanModel::whereIn('id', $loanIds)->get()->keyBy('id');
 
         $customerIds = array_unique(array_map(fn ($l) => $l->getCustomerId()->getValue(), $loans));
         $namesMap = $this->customerNameProvider->getNamesMap($customerIds);
@@ -34,8 +32,7 @@ final class GetLoanBalanceReportUseCase
             $customerId = $loan->getCustomerId()->getValue();
             $loanId = $loan->getId()->getValue();
 
-            $loanModel = $loanModels[$loanId] ?? null;
-            $loanNumber = $loanModel?->loan_number ?? '-';
+            $loanNumber = $this->loanDataProvider->getLoanNumber($loanId) ?? '-';
             $customerName = $namesMap[$customerId] ?? '-';
 
             $originalCapital = $loan->getOriginalCapital()->getAmount();

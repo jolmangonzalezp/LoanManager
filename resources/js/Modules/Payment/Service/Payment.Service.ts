@@ -29,5 +29,11 @@ export const PaymentService = {
   async create(data: PaymentForm): Promise<string> {
     const mapped: PaymentFormDTO = PaymentMapper.toFormDTO(data)
     return PaymentApi.create(mapped)
+  },
+
+  async update(id: string, data: PaymentForm): Promise<string> {
+      const mapped: PaymentFormDTO = PaymentMapper.toFormDTO(data);
+      const r =  await PaymentApi.update(mapped, id);
+      return r
   }
 }

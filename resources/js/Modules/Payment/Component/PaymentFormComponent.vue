@@ -14,12 +14,12 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { paymentForm, initForm, create } = usePayment();
+const { paymentForm, initForm, create, update} = usePayment();
 const { close } = useModal();
 const save = async () => {
   if (!paymentForm.value) return
   if (props.isEditing) {
-    console.log()
+    await update(props.id, paymentForm.value);
   }else {
     await create(paymentForm.value)
   }
