@@ -96,6 +96,38 @@ final class Loan
         );
     }
 
+    public function update(
+        MoneyVO $originalCapital,
+        InterestRateVO $interestRate,
+        DateVO $startDate,
+        DateVO $dueDate,
+        ?LoanStatus $status = null
+    ): self {
+        $newRemainingDebt = $originalCapital->subtract($this->paidCapital);
+        $newStatus = $status ?? $this->status;
+
+        if ($newRemainingDebt->isZero()) {
+            $newStatus = LoanStatus::PAID;
+        }
+
+        return new self(
+            $this->id,
+            $this->customerId,
+            $originalCapital,
+            $interestRate,
+            $startDate,
+            $dueDate,
+            $this->createdAt,
+            $newStatus,
+            $this->paidInterest,
+            $this->paidCapital,
+            $newRemainingDebt,
+            $this->pendingInterest,
+            $this->interestPeriod,
+            $this->nextPaymentDate
+        );
+    }
+
     public function reversePayment(MoneyVO $interestPortion, MoneyVO $capitalPortion): self
     {
         $newPaidInterest = $this->paidInterest->subtract($interestPortion);

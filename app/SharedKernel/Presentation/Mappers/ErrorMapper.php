@@ -6,6 +6,7 @@ namespace App\SharedKernel\Presentation\Mappers;
 
 use App\CustomerBC\Application\Exceptions\CustomerAlreadyExistsException;
 use App\CustomerBC\Application\Exceptions\CustomerNotFoundException;
+use App\LoanBC\Application\Exception\LoanNotFoundException;
 use App\UserBC\Application\Exceptions\InvalidCredentialsException;
 use App\UserBC\Application\Exceptions\UserAlreadyExistsException;
 use App\UserBC\Application\Exceptions\UserDisabledException;
@@ -105,6 +106,7 @@ final class ErrorMapper
             UserAlreadyExistsException::class => 409,
             InvalidCredentialsException::class => 401,
             UserDisabledException::class => 403,
+            LoanNotFoundException::class => 404,
             ApplicationException::class => 409,
 
             // Infrastructure

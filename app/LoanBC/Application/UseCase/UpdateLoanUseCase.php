@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace App\LoanBC\Application\UseCase;
 
-use App\CustomerBC\Application\Exceptions\CustomerNotFoundException;
 use App\CustomerBC\Domain\Repository\CustomerFinderById;
 use App\LoanBC\Application\DTO\LoanResponse;
+use App\LoanBC\Application\Exception\LoanNotFoundException;
 use App\LoanBC\Domain\Repository\CustomerNameProvider;
 use App\LoanBC\Domain\Repository\LoanFinderById;
 use App\LoanBC\Domain\Repository\LoanUpdater;
+use App\LoanBC\Domain\ValueObject\InterestRateVO;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
+use App\LoanBC\Domain\ValueObject\LoanStatus;
 use App\LoanBC\Infrastructure\Mapper\LoanMapper;
-use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
+use App\SharedKernel\Domain\ValueObject\DateVO;
+use App\SharedKernel\Domain\ValueObject\MoneyVO;
 
 final class UpdateLoanUseCase
 {
@@ -29,42 +32,44 @@ final class UpdateLoanUseCase
         $loan = $this->finder->findById(LoanIdVO::fromString($id));
 
         if ($loan === null) {
-            throw new CustomerNotFoundException($id);
+            throw new LoanNotFoundException($id);
         }
 
-        $loanModel = LoanModel::where('id', $id)->first();
-        if (! $loanModel) {
-            throw new CustomerNotFoundException($id);
-        }
+        $originalCapital = isset($data['capital'])
+            ? MoneyVO::create((int) $data['capital'])
+            : $loan->getOriginalCapital();
 
-        if (isset($data['capital'])) {
-            $loanModel->capital = (int) $data['capital'];
-            $loanModel->original_capital = (int) $data['capital'];
-            $loanModel->remaining_debt = (int) $data['capital'];
-        }
+        $interestRate = isset($data['interest_rate'])
+            ? InterestRateVO::createAnnual((float) $data['interest_rate'])
+            : $loan->getInterestRate();
 
-        if (isset($data['interest_rate'])) {
-            $loanModel->interest_rate = (float) $data['interest_rate'];
-        }
+        $startDate = isset($data['start_date'])
+            ? DateVO::fromString($data['start_date'])
+            : $loan->getStartDate();
 
-        if (isset($data['start_date'])) {
-            $loanModel->start_date = $data['start_date'];
-        }
+        $dueDate = isset($data['due_date'])
+            ? DateVO::fromString($data['due_date'])
+            : $loan->getDueDate();
 
-        if (isset($data['status'])) {
-            $loanModel->status = $data['status'];
-        }
+        $status = isset($data['status'])
+            ? LoanStatus::from($data['status'])
+            : null;
 
-        $loanModel->save();
+        $updatedLoan = $loan->update(
+            $originalCapital,
+            $interestRate,
+            $startDate,
+            $dueDate,
+            $status
+        );
 
-        $updatedLoan = $this->finder->findById(LoanIdVO::fromString($id));
+        $this->updater->update($updatedLoan);
+
         $response = LoanResponse::fromEntity($updatedLoan);
 
-        $response->setLoanNumber($loanModel->loan_number);
-
-        $namesMap = $this->customerNameProvider->getNamesMap([$loanModel->customer_id]);
-        if (isset($namesMap[$loanModel->customer_id])) {
-            $response->setCustomerName($namesMap[$loanModel->customer_id]);
+        $namesMap = $this->customerNameProvider->getNamesMap([$loan->getCustomerId()->getValue()]);
+        if (isset($namesMap[$loan->getCustomerId()->getValue()])) {
+            $response->setCustomerName($namesMap[$loan->getCustomerId()->getValue()]);
         }
 
         return $response;

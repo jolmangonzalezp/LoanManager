@@ -18,11 +18,15 @@ final class EloquentLoanUpdater implements LoanUpdater
             return;
         }
 
+        $model->original_capital = $loan->getOriginalCapital()->getAmount();
         $model->remaining_debt = $loan->getRemainingDebt()->getAmount();
         $model->paid_capital = $loan->getPaidCapital()->getAmount();
         $model->paid_interest = $loan->getPaidInterest()->getAmount();
         $model->pending_interest = $loan->getPendingInterest()->getAmount();
+        $model->interest_rate = $loan->getInterestRate()->getAnnualRate();
         $model->interest_period = $loan->getInterestPeriod();
+        $model->start_date = $loan->getStartDate()->getFormatted();
+        $model->due_date = $loan->getDueDate()->getFormatted();
         $model->next_payment_date = $loan->getNextPaymentDate()->getFormatted();
         $model->status = $loan->getStatus()->value;
 
