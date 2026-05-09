@@ -16,6 +16,7 @@ export const PaymentMapper = {
             status: dto.status,
             interestPaid: dto.interest_paid,
             capitalPaid: dto.capital_paid,
+            paymentMethod: dto.payment_method,
             createdAt: dto.created_at
         }
     },
@@ -24,7 +25,8 @@ export const PaymentMapper = {
         return {
             loan_id: form.loanId,
             amount: form.amount,
-            payment_date: form.paymentDate
+            payment_date: form.paymentDate,
+            payment_method: form.paymentMethod
         }
     },
 

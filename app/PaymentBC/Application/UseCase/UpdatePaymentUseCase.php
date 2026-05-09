@@ -61,7 +61,8 @@ final readonly class UpdatePaymentUseCase
         $payment->update(
             $command->loanId,
             $command->amount,
-            $command->paymentDate
+            $command->paymentDate,
+            $command->paymentMethod
         );
 
         $payment->apply($result->interestPortion, $result->capitalPortion);

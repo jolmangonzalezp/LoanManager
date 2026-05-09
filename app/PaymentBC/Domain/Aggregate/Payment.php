@@ -7,6 +7,7 @@ namespace App\PaymentBC\Domain\Aggregate;
 use App\PaymentBC\Domain\ValueObject\LoanIdVO;
 use App\PaymentBC\Domain\ValueObject\PaymentIdVO;
 use App\PaymentBC\Domain\Exception\InvalidPaymentUpdateException;
+use App\PaymentBC\Domain\ValueObject\PaymentMethod;
 use App\PaymentBC\Domain\ValueObject\PaymentStatus;
 use App\SharedKernel\Domain\ValueObject\DateVO;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
@@ -24,6 +25,7 @@ final class Payment
         PaymentStatus $status = PaymentStatus::PENDING,
         private ?MoneyVO $interestPaid = null,
         private ?MoneyVO $capitalPaid = null,
+        private PaymentMethod $paymentMethod = PaymentMethod::CASH,
     ) {
         $this->status = $status;
     }
@@ -31,7 +33,8 @@ final class Payment
     public static function create(
         LoanIdVO $loanId,
         MoneyVO $amount,
-        ?DateVO $paymentDate
+        ?DateVO $paymentDate,
+        PaymentMethod $paymentMethod = PaymentMethod::CASH,
     ): self {
         return new self(
             PaymentIdVO::generate(),
@@ -39,7 +42,10 @@ final class Payment
             $amount,
             $paymentDate,
             DateVO::now(),
-            PaymentStatus::PENDING
+            PaymentStatus::PENDING,
+            null,
+            null,
+            $paymentMethod
         );
     }
 
@@ -51,7 +57,8 @@ final class Payment
         DateVO $createdAt,
         PaymentStatus $status,
         ?MoneyVO $interestPaid,
-        ?MoneyVO $capitalPaid
+        ?MoneyVO $capitalPaid,
+        PaymentMethod $paymentMethod = PaymentMethod::CASH,
     ): self {
         return new self(
             $id,
@@ -61,11 +68,12 @@ final class Payment
             $createdAt,
             $status,
             $interestPaid,
-            $capitalPaid
+            $capitalPaid,
+            $paymentMethod
         );
     }
 
-    public function update(LoanIdVO $loanId, MoneyVO $amount, ?DateVO $paymentDate = null): void
+    public function update(LoanIdVO $loanId, MoneyVO $amount, ?DateVO $paymentDate = null, ?PaymentMethod $paymentMethod = null): void
     {
         if ($this->status === PaymentStatus::REJECTED || $this->status === PaymentStatus::REFUNDED) {
             throw new InvalidPaymentUpdateException('Cannot update a rejected or refunded payment');
@@ -75,6 +83,9 @@ final class Payment
         $this->amount = $amount;
         if ($paymentDate !== null) {
             $this->paymentDate = $paymentDate;
+        }
+        if ($paymentMethod !== null) {
+            $this->paymentMethod = $paymentMethod;
         }
         $this->status = PaymentStatus::PENDING;
         $this->interestPaid = null;
@@ -134,5 +145,10 @@ final class Payment
     public function getCapitalPaid(): ?MoneyVO
     {
         return $this->capitalPaid;
+    }
+
+    public function getPaymentMethod(): PaymentMethod
+    {
+        return $this->paymentMethod;
     }
 }

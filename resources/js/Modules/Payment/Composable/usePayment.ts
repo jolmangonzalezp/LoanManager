@@ -29,7 +29,8 @@ export function usePayment() {
         paymentForm.value = {
             loanId: id,
             amount: minPay,
-            paymentDate: hoy
+            paymentDate: hoy,
+            paymentMethod: 'cash',
         }
     }
 
@@ -39,6 +40,7 @@ export function usePayment() {
             loanId: payment.value.loan.id,
             amount: payment.value.amount,
             paymentDate: payment.value.paymentDate,
+            paymentMethod: payment.value.paymentMethod,
         }
     }
 

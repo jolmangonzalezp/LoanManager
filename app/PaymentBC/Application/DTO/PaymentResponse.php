@@ -19,6 +19,7 @@ final class PaymentResponse
         public readonly ?int $interestPaid,
         public readonly int $capitalPaid,
         public readonly string $createdAt,
+        public readonly string $paymentMethod = 'cash',
         public ?string $customerName = null
     ) {}
 
@@ -32,7 +33,8 @@ final class PaymentResponse
             status: $payment->getStatus()->value,
             interestPaid: $payment->getInterestPaid()?->getAmount() ?? 0,
             capitalPaid: $payment->getCapitalPaid()?->getAmount() ?? 0,
-            createdAt: $payment->getCreatedAt()->getFormatted('Y-m-d H:i:s')
+            createdAt: $payment->getCreatedAt()->getFormatted('Y-m-d H:i:s'),
+            paymentMethod: $payment->getPaymentMethod()->value
         );
     }
 
@@ -53,6 +55,7 @@ final class PaymentResponse
             'status' => $this->status,
             'interest_paid' => $this->interestPaid,
             'capital_paid' => $this->capitalPaid,
+            'payment_method' => $this->paymentMethod,
             'created_at' => $this->createdAt,
             'customer_name' => $this->customerName,
             'remaining_debt' => $this->remainingDebt,

@@ -6,6 +6,7 @@ namespace App\PaymentBC\Application\CQRS\Command;
 
 use App\PaymentBC\Domain\ValueObject\LoanIdVO;
 use App\PaymentBC\Domain\ValueObject\PaymentIdVO;
+use App\PaymentBC\Domain\ValueObject\PaymentMethod;
 use App\SharedKernel\Domain\ValueObject\DateVO;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
 
@@ -15,6 +16,7 @@ final readonly class UpdatePaymentCommand
         public PaymentIdVO $paymentId,
         public LoanIdVO $loanId,
         public MoneyVO $amount,
-        public ?DateVO $paymentDate = null
+        public ?DateVO $paymentDate = null,
+        public PaymentMethod $paymentMethod = PaymentMethod::CASH,
     ) {}
 }

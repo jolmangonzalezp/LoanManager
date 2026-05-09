@@ -7,6 +7,7 @@ namespace App\PaymentBC\Infrastructure\Mapper;
 use App\PaymentBC\Domain\ValueObject\LoanIdVO;
 use App\PaymentBC\Domain\Aggregate\Payment;
 use App\PaymentBC\Domain\ValueObject\PaymentIdVO;
+use App\PaymentBC\Domain\ValueObject\PaymentMethod;
 use App\PaymentBC\Domain\ValueObject\PaymentStatus;
 use App\PaymentBC\Infrastructure\Persistence\Model\PaymentModel;
 use App\SharedKernel\Domain\ValueObject\DateVO;
@@ -31,7 +32,8 @@ final class PaymentMapper
             DateVO::fromDateTime($model->created_at),
             PaymentStatus::from($model->status),
             $interestPaid,
-            $capitalPaid
+            $capitalPaid,
+            PaymentMethod::from($model->payment_method ?? 'cash')
         );
     }
 
@@ -44,6 +46,7 @@ final class PaymentMapper
             'payment_date' => $payment->getPaymentDate()->getFormatted(),
             'interest_paid' => $payment->getInterestPaid()?->getAmount() ?? 0,
             'capital_paid' => $payment->getCapitalPaid()?->getAmount() ?? 0,
+            'payment_method' => $payment->getPaymentMethod()->value,
             'status' => $payment->getStatus()->value,
             'created_at' => $payment->getCreatedAt()->getFormatted(),
         ];

@@ -22,7 +22,8 @@ final class ProcessPaymentUseCase
         $payment = Payment::create(
             $command->loanId,
             $command->amount,
-            $command->paymentDate
+            $command->paymentDate,
+            $command->paymentMethod
         );
 
         $result = $this->loanPaymentProcessor->processPayment(

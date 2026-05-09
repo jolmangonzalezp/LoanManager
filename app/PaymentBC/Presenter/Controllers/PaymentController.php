@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\PaymentBC\Presenter\Controllers;
 
 use App\PaymentBC\Domain\ValueObject\LoanIdVO;
+use App\PaymentBC\Domain\ValueObject\PaymentMethod;
 use App\PaymentBC\Application\CQRS\Command\ProcessPaymentCommand;
 use App\PaymentBC\Application\UseCase\GetAllPaymentsUseCase;
 use App\PaymentBC\Application\UseCase\GetMonthlyReportUseCase;
@@ -33,12 +34,14 @@ final class PaymentController
             'loan_id' => 'required|string',
             'amount' => 'required|numeric|min:1',
             'payment_date' => 'sometimes|date',
+            'payment_method' => 'sometimes|string|in:cash,bank_transfer,card,check,other',
         ]);
 
         $command = new ProcessPaymentCommand(
             LoanIdVO::fromString($data['loan_id']),
             MoneyVO::create((int) $data['amount']),
-            isset($data['payment_date']) ? DateVO::fromString($data['payment_date']) : null
+            isset($data['payment_date']) ? DateVO::fromString($data['payment_date']) : null,
+            isset($data['payment_method']) ? PaymentMethod::from($data['payment_method']) : PaymentMethod::CASH,
         );
 
         $response = $this->processPaymentUseCase->execute($command);

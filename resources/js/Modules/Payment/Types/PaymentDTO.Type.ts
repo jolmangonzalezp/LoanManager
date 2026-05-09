@@ -11,6 +11,7 @@ export interface PaymentDTO {
     status: 'pending' | 'applied' | 'failed'
     interest_paid?: number
     capital_paid?: number
+    payment_method: string
     created_at: string
 }
 
@@ -18,6 +19,7 @@ export interface PaymentFormDTO {
     loan_id: string
     amount: number
     payment_date: string
+    payment_method: string
 }
 
 export interface PaymentReportDTO {

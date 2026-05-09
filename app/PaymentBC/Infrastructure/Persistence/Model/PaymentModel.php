@@ -19,6 +19,7 @@ final class PaymentModel extends Model
         'payment_date',
         'interest_paid',
         'capital_paid',
+        'payment_method',
         'status',
         'created_at',
         'updated_at',
@@ -29,6 +30,7 @@ final class PaymentModel extends Model
         'payment_date' => 'datetime',
         'interest_paid' => 'integer',
         'capital_paid' => 'integer',
+        'payment_method' => 'string',
     ];
 
     public $incrementing = false;

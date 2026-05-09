@@ -11,6 +11,7 @@ export interface Payment {
     status: 'pending' | 'applied' | 'failed'
     interestPaid?: number
     capitalPaid?: number
+    paymentMethod: string
     createdAt: string
 }
 
@@ -18,6 +19,7 @@ export interface PaymentForm {
     loanId: string
     amount: number
     paymentDate: string
+    paymentMethod: string
 }
 
 export interface PaymentReport {
