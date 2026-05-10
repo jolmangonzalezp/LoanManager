@@ -117,7 +117,6 @@ export function useLoan() {
     const create = async (data: LoanForm): Promise<boolean> => {
         notify.loading("Cargando", "");
         try {
-            console.log(data);
             const response = await LoanService.create(data);
             if (response) {
                 await getAll();
