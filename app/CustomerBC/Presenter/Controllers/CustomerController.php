@@ -32,13 +32,13 @@ final class CustomerController
     {
         $command = CreateCustomerRequest::fromArray($request);
 
-        $response = $this->createUseCase->execute($command);
+        $success = $this->createUseCase->execute($command);
 
         $this->auditLogger->created('customer', $this->createUseCase->getResponse()->id, [
             'name' => $request->input('first_name').' '.$request->input('last_name'),
         ]);
 
-        return response()->json($response, 201);
+        return response()->json($success, 201);
     }
 
     public function show(string $id): JsonResponse
@@ -98,10 +98,10 @@ final class CustomerController
     public function update(Request $request, string $id): JsonResponse
     {
         $command = UpdateCustomerRequest::fromArray($id, $request);
-        $response = $this->updateUseCase->execute($command);
+        $success = $this->updateUseCase->execute($command);
 
         $this->auditLogger->updated('customer', $id, $request->toArray());
 
-        return response()->json($response);
+        return response()->json($success);
     }
 }
