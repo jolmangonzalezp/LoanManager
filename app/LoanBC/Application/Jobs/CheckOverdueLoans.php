@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\LoanBC\Application\Jobs;
 
-use App\LoanBC\Domain\Aggregate\Loan;
 use App\LoanBC\Domain\Repository\LoanFinderAll;
 use App\LoanBC\Domain\Repository\LoanUpdater;
 use App\LoanBC\Domain\ValueObject\LoanStatus;
@@ -35,23 +34,7 @@ class CheckOverdueLoans implements ShouldQueue
 
             // Check if due date is past
             if ($dueDate->isBefore($today) || $dueDate->isPast()) {
-                // Create updated loan with DEFAULTED status
-                $updatedLoan = Loan::reconstitute(
-                    $loan->getId(),
-                    $loan->getCustomerId(),
-                    $loan->getOriginalCapital(),
-                    $loan->getInterestRate(),
-                    $loan->getStartDate(),
-                    $loan->getDueDate(),
-                    $loan->getCreatedAt(),
-                    LoanStatus::DEFAULTED,
-                    $loan->getPaidInterest(),
-                    $loan->getPaidCapital(),
-                    $loan->getRemainingDebt(),
-                    $loan->getPendingInterest(),
-                    $loan->getInterestPeriod(),
-                    $loan->getNextPaymentDate()
-                );
+                $updatedLoan = $loan->markAsDefaulted();
 
                 $loanUpdater->update($updatedLoan);
                 $overdueCount++;

@@ -110,6 +110,19 @@ final readonly class Loan
             $newStatus = LoanStatus::PAID;
         }
 
+        $rateChanged = $interestRate->getMonthlyRate() !== $this->interestRate->getMonthlyRate();
+        $newPendingInterest = $rateChanged
+            ? $interestRate->calculateInterest($newRemainingDebt)
+            : $this->pendingInterest;
+
+        $datesChanged = !$startDate->equals($this->startDate) || !$dueDate->equals($this->dueDate);
+        $newNextPaymentDate = $datesChanged
+            ? $startDate->isFuture() ? DateVO::now()->addMonths(1) : $startDate->addMonths(1)
+            : $this->nextPaymentDate;
+        $newInterestPeriod = $datesChanged
+            ? $startDate->getFormatted('Y-m')
+            : $this->interestPeriod;
+
         return new self(
             $this->id,
             $this->customerId,
@@ -122,8 +135,32 @@ final readonly class Loan
             $this->paidInterest,
             $this->paidCapital,
             $newRemainingDebt,
-            $this->pendingInterest,
-            $this->interestPeriod,
+            $newPendingInterest,
+            $newInterestPeriod,
+            $newNextPaymentDate
+        );
+    }
+
+    public function markAsDefaulted(): self
+    {
+        $newRemainingDebt = $this->remainingDebt->add($this->pendingInterest);
+        $newPendingInterest = MoneyVO::zero();
+        $newInterestPeriod = DateVO::now()->getFormatted('Y-m');
+
+        return new self(
+            $this->id,
+            $this->customerId,
+            $this->originalCapital,
+            $this->interestRate,
+            $this->startDate,
+            $this->dueDate,
+            $this->createdAt,
+            LoanStatus::DEFAULTED,
+            $this->paidInterest,
+            $this->paidCapital,
+            $newRemainingDebt,
+            $newPendingInterest,
+            $newInterestPeriod,
             $this->nextPaymentDate
         );
     }

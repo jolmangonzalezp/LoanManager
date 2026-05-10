@@ -11,6 +11,7 @@ use App\CustomerBC\Domain\Aggregate\Customer;
 use App\CustomerBC\Domain\Repository\CustomerFinderById;
 use App\CustomerBC\Domain\Repository\CustomerDniFinder;
 use App\CustomerBC\Domain\Repository\CustomerUpdater;
+use App\CustomerBC\Domain\ValueObject\CustomerIdVO;
 
 final class UpdateCustomerUseCase
 {

@@ -2,6 +2,7 @@ import { ref, onMounted } from 'vue'
 import { Payment, PaymentForm, PaymentReport, PaymentService } from '@/Modules/Payment';
 import { formatCurrency, useNotifier } from '@/Shared';
 import { useRouter } from 'vue-router';
+import { useLoan } from '@/Modules/Loan';
 
 
 const payments = ref<Payment[]>([])
@@ -87,6 +88,8 @@ export function usePayment() {
             const response = await PaymentService.create(data);
             if (response) {
                 await Promise.all([getAll(), getMonthlyReport()])
+                await useLoan().getAll();
+                await useLoan().getReport();
             }
             notify.closeLoading();
             notify.success("Exito", "Pago se ha guardado exitosamente");
