@@ -7,7 +7,6 @@ namespace App\CustomerBC\Infrastructure\Mapper;
 use App\CustomerBC\Domain\Aggregate\Customer;
 use App\CustomerBC\Domain\ValueObject\CustomerIdVO;
 use App\CustomerBC\Infrastructure\Persistence\Model\CustomerModel;
-use App\SharedKernel\Domain\Ports\EncryptionService;
 use App\SharedKernel\Domain\ValueObject\AddressVO;
 use App\SharedKernel\Domain\ValueObject\DateVO;
 use App\SharedKernel\Domain\ValueObject\DniType;
@@ -19,10 +18,6 @@ use App\SharedKernel\Domain\ValueObject\PhoneVO;
 
 final class CustomerMapper
 {
-    public function __construct(
-        private readonly EncryptionService $encryption
-    ) {}
-
     public function toDomain(CustomerModel $model): Customer
     {
         $personalData = $this->toPersonVO($model);
@@ -43,18 +38,16 @@ final class CustomerMapper
 
         return [
             'id' => $customer->getId()->getValue(),
-            'first_name' => $this->encryption->encrypt($name->getFirstName()),
-            'last_name' => $this->encryption->encrypt($name->getLastName()),
-            'second_last_name' => $this->encryption->encrypt($name->getSecondLastName()),
-            'middle_name' => $name->getMiddleName()
-                ? $this->encryption->encrypt($name->getMiddleName())
-                : null,
-            'dni_number' => $this->encryption->encrypt($dni->getNumber()),
-            'dni_hash' => $this->encryption->hash($dni->getNumber()),
+            'first_name' => $name->getFirstName(),
+            'last_name' => $name->getLastName(),
+            'second_last_name' => $name->getSecondLastName(),
+            'middle_name' => $name->getMiddleName(),
+            'dni_number' => $dni->getNumber(),
+            'dni_hash' => $dni->getHash(),
             'dni_type' => $dni->getType()->value,
-            'phone_number' => $this->encryption->encrypt($phone->getNumber()),
+            'phone_number' => $phone->getNumber(),
             'phone_country_code' => $phone->getCountryCode(),
-            'address' => $this->encryption->encrypt($person->getAddress()->getValue()),
+            'address' => $person->getAddress()->getValue(),
             'email' => $person->getEmail()?->getValue(),
             'enabled' => $customer->isEnabled(),
             'created_at' => $customer->getCreatedAt()->getFormatted('Y-m-d H:i:s'),
@@ -64,35 +57,29 @@ final class CustomerMapper
     private function toPersonVO(CustomerModel $model): PersonVO
     {
         $name = NameVO::create(
-            $this->encryption->decrypt($model->first_name),
-            $this->encryption->decrypt($model->last_name),
-            $this->encryption->decrypt($model->second_last_name),
+            $model->first_name,
+            $model->last_name,
+            $model->second_last_name,
             $model->middle_name
-                ? $this->encryption->decrypt($model->middle_name)
-                : null
         );
 
         $dni = DniVO::create(
-            $this->encryption->decrypt($model->dni_number),
+            $model->dni_number,
             DniType::from($model->dni_type)
         );
 
         $phone = PhoneVO::create(
-            $this->encryption->decrypt($model->phone_number),
+            $model->phone_number,
             $model->phone_country_code ? '+'.ltrim($model->phone_country_code, '+') : '+57'
         );
 
         $address = AddressVO::create(
-            $this->encryption->decrypt($model->address)
+            $model->address
         );
 
         $email = null;
         if ($model->email) {
-            try {
-                $email = EmailVO::create($this->encryption->decrypt($model->email));
-            } catch (\Throwable) {
-                $email = EmailVO::create($model->email);
-            }
+            $email = EmailVO::create($model->email);
         }
 
         return PersonVO::create($name, $dni, $phone, $address, $email);

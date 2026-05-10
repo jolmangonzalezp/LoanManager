@@ -11,8 +11,6 @@ use App\CustomerBC\Domain\Aggregate\Customer;
 use App\CustomerBC\Domain\Repository\CustomerFinderById;
 use App\CustomerBC\Domain\Repository\CustomerDniFinder;
 use App\CustomerBC\Domain\Repository\CustomerUpdater;
-use App\CustomerBC\Domain\ValueObject\CustomerIdVO;
-use App\SharedKernel\Domain\Ports\EncryptionService;
 
 final class UpdateCustomerUseCase
 {
@@ -21,8 +19,7 @@ final class UpdateCustomerUseCase
     public function __construct(
         private readonly CustomerFinderById $finder,
         private readonly CustomerUpdater $updater,
-        private readonly CustomerDniFinder $dniFinder,
-        private readonly EncryptionService $encryption
+        private readonly CustomerDniFinder $dniFinder
     ) {}
 
     public function getResponse(): ?array
@@ -45,7 +42,7 @@ final class UpdateCustomerUseCase
         if ($newDni->getNumber() !== $existingDni->getNumber() || 
             $newDni->getType() !== $existingDni->getType()) {
             if ($this->dniFinder->existsByDni(
-                $newDni->getHash($this->encryption),
+                $newDni->getHash(),
                 $customerId->getValue()
             )) {
                 throw new \App\CustomerBC\Application\Exceptions\CustomerAlreadyExistsException;

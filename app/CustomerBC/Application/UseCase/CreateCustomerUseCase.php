@@ -10,7 +10,6 @@ use App\CustomerBC\Application\Exceptions\CustomerAlreadyExistsException;
 use App\CustomerBC\Domain\Aggregate\Customer;
 use App\CustomerBC\Domain\Repository\CustomerCreator;
 use App\CustomerBC\Domain\Repository\CustomerDniFinder;
-use App\SharedKernel\Domain\Ports\EncryptionService;
 
 final class CreateCustomerUseCase
 {
@@ -18,8 +17,7 @@ final class CreateCustomerUseCase
 
     public function __construct(
         private readonly CustomerCreator $creator,
-        private readonly CustomerDniFinder $dniFinder,
-        private readonly EncryptionService $encryption
+        private readonly CustomerDniFinder $dniFinder
     ) {}
 
     public function getResponse(): ?CreatedCustomerResponse
@@ -31,7 +29,7 @@ final class CreateCustomerUseCase
     {
         $dni = $command->personalData->getDni();
 
-        if ($this->dniFinder->existsByDni($dni->getHash($this->encryption))) {
+        if ($this->dniFinder->existsByDni($dni->getHash())) {
             throw new CustomerAlreadyExistsException;
         }
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\SharedKernel\Domain\ValueObject;
 
 use App\SharedKernel\Domain\Exception\InvalidDniException;
-use App\SharedKernel\Domain\Ports\EncryptionService;
 
 final class DniVO implements \Stringable
 {
@@ -69,9 +68,9 @@ final class DniVO implements \Stringable
         return $this->type;
     }
 
-    public function getHash(EncryptionService $encryption): string
+    public function getHash(): string
     {
-        return $encryption->hash($this->number);
+        return hash('sha256', $this->number);
     }
 
     public function getFormatted(): string
