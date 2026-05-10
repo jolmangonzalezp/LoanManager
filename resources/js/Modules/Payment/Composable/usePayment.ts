@@ -1,6 +1,6 @@
 import { ref, onMounted } from 'vue'
 import { Payment, PaymentForm, PaymentReport, PaymentService } from '@/Modules/Payment';
-import { useNotifier } from '@/Shared';
+import { formatCurrency, useNotifier } from '@/Shared';
 import { useRouter } from 'vue-router';
 
 
@@ -38,7 +38,7 @@ export function usePayment() {
         if (!payment.value) return
         paymentForm.value = {
             loanId: payment.value.loan.id,
-            amount: payment.value.amount,
+            amount: Number(payment.value.amount),
             paymentDate: payment.value.paymentDate,
             paymentMethod: payment.value.paymentMethod,
         }
@@ -47,7 +47,11 @@ export function usePayment() {
     const getAll = async (): Promise<void> => {
         notify.loading("Cargando", "");
         try {
-            payments.value = await PaymentService.getAll()
+            const response = await PaymentService.getAll()
+            response.map(pay => {
+                pay.amount = pay.amount ? formatCurrency(pay.amount) : formatCurrency(0)
+            });
+            payments.value = response
             notify.closeLoading();
         } catch (e: any) {
             notify.closeLoading();
@@ -77,25 +81,31 @@ export function usePayment() {
         }
 
     }
-    const create = async (data: PaymentForm): Promise<void> => {
+    const create = async (data: PaymentForm): Promise<boolean> => {
         notify.loading("Cargando", "");
         try {
-            await PaymentService.create(data)
-            await Promise.all([getAll(), getMonthlyReport()])
+            const response = await PaymentService.create(data);
+            if (response) {
+                await Promise.all([getAll(), getMonthlyReport()])
+            }
             notify.closeLoading();
             notify.success("Exito", "Pago se ha guardado exitosamente");
+            return response;
         } catch (e: any) {
             notify.closeLoading();
             notify.toastError(e.message);
         }
     }
 
-    const update = async (id:string, data: PaymentForm): Promise<void> => {
+    const update = async (id:string, data: PaymentForm): Promise<boolean> => {
         notify.loading("Cargando", "");
         try {
-            await PaymentService.update(id, data);
-            getAll()
+            const response = await PaymentService.update(id, data);
+            if (response) {
+                await Promise.all([getAll(), getMonthlyReport()])
+            }
             notify.success("Exito", "Pago se ha actualizado exitosamente");
+            return response;
         } catch (e: any) {
             notify.toastError(e.message);
         }

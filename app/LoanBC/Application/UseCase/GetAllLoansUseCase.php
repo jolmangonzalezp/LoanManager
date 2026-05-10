@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\LoanBC\Application\UseCase;
 
 use App\LoanBC\Application\DTO\LoanResponse;
+use App\LoanBC\Application\Exception\LoanNotFoundException;
 use App\LoanBC\Domain\Repository\CustomerNameProvider;
 use App\LoanBC\Domain\Repository\LoanFinderAll;
 use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
+use Illuminate\Support\Facades\Log;
 
 final class GetAllLoansUseCase
 {
@@ -19,7 +21,6 @@ final class GetAllLoansUseCase
     public function execute(): array
     {
         $loans = $this->loanFinder->findAll();
-
         if (empty($loans)) {
             return [];
         }

@@ -12,12 +12,19 @@ use App\PaymentBC\Domain\Repository\PaymentCreator;
 
 final class ProcessPaymentUseCase
 {
+    private ?PaymentResponse $response = null;
+
     public function __construct(
         private readonly PaymentCreator $paymentCreator,
         private readonly LoanPaymentProcessor $loanPaymentProcessor
     ) {}
 
-    public function execute(ProcessPaymentCommand $command): PaymentResponse
+    public function getResponse(): ?PaymentResponse
+    {
+        return $this->response;
+    }
+
+    public function execute(ProcessPaymentCommand $command): bool
     {
         $payment = Payment::create(
             $command->loanId,
@@ -35,8 +42,9 @@ final class ProcessPaymentUseCase
 
         $this->paymentCreator->create($payment);
 
-        $response = PaymentResponse::fromEntity($payment);
+        $this->response = PaymentResponse::fromEntity($payment);
+        $this->response = $this->response->withRemainingDebt($result->remainingDebt->getAmount());
 
-        return $response->withRemainingDebt($result->remainingDebt->getAmount());
+        return true;
     }
 }

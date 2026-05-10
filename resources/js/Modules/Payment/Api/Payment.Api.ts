@@ -16,11 +16,11 @@ export const PaymentApi = {
         return Http.get<PaymentReportDTO>(`${BASE}/monthly`);
     },
 
-    async create(data: PaymentFormDTO): Promise<string> {
-        return Http.post<string>(BASE, data);
+    async create(data: PaymentFormDTO): Promise<boolean> {
+        return await Http.post<boolean>(BASE, data);
     },
 
-    async update(data: PaymentFormDTO, id: string): Promise<string> {
-        return await Http.put<string>(`${BASE}/${id}`, data);
+    async update(data: PaymentFormDTO, id: string): Promise<boolean> {
+        return await Http.put<boolean>(`${BASE}/${id}`, data);
     }
 }

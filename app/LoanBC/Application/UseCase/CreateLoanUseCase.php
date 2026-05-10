@@ -12,13 +12,20 @@ use App\LoanBC\Domain\Services\LoanNumberGenerator;
 
 final class CreateLoanUseCase
 {
+    private ?array $response = null;
+
     public function __construct(
-        private readonly LoanCreator $creator,
-        private readonly CustomerFinderById $customerFinder,
-        private readonly LoanNumberGenerator $loanNumberGenerator
+        private LoanCreator $creator,
+        private CustomerFinderById $customerFinder,
+        private LoanNumberGenerator $loanNumberGenerator
     ) {}
 
-    public function execute(CreateLoanCommand $command): LoanResponse
+    public function getResponse(): ?array
+    {
+        return $this->response;
+    }
+
+    public function execute(CreateLoanCommand $command): bool
     {
         $customer = $this->customerFinder->findById($command->customerId);
 
@@ -38,9 +45,10 @@ final class CreateLoanUseCase
 
         $this->creator->create($loan);
 
-        $response = LoanResponse::fromEntity($loan);
-        $response->setLoanNumber($this->loanNumberGenerator->generate());
+        $dto = LoanResponse::fromEntity($loan);
+        $dto->setLoanNumber($this->loanNumberGenerator->generate());
+        $this->response = $dto->toArray($loan->getCustomerId()->getValue());
 
-        return $response;
+        return true;
     }
 }

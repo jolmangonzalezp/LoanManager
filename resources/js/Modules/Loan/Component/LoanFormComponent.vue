@@ -23,16 +23,36 @@ const options = computed(() =>
     }))
 );
 
+const capitalFormatted = computed({
+    get() {
+        return loanForm.value?.capital
+            ? loanForm.value.capital.toLocaleString('es-CO')
+            : ''
+    },
+
+    set(value: string) {
+        if (!loanForm.value) return
+
+        loanForm.value.capital = Number(
+            value.replace(/\./g, '').replace(',', '.')
+        ) || 0
+    }
+})
+
 const save = async () => {
   if (!loanForm.value) return
   if (props.isEditing) {
       if (!props.id) return
-    await update(props.id, loanForm.value)
+    const response = await update(props.id, loanForm.value)
+      if (response) {
+          close();
+      }
   }else {
-    await create(loanForm.value);
+    const response = await create(loanForm.value);
+      if (response) {
+          close();
+      }
   }
-  loading.value = false;
-  close();
 }
 
 onMounted(() => {
@@ -54,7 +74,7 @@ onMounted(() => {
     <Select
       label="Cliente"
       :options="options"
-      placeholder="Seleccione el tipo de documento"
+      placeholder="Seleccione el cliente"
       class="loan-form__input"
       v-model="loanForm.customer"
       :disabled="props.disable"
@@ -64,13 +84,13 @@ onMounted(() => {
         onlyNumbers
         label="Monto:"
         placeholder="Ingrese el monto"
-        v-model="loanForm.capital"
+        v-model="capitalFormatted"
         class="loan-form__input"
     />
     <Input
       type="text"
       label="Tasa de interés:"
-      placeholder="Ingrese el primer nombre"
+      placeholder="Ingrese el interes"
       v-model="loanForm.interestRate"
       class="loan-form__input"
     />

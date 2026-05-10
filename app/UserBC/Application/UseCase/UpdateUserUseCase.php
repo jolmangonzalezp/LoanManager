@@ -7,26 +7,35 @@ namespace App\UserBC\Application\UseCase;
 use App\UserBC\Application\CQRS\Command\UpdateUserCommand;
 use App\UserBC\Application\DTOs\UserResponse;
 use App\UserBC\Application\Exceptions\UserNotFoundException;
+use App\UserBC\Domain\Aggregate\User;
 use App\UserBC\Domain\Repository\UserFinderById;
 use App\UserBC\Domain\Repository\UserUpdater;
+use App\UserBC\Domain\ValueObject\UserIdVO;
 
-final readonly class UpdateUserUseCase
+final class UpdateUserUseCase
 {
+    private ?UserResponse $response = null;
+
     public function __construct(
         private UserFinderById $finder,
         private UserUpdater $updater,
     ) {}
 
-    public function execute(UpdateUserCommand $command): UserResponse
+    public function getResponse(): ?UserResponse
     {
-        $userId = \App\UserBC\Domain\ValueObject\UserIdVO::fromString($command->id);
+        return $this->response;
+    }
+
+    public function execute(UpdateUserCommand $command): bool
+    {
+        $userId = UserIdVO::fromString($command->id);
         $user = $this->finder->findById($userId);
 
         if ($user === null) {
             throw new UserNotFoundException;
         }
 
-        $updated = \App\UserBC\Domain\Aggregate\User::reconstitute(
+        $updated = User::reconstitute(
             id: $userId,
             username: $command->username,
             password: $user->getPassword(),
@@ -40,6 +49,8 @@ final readonly class UpdateUserUseCase
 
         $this->updater->update($updated);
 
-        return UserResponse::fromEntity($updated);
+        $this->response = UserResponse::fromEntity($updated);
+
+        return true;
     }
 }

@@ -6,23 +6,23 @@ namespace App\LoanBC\Domain\Aggregate;
 
 use App\CustomerBC\Domain\ValueObject\CustomerIdVO;
 use App\LoanBC\Domain\DTO\PaymentDistributionResult;
+use App\LoanBC\Domain\InactiveLoanException;
 use App\LoanBC\Domain\ValueObject\InterestRateVO;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
 use App\LoanBC\Domain\ValueObject\LoanStatus;
-use App\SharedKernel\Domain\Exception\DomainException;
 use App\SharedKernel\Domain\ValueObject\DateVO;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
 
-final class Loan
+final readonly class Loan
 {
     private function __construct(
-        private readonly LoanIdVO $id,
-        private readonly CustomerIdVO $customerId,
-        private readonly MoneyVO $originalCapital,
-        private readonly InterestRateVO $interestRate,
-        private readonly DateVO $startDate,
-        private readonly DateVO $dueDate,
-        private readonly DateVO $createdAt,
+        private LoanIdVO $id,
+        private CustomerIdVO $customerId,
+        private MoneyVO $originalCapital,
+        private InterestRateVO $interestRate,
+        private DateVO $startDate,
+        private DateVO $dueDate,
+        private DateVO $createdAt,
         private LoanStatus $status,
         private MoneyVO $paidInterest,
         private MoneyVO $paidCapital,
@@ -133,6 +133,7 @@ final class Loan
         $newPaidInterest = $this->paidInterest->subtract($interestPortion);
         $newPaidCapital = $this->paidCapital->subtract($capitalPortion);
         $newRemainingDebt = $this->remainingDebt->add($capitalPortion);
+        $newPendingInterest = $this->pendingInterest->add($interestPortion);
 
         return new self(
             $this->id,
@@ -146,7 +147,7 @@ final class Loan
             $newPaidInterest,
             $newPaidCapital,
             $newRemainingDebt,
-            $this->pendingInterest,
+            $newPendingInterest,
             $this->interestPeriod,
             $this->nextPaymentDate
         );
@@ -155,7 +156,7 @@ final class Loan
     public function makePayment(MoneyVO $amount): PaymentDistributionResult
     {
         if ($this->status !== LoanStatus::ACTIVE) {
-            throw new DomainException('inactive_loan', 'El préstamo no está activo');
+            throw new InactiveLoanException('inactive_loan');
         }
 
         $currentPeriod = DateVO::now()->getFormatted('Y-m');

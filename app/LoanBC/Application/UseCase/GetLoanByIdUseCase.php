@@ -11,11 +11,11 @@ use App\LoanBC\Domain\Repository\LoanFinderById;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
 use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
 
-final class GetLoanByIdUseCase
+final readonly class GetLoanByIdUseCase
 {
     public function __construct(
-        private readonly LoanFinderById $finder,
-        private readonly CustomerNameProvider $customerNameProvider
+        private LoanFinderById $finder,
+        private CustomerNameProvider $customerNameProvider
     ) {}
 
     public function execute(string $id): array
@@ -26,16 +26,17 @@ final class GetLoanByIdUseCase
             throw new CustomerNotFoundException($id);
         }
 
-        $loanModel = LoanModel::where('id', $id)->first();
         $response = LoanResponse::fromEntity($loan);
 
-        if ($loanModel) {
-            $response->setLoanNumber($loanModel->loan_number);
+        $loanNumber = LoanModel::where('id', $id)->value('loan_number');
+        if ($loanNumber) {
+            $response->setLoanNumber($loanNumber);
+        }
 
-            $namesMap = $this->customerNameProvider->getNamesMap([$loanModel->customer_id]);
-            if (isset($namesMap[$loanModel->customer_id])) {
-                $response->setCustomerName($namesMap[$loanModel->customer_id]);
-            }
+        $customerId = $loan->getCustomerId()->getValue();
+        $namesMap = $this->customerNameProvider->getNamesMap([$customerId]);
+        if (isset($namesMap[$customerId])) {
+            $response->setCustomerName($namesMap[$customerId]);
         }
 
         return $response->toArray($loan->getCustomerId()->getValue());

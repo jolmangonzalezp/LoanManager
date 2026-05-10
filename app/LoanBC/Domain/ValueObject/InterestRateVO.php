@@ -7,7 +7,7 @@ namespace App\LoanBC\Domain\ValueObject;
 use App\SharedKernel\Domain\Exception\BusinessRuleViolationException;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
 
-final class InterestRateVO implements \Stringable
+final class InterestRateVO
 {
     private const MIN_RATE = 0.0;
 
@@ -36,10 +36,9 @@ final class InterestRateVO implements \Stringable
 
     public static function createMonthly(float $monthlyRate): self
     {
-        if ($monthlyRate < self::MIN_RATE) {
+        if ($monthlyRate <= self::MIN_RATE) {
             throw new BusinessRuleViolationException(
-                'invalid_rate',
-                'La tasa de interés no puede ser negativa'
+                'La tasa de interés no puede ser menor o igual a 0'
             );
         }
 

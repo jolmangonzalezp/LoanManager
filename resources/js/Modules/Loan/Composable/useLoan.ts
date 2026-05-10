@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { Loan, LoanForm, LoanReport, LoanService } from '@/Modules/Loan';
 import { CustomerName, CustomerService } from '@/Modules/Customer';
-import { useMask, useNotifier } from '@/Shared';
+import { formatCurrency, useMask, useNotifier } from '@/Shared';
 import { useRouter } from 'vue-router';
 //import { usePagination } from '@/Shared/Composable/usePagination'
 
@@ -45,7 +45,7 @@ export function useLoan() {
         if (!loan.value) return
         loanForm.value = {
             customer: loan.value.customer.id,
-            capital: loan.value.capital,
+            capital: Number(loan.value.capital),
             interestRate: loan.value.interestRate,
             dateStart: loan.value.startDate
         }
@@ -69,6 +69,7 @@ export function useLoan() {
             response.map(r => {
                 r.partialName = useMask().maskStart(r.partialName)
                 r.progress = r.progress ? Number(r.progress.toFixed(2)) : 0
+                r.capital = r.capital ? formatCurrency(r.capital) : formatCurrency(0)
             })
             loans.value = response
             notify.closeLoading();
@@ -82,6 +83,8 @@ export function useLoan() {
         notify.loading("Cargando", "");
         try {
             loan.value = await LoanService.getById(id);
+            loan.value.partialName = useMask().maskStart(loan.value.partialName)
+            loan.value.progress = loan.value.progress ? Number(loan.value.progress.toFixed(2)) : 0
             notify.closeLoading();
         } catch (e: any) {
             notify.closeLoading();
@@ -111,28 +114,37 @@ export function useLoan() {
         }
     }
 
-    const create = async (data: LoanForm):Promise<void> => {
+    const create = async (data: LoanForm): Promise<boolean> => {
         notify.loading("Cargando", "");
         try {
-            await LoanService.create(data);
-            await getAll();
+            console.log(data);
+            const response = await LoanService.create(data);
+            if (response) {
+                await getAll();
+                await getReport();
+            }
             notify.closeLoading()
             notify.success("Exito", "Prestamo se ha guardado exitosamente");
             await router.push('/prestamos');
+            return response;
         } catch (e: any) {
             notify.closeLoading();
             notify.toastError(e.message);
         }
     }
 
-    const update = async (id: string, data: LoanForm): Promise<void> => {
+    const update = async (id: string, data: LoanForm): Promise<boolean> => {
         notify.loading("Cargando", "");
         try {
-            await LoanService.update(id, data)
-            await getAll()
+            const response = await LoanService.update(id, data)
+            if (response) {
+                await getAll();
+                await getReport();
+            }
             notify.closeLoading();
             notify.success("Exito", "Prestamo se ha actualizado exitosamente");
             await router.push('/prestamos')
+            return response;
         } catch (e: any) {
             notify.closeLoading();
             notify.toastError(e.message);

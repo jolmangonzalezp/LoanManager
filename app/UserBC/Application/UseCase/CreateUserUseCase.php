@@ -12,15 +12,22 @@ use App\UserBC\Domain\Repository\UserCreator;
 use App\UserBC\Domain\Repository\UserFinderByUsername;
 use App\UserBC\Domain\Repository\UserRoleAssigner;
 
-final readonly class CreateUserUseCase
+final class CreateUserUseCase
 {
+    private ?CreatedUserResponse $response = null;
+
     public function __construct(
         private UserCreator $creator,
         private UserFinderByUsername $userFinder,
         private UserRoleAssigner $roleAssigner,
     ) {}
 
-    public function execute(CreateUserCommand $command): CreatedUserResponse
+    public function getResponse(): ?CreatedUserResponse
+    {
+        return $this->response;
+    }
+
+    public function execute(CreateUserCommand $command): bool
     {
         $existing = $this->userFinder->findByUsername($command->username);
         if ($existing !== null) {
@@ -38,6 +45,8 @@ final readonly class CreateUserUseCase
         $this->creator->create($user);
         $this->roleAssigner->assignRoles($user->getId()->getValue(), ['viewer']);
 
-        return CreatedUserResponse::fromEntity($user);
+        $this->response = CreatedUserResponse::fromEntity($user);
+
+        return true;
     }
 }

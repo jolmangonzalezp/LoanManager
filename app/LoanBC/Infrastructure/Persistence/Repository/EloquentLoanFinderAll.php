@@ -17,7 +17,9 @@ final class EloquentLoanFinderAll implements LoanFinderAll
 
     public function findAll(): array
     {
-        $models = LoanModel::orderBy('updated_at', 'desc')->get();
+        $models = LoanModel::where('status', '<>', 'paid')
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
         return $models->map(fn ($m) => $this->mapper->toDomain($m))->all();
     }

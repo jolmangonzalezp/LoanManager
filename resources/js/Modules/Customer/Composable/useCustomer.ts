@@ -13,7 +13,6 @@ const loans = ref<LoansByCustomer[]>([])
 
 export function useCustomer() {
     const notify =  useNotifier();
-    const modal = useModal();
     const mask = useMask();
 
     /******************/
@@ -132,29 +131,33 @@ export function useCustomer() {
         }
     }
 
-    const create = async (data: CustomerForm): Promise<void> => {
+    const create = async (data: CustomerForm): Promise<boolean> => {
         notify.loading("Cargando", "");
         try {
-            await CustomerService.create(data);
-            await getCustomerKPI();
-            await getAll();
-            modal.close();
+            const response = await CustomerService.create(data);
+            if (response) {
+                await getCustomerKPI();
+                await getAll();
+            }
             notify.closeLoading();
             notify.success("Exito", "Cliente se ha guardado exitosamente");
+            return response;
         } catch (e: any) {
             notify.closeLoading();
             notify.toastError(e.message);
         }
     }
 
-    const update = async (id: string, data: CustomerForm): Promise<void> => {
+    const update = async (id: string, data: CustomerForm): Promise<boolean> => {
         notify.loading("Cargando", "");
         try {
-            await CustomerService.update(id, data);
-            await getAll();
-            modal.close();
+            const response = await CustomerService.update(id, data);
+            if (response) {
+                await getAll();
+            }
             notify.closeLoading();
             notify.success("Exito", "Cliente se ha actualizado exitosamente");
+            return response;
         } catch (e: any) {
             notify.closeLoading();
             notify.toastError(e.message);

@@ -6,7 +6,7 @@ export interface Payment {
       remainingDebt: number
     }
     loanNumber: string
-    amount: number
+    amount: number | string
     paymentDate: string
     status: 'pending' | 'applied' | 'failed'
     interestPaid?: number

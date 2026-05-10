@@ -16,6 +16,8 @@ use App\SharedKernel\Domain\Ports\EncryptionService;
 
 final class UpdateCustomerUseCase
 {
+    private ?array $response = null;
+
     public function __construct(
         private readonly CustomerFinderById $finder,
         private readonly CustomerUpdater $updater,
@@ -23,7 +25,12 @@ final class UpdateCustomerUseCase
         private readonly EncryptionService $encryption
     ) {}
 
-    public function execute(UpdateCustomerCommand $command): array
+    public function getResponse(): ?array
+    {
+        return $this->response;
+    }
+
+    public function execute(UpdateCustomerCommand $command): bool
     {
         $customerId = CustomerIdVO::fromString($command->id->getValue());
         $existingCustomer = $this->finder->findById($customerId);
@@ -54,6 +61,8 @@ final class UpdateCustomerUseCase
 
         $this->updater->update($updatedCustomer);
 
-        return CustomerResponse::fromEntity($updatedCustomer)->toArray();
+        $this->response = CustomerResponse::fromEntity($updatedCustomer)->toArray();
+
+        return true;
     }
 }

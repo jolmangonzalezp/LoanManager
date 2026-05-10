@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\LoanBC\Application\UseCase;
 
-use App\CustomerBC\Domain\Repository\CustomerFinderById;
 use App\LoanBC\Application\DTO\LoanResponse;
 use App\LoanBC\Application\Exception\LoanNotFoundException;
 use App\LoanBC\Domain\Repository\CustomerNameProvider;
@@ -13,21 +12,25 @@ use App\LoanBC\Domain\Repository\LoanUpdater;
 use App\LoanBC\Domain\ValueObject\InterestRateVO;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
 use App\LoanBC\Domain\ValueObject\LoanStatus;
-use App\LoanBC\Infrastructure\Mapper\LoanMapper;
 use App\SharedKernel\Domain\ValueObject\DateVO;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
 
 final class UpdateLoanUseCase
 {
+    private ?array $response = null;
+
     public function __construct(
-        private readonly LoanFinderById $finder,
-        private readonly LoanUpdater $updater,
-        private readonly LoanMapper $mapper,
-        private readonly CustomerFinderById $customerFinder,
-        private readonly CustomerNameProvider $customerNameProvider
+        private LoanFinderById $finder,
+        private LoanUpdater $updater,
+        private CustomerNameProvider $customerNameProvider
     ) {}
 
-    public function execute(string $id, array $data): LoanResponse
+    public function getResponse(): ?array
+    {
+        return $this->response;
+    }
+
+    public function execute(string $id, array $data): bool
     {
         $loan = $this->finder->findById(LoanIdVO::fromString($id));
 
@@ -40,7 +43,7 @@ final class UpdateLoanUseCase
             : $loan->getOriginalCapital();
 
         $interestRate = isset($data['interest_rate'])
-            ? InterestRateVO::createAnnual((float) $data['interest_rate'])
+            ? InterestRateVO::createMonthly((float) $data['interest_rate'])
             : $loan->getInterestRate();
 
         $startDate = isset($data['start_date'])
@@ -65,13 +68,15 @@ final class UpdateLoanUseCase
 
         $this->updater->update($updatedLoan);
 
-        $response = LoanResponse::fromEntity($updatedLoan);
+        $dto = LoanResponse::fromEntity($updatedLoan);
 
         $namesMap = $this->customerNameProvider->getNamesMap([$loan->getCustomerId()->getValue()]);
         if (isset($namesMap[$loan->getCustomerId()->getValue()])) {
-            $response->setCustomerName($namesMap[$loan->getCustomerId()->getValue()]);
+            $dto->setCustomerName($namesMap[$loan->getCustomerId()->getValue()]);
         }
 
-        return $response;
+        $this->response = $dto->toArray($loan->getCustomerId()->getValue());
+
+        return true;
     }
 }

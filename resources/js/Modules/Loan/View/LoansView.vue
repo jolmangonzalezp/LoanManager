@@ -29,7 +29,7 @@ onMounted(() => {
   <div class="page pu">
     <PageHeader title="Cartera de Préstamos" />
       <div v-if="report" class="kpi-grid">
-        <KPI label="Cartera Total" :value="formatCurrency(report.totalCapital)" :goldValue="true" class="kpi-grid-item"/>
+        <KPI label="Cartera Total" :value="formatCurrency(report.totalRemainingDebt)" :goldValue="true" class="kpi-grid-item"/>
         <KPI label="Activos" :value="report.activeLoans.toString() || '0'" :goldValue="true" class="kpi-grid-item" />
         <KPI label="En Mora" :value="report.defaultedLoans.toString() || '0'" :goldValue="true" class="kpi-grid-item" />
       </div>

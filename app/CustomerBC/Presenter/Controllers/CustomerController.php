@@ -8,10 +8,10 @@ use App\CustomerBC\Application\UseCase\CreateCustomerUseCase;
 use App\CustomerBC\Application\UseCase\GetAllCustomersSummaryUseCase;
 use App\CustomerBC\Application\UseCase\GetAllCustomersUseCase;
 use App\CustomerBC\Application\UseCase\GetCustomerByIdUseCase;
-use App\LoanBC\Application\UseCase\GetLoansByCustomerUseCase;
 use App\CustomerBC\Application\UseCase\UpdateCustomerUseCase;
 use App\CustomerBC\Infrastructure\Request\CreateCustomerRequest;
 use App\CustomerBC\Infrastructure\Request\UpdateCustomerRequest;
+use App\LoanBC\Application\UseCase\GetLoansByCustomerUseCase;
 use App\SharedKernel\Application\Services\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,13 +31,14 @@ final class CustomerController
     public function store(Request $request): JsonResponse
     {
         $command = CreateCustomerRequest::fromArray($request);
+
         $response = $this->createUseCase->execute($command);
 
-        $this->auditLogger->created('customer', $response->id, [
+        $this->auditLogger->created('customer', $this->createUseCase->getResponse()->id, [
             'name' => $request->input('first_name').' '.$request->input('last_name'),
-            ]);
+        ]);
 
-        return response()->json($response->toArray(), 201);
+        return response()->json($response, 201);
     }
 
     public function show(string $id): JsonResponse
@@ -78,7 +79,7 @@ final class CustomerController
 
         foreach ($responses as $customer) {
             $loans = $this->getLoansByCustomerUseCase->execute($customer['id']);
-            if (!empty($loans)) {
+            if (! empty($loans)) {
                 $customersWithLoans++;
                 foreach ($loans as $loan) {
                     $totalDebt += $loan['balance'] ?? 0;

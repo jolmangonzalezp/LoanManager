@@ -26,14 +26,13 @@ export const PaymentService = {
     return PaymentMapper.toPaymentReport(response);
   },
 
-  async create(data: PaymentForm): Promise<string> {
+  async create(data: PaymentForm): Promise<boolean> {
     const mapped: PaymentFormDTO = PaymentMapper.toFormDTO(data)
     return PaymentApi.create(mapped)
   },
 
-  async update(id: string, data: PaymentForm): Promise<string> {
+  async update(id: string, data: PaymentForm): Promise<boolean> {
       const mapped: PaymentFormDTO = PaymentMapper.toFormDTO(data);
-      const r =  await PaymentApi.update(mapped, id);
-      return r
+      return await PaymentApi.update(mapped, id);
   }
 }

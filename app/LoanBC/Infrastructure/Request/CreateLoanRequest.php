@@ -16,7 +16,7 @@ final class CreateLoanRequest
     public static function fromArray(Request $request): CreateLoanCommand
     {
         $capital = MoneyVO::create((int) ($request['capital'] ?? 0));
-        $interestRate = InterestRateVO::createMonthly((float) ($request['interest_rate'] ?? 0));
+        $interestRate = InterestRateVO::createMonthly((float) ($request['interest_rate']));
 
         return new CreateLoanCommand(
             CustomerIdVO::fromString((string) ($request['customer'] ?? $request['customer_id'])),

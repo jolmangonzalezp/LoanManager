@@ -91,7 +91,7 @@ const makePayment = () => {
         </div>
       </GCard>
     </section>
-    <div class="btns">
+    <div class="btns" v-if="loan.status !== 'paid'">
       <Btn v-if="can('loans.update')" variant="secondary" @click="updateLoan">Actualizar</Btn>
       <Btn v-if="can('payments.create')" @click="makePayment">Hacer Pago</Btn>
     </div>

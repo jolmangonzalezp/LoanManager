@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed, onMounted} from "vue";
 import { useCustomer } from '@/Modules/Customer';
-import { Btn, Select, Input } from '@/Shared';
+import { Btn, Select, Input, useModal } from '@/Shared';
 
 interface Props {
   isEditing: boolean;
@@ -11,6 +11,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const {customerForm, emptyCustomer, create, update} = useCustomer();
+const { close } = useModal()
 
 const docType = [
   {abrev:"CC", name:"Cédula de ciudadanía"},
@@ -29,9 +30,15 @@ const options = computed(() =>
 const save = async () => {
   if (!customerForm.value) return
   if (props.isEditing) {
-    await update(props.id, customerForm.value)
+    const response = await update(props.id, customerForm.value)
+      if (response) {
+        close()
+      }
   } else {
-    await create(customerForm.value);
+    const response = await create(customerForm.value);
+      if (response) {
+          close()
+      }
   }
 }
 

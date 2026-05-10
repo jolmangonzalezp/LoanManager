@@ -24,10 +24,11 @@ final class DateVO
             throw new InvalidDateException('La fecha no puede estar vacia');
         }
 
-        if (!strtotime($value)) {
+        if (! strtotime($value)) {
             throw new InvalidDateException('La fecha no es valida');
         }
-        return new self(new \DateTimeImmutable($value));
+
+        return new self(new DateTimeImmutable($value));
     }
 
     public static function fromDateTime(DateTimeInterface $dateTime): self
@@ -35,12 +36,13 @@ final class DateVO
         if ($dateTime instanceof DateTimeImmutable) {
             return new self($dateTime);
         }
+
         return new self(new DateTimeImmutable($dateTime->format('Y-m-d H:i:s.u')));
     }
 
     public static function now(): self
     {
-        return new self(new \DateTimeImmutable);
+        return new self(new DateTimeImmutable);
     }
 
     public function getValue(): DateTimeInterface
@@ -68,22 +70,25 @@ final class DateVO
         return $this->value->format('Y-m-d') === $other->value->format('Y-m-d');
     }
 
+    /**
+     * @throws \DateMalformedStringException
+     */
     public function addMonths(int $months = 1): self
     {
         $newDateStr = $this->value->format('Y-m-d');
-        $newDate = (new \DateTimeImmutable($newDateStr))->modify("+{$months} month");
+        $newDate = (new DateTimeImmutable($newDateStr))->modify("+{$months} month");
 
         return new self($newDate);
     }
 
     public function isFuture(): bool
     {
-        return $this->value > new \DateTimeImmutable;
+        return $this->value > new DateTimeImmutable;
     }
 
     public function isPast(): bool
     {
-        return $this->value < new \DateTimeImmutable;
+        return $this->value < new DateTimeImmutable;
     }
 
     public function equals(self $other): bool

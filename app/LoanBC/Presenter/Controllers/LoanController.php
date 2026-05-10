@@ -16,30 +16,25 @@ use App\SharedKernel\Application\Services\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final class LoanController
+final readonly class LoanController
 {
     public function __construct(
-        private readonly CreateLoanUseCase $createLoanUseCase,
-        private readonly GetLoanByIdUseCase $getLoanByIdUseCase,
-        private readonly GetAllLoansUseCase $getAllLoansUseCase,
-        private readonly GetLoanReportUseCase $getLoanReportUseCase,
-        private readonly MakePaymentUseCase $makePaymentUseCase,
-        private readonly UpdateLoanUseCase $updateLoanUseCase,
-        private readonly AuditLogger $auditLogger
+        private CreateLoanUseCase    $createLoanUseCase,
+        private GetLoanByIdUseCase   $getLoanByIdUseCase,
+        private GetAllLoansUseCase   $getAllLoansUseCase,
+        private GetLoanReportUseCase $getLoanReportUseCase,
+        private MakePaymentUseCase   $makePaymentUseCase,
+        private UpdateLoanUseCase    $updateLoanUseCase,
+        private AuditLogger          $auditLogger
     ) {}
 
     public function store(Request $request): JsonResponse
     {
         $command = CreateLoanRequest::fromArray($request);
-        $response = $this->createLoanUseCase->execute($command);
 
-        $this->auditLogger->created('loan', $response->id, [
-            'loan_number' => $response->getLoanNumber(),
-            'customer_id' => $response->getCustomerId(),
-            'capital' => $response->originalCapital,
-        ]);
+        $success = $this->createLoanUseCase->execute($command);
 
-        return response()->json($response->toArray($response->getCustomerId()), 201);
+        return response()->json($success, 201);
     }
 
     public function show(string $id): JsonResponse
@@ -51,8 +46,6 @@ final class LoanController
 
     public function index(): JsonResponse
     {
-        // TODO: La hidratación del nombre del cliente debe ocurrir en una capa de Query (CQRS)
-        // Por ahora mantenemos la lista simple.
         $responses = $this->getAllLoansUseCase->execute();
 
         return response()->json($responses);
@@ -68,23 +61,24 @@ final class LoanController
     public function makePayment(Request $request, string $id): JsonResponse
     {
         $command = MakePaymentRequest::fromArray($id, $request->all());
-        $response = $this->makePaymentUseCase->execute($command);
+        $this->makePaymentUseCase->execute($command);
+        $response = $this->makePaymentUseCase->getResponse();
 
         $this->auditLogger->payment($id, [
             'amount' => $request->input('amount'),
             'payment_date' => $request->input('payment_date'),
-            'new_remaining_debt' => $response->remainingDebt,
+            'new_remaining_debt' => $response['remainingDebt'],
         ]);
 
-        return response()->json($response->toArray());
+        return response()->json($response);
     }
 
     public function update(Request $request, string $id): JsonResponse
     {
-        $response = $this->updateLoanUseCase->execute($id, $request->all());
+        $response = $this->updateLoanUseCase->execute($id, $request->all());;
 
         $this->auditLogger->updated('loan', $id, $request->all());
 
-        return response()->json($response->toArray($response->getCustomerId()));
+        return response()->json($response);
     }
 }

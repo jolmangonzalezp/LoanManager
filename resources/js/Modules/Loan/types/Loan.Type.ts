@@ -12,7 +12,7 @@ export interface Loan {
   }
   partialName: string
   fullName: string
-  capital: number
+  capital: number | string
   remainingDebt: number
   interestRate: number
   startDate: string

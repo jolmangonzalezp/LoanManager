@@ -25,12 +25,12 @@ export const CustomerService = {
     return CustomerMapper.toLoansByCustomerInList(response);
   },
 
-  async create(data: CustomerForm): Promise<string> {
+  async create(data: CustomerForm): Promise<boolean> {
     const mapped: CustomerFormDTO = CustomerMapper.toCustomerFormDTO(data);
     return CustomerApi.create(mapped);
   },
 
-  async update(id: string, data: CustomerForm): Promise<string> {
+  async update(id: string, data: CustomerForm): Promise<boolean> {
     const mapped: CustomerFormDTO = CustomerMapper.toCustomerFormDTO(data)
     return CustomerApi.update(id, mapped)
   },

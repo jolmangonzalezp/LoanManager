@@ -13,15 +13,22 @@ use App\PaymentBC\Domain\Repository\PaymentUpdater;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
 use Illuminate\Support\Facades\Log;
 
-final readonly class UpdatePaymentUseCase
+final class UpdatePaymentUseCase
 {
+    private ?PaymentResponse $response = null;
+
     public function __construct(
         private PaymentFinderById $finder,
         private PaymentUpdater $updater,
         private LoanPaymentProcessor $loanPaymentProcessor
     ) {}
 
-    public function execute(UpdatePaymentCommand $command): PaymentResponse
+    public function getResponse(): ?PaymentResponse
+    {
+        return $this->response;
+    }
+
+    public function execute(UpdatePaymentCommand $command): bool
     {
         Log::info('[UpdatePayment] Starting', [
             'payment_id' => $command->paymentId->getValue(),
@@ -71,8 +78,9 @@ final readonly class UpdatePaymentUseCase
 
         Log::info('[UpdatePayment] Completed');
 
-        $response = PaymentResponse::fromEntity($payment);
+        $this->response = PaymentResponse::fromEntity($payment);
+        $this->response = $this->response->withRemainingDebt($result->remainingDebt->getAmount());
 
-        return $response->withRemainingDebt($result->remainingDebt->getAmount());
+        return true;
     }
 }

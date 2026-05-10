@@ -12,12 +12,19 @@ use App\LoanBC\Domain\Repository\LoanUpdater;
 
 final class MakePaymentUseCase
 {
+    private ?array $response = null;
+
     public function __construct(
         private readonly LoanFinderById $finder,
         private readonly LoanUpdater $updater
     ) {}
 
-    public function execute(MakePaymentCommand $command): LoanResponse
+    public function getResponse(): ?array
+    {
+        return $this->response;
+    }
+
+    public function execute(MakePaymentCommand $command): bool
     {
         $loan = $this->finder->findById($command->loanId);
 
@@ -29,6 +36,9 @@ final class MakePaymentUseCase
 
         $this->updater->update($updatedLoan);
 
-        return LoanResponse::fromEntity($updatedLoan);
+        $dto = LoanResponse::fromEntity($updatedLoan);
+        $this->response = $dto->toArray($updatedLoan->getCustomerId()->getValue());
+
+        return true;
     }
 }

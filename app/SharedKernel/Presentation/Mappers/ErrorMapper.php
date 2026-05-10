@@ -41,7 +41,7 @@ final class ErrorMapper
     public static function map(Throwable $e): JsonResponse
     {
         $status = self::resolveStatusCode($e);
-        
+
         self::logError($e, $status);
 
         if ($e instanceof ValidationException) {
@@ -51,8 +51,8 @@ final class ErrorMapper
             ], 422);
         }
 
-        $message = ($status >= 500) 
-            ? 'Ha ocurrido un error interno en el servidor.' 
+        $message = ($status >= 500)
+            ? 'Ha ocurrido un error interno en el servidor.'
             : $e->getMessage();
 
         return new JsonResponse([
@@ -88,7 +88,7 @@ final class ErrorMapper
         if ($status >= 500) {
             Log::critical("SERVER_ERROR: " . $e->getMessage(), $context);
         } else {
-            Log::notice("CLIENT_ERROR ($status): " . $e->getMessage());
+            Log::notice("CLIENT_ERROR ($status): " . $e->getMessage() . $e->getFile() . $e->getLine());
         }
     }
 
@@ -127,7 +127,7 @@ final class ErrorMapper
             DatabaseException::class => 500,
             DecryptException::class => 500,
             InfrastructureException::class => 503,
-            
+
             // Laravel Native
             ValidationException::class => 422,
         ];

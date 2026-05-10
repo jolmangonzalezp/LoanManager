@@ -5,33 +5,31 @@ const BASE = '/customers'
 
 export const CustomerApi = {
 
-  async getAll(): Promise<CustomerDTO[]> {
-    return await Http.get<CustomerDTO[]>(BASE);
-  },
+    async getAll(): Promise<CustomerDTO[]> {
+        return await Http.get<CustomerDTO[]>(BASE);
+    },
 
-  async getById(id: string): Promise<CustomerDTO> {
-    return await Http.get<CustomerDTO>(`${BASE}/${id}`);
-  },
+    async getById(id: string): Promise<CustomerDTO> {
+        return await Http.get<CustomerDTO>(`${BASE}/${id}`);
+    },
 
-  async getSummary(): Promise<CustomerNameDTO[]> {
-    return  await Http.get<CustomerNameDTO[]>(`${BASE}/summary`)
-  },
+    async getSummary(): Promise<CustomerNameDTO[]> {
+        return  await Http.get<CustomerNameDTO[]>(`${BASE}/summary`)
+    },
 
-  async getLoans(id: string): Promise<LoansByCustomerDTO[]> {
-    return  await Http.get<LoansByCustomerDTO[]>(`${BASE}/${id}/loans`);
-  },
+    async getLoans(id: string): Promise<LoansByCustomerDTO[]> {
+        return  await Http.get<LoansByCustomerDTO[]>(`${BASE}/${id}/loans`);
+    },
 
-  async create(data: CustomerFormDTO): Promise<string> {
-    const r = await Http.post<string>(BASE, data);
-      console.log(r);
-      return r;
-  },
+    async create(data: CustomerFormDTO): Promise<boolean> {
+        return  await Http.post<boolean>(BASE, data);
+    },
 
-  async update(id: string, data: CustomerFormDTO): Promise<string> {
-    return Http.put<string>(`${BASE}/${id}`, data)
-  },
+    async update(id: string, data: CustomerFormDTO): Promise<boolean> {
+        return Http.put<boolean>(`${BASE}/${id}`, data)
+    },
 
-  async delete(id: string): Promise<void> {
-    return Http.delete(`${BASE}/${id}`)
-  }
+    async delete(id: string): Promise<void> {
+        return Http.delete(`${BASE}/${id}`)
+    }
 }

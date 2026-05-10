@@ -16,13 +16,13 @@ export const LoanService = {
     return LoanMapper.toReport(response)
   },
 
-  async create(data: LoanForm): Promise<string> {
+  async create(data: LoanForm): Promise<boolean> {
 
     const mapped: LoanFormDTO = LoanMapper.toFormDTO(data)
     return await LoanApi.create(mapped)
   },
 
-  async update(id: string, data: LoanForm): Promise<string> {
+  async update(id: string, data: LoanForm): Promise<boolean> {
     const mapped = LoanMapper.toFormDTO(data)
     return LoanApi.update(id, mapped)
   },

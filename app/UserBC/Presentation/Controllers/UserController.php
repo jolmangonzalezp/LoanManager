@@ -78,7 +78,7 @@ final class UserController
 
         $response = $this->createUserUseCase->execute($command);
 
-        return response()->json($response->toArray(), 201);
+        return response()->json($response, 201);
     }
 
     public function update(Request $request, string $id): JsonResponse
@@ -114,7 +114,7 @@ final class UserController
 
         $response = $this->updateUserUseCase->execute($command);
 
-        return response()->json($response->toArray());
+        return response()->json($response);
     }
 
     public function destroy(string $id): JsonResponse
