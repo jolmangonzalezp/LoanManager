@@ -21,6 +21,18 @@ const goToLoan = async () => {
   )
 }
 
+const paymentMethodLabels: Record<string, string> = {
+  cash: 'Efectivo',
+  bank_transfer: 'Transferencia bancaria',
+  card: 'Tarjeta',
+  check: 'Cheque',
+  other: 'Otro',
+};
+
+const paymentMethodLabel = (method: string): string => {
+  return paymentMethodLabels[method] ?? method;
+}
+
 const updatePayment = () => {
     if (!payment.value) return
   fillForm();
@@ -64,6 +76,10 @@ const updatePayment = () => {
         <GCard class="grid-card">
           <CardTitle class="grid-title">Interés Pagado</CardTitle>
           <div class="grid-value">{{ formatCurrency(payment?.interestPaid) }}</div>
+        </GCard>
+        <GCard class="grid-card">
+          <CardTitle class="grid-title">Método de pago</CardTitle>
+          <div class="grid-value payment-method">{{ paymentMethodLabel(payment?.paymentMethod ?? '') }}</div>
         </GCard>
       </div>
 
@@ -114,6 +130,10 @@ const updatePayment = () => {
 .grid-value{
   color: #d4af37;
   font-size: 1.5rem;
+}
+
+.payment-method {
+  font-size: 1rem;
 }
 
 .btns{

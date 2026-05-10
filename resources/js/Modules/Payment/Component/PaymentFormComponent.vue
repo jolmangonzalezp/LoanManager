@@ -1,7 +1,7 @@
  <script setup lang="ts">
  import {onMounted} from "vue";
  import { usePayment } from '@/Modules/Payment';
- import {Btn, formatCurrency, Input, useModal} from "@/Shared";
+ import {Btn, formatCurrency, Input, Select, useModal} from "@/Shared";
 
 interface Props {
   id: string;
@@ -16,6 +16,15 @@ const props = defineProps<Props>();
 
 const { paymentForm, initForm, create, update} = usePayment();
 const { close } = useModal();
+
+const paymentMethodOptions = [
+  { label: 'Efectivo', value: 'cash' },
+  { label: 'Transferencia bancaria', value: 'bank_transfer' },
+  { label: 'Tarjeta', value: 'card' },
+  { label: 'Cheque', value: 'check' },
+  { label: 'Otro', value: 'other' },
+];
+
 const save = async () => {
   if (!paymentForm.value) return
   if (props.isEditing) {
@@ -64,6 +73,13 @@ onMounted( () => {
           label="Fecha de inicio:"
           placeholder=""
           v-model="paymentForm.paymentDate"
+          class="payment-form__input"
+      />
+      <Select
+          label="Método de pago:"
+          :options="paymentMethodOptions"
+          placeholder="Seleccione método"
+          v-model="paymentForm.paymentMethod"
           class="payment-form__input"
       />
       <div class="actions">

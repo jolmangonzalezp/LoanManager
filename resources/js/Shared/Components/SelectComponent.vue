@@ -8,7 +8,7 @@ interface props {
   options: Option[];
   placeholder: string;
   modelValue: string | number;
-  disabled: boolean;
+  disabled?: boolean;
 }
 const props = defineProps<props>();
 const emit = defineEmits(['update:modelValue']);

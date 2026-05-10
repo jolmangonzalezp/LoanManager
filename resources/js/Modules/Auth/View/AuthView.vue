@@ -31,10 +31,6 @@ const { form, login } = useAuth()
                 <Btn @click="login" style="width: 100%; justify-content: center">
                     Iniciar Sesion
                 </Btn>
-
-                <div class="hint">
-                    Demo: admin / admin123
-                </div>
             </GCard>
         </div>
     </div>
@@ -91,21 +87,4 @@ const { form, login } = useAuth()
     letter-spacing: 1.5px;
 }
 
-.error {
-    background: rgba(239,68,68,0.1);
-    border: 1px solid rgba(239,68,68,0.3);
-    color: #ef4444;
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 16px;
-    font-size: 13px;
-    text-align: center;
-}
-
-.hint {
-    text-align: center;
-    margin-top: 16px;
-    font-size: 11px;
-    color: #3d4f5a;
-}
 </style>
