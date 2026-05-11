@@ -55,7 +55,7 @@ const handleInput = (e: Event) => {
 .input_label {
   width: 100%;
   height: 30px;
-  color: var(--color-bg-emerald);
+  color: #e8c84a;
   font-weight: 600;
   font-size: 1.25rem;
 }

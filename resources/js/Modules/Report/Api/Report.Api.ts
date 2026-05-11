@@ -14,11 +14,13 @@ export const ReportApi = {
   },
 
     async getProfitability(): Promise<ReportProfitableDTO> {
-        return Http.get<ReportProfitableDTO>(`${BASE}/profitability`)
+        return await Http.get<ReportProfitableDTO>(`${BASE}/profitability`);
     },
 
     async getDelinquency(): Promise<ReportDeliquencyDTO> {
-        return Http.get<ReportDeliquencyDTO>(`${BASE}/delinquency`)
+        const response = await Http.get<ReportDeliquencyDTO>(`${BASE}/delinquency`)
+        console.log(response);
+        return response;
     },
 
     async getKpis(): Promise<any> {

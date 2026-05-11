@@ -39,7 +39,7 @@ onMounted(() => {
       </section>
       <section class="report-section">
           <h3 class="section-title">Detalle por Préstamo</h3>
-          <DataTable :columns="columns" :rows="loan"></DataTable>
+          <DataTable :columns="columnsProfitable" :rows="loanProfitable"></DataTable>
       </section>
   </div>
 </template>

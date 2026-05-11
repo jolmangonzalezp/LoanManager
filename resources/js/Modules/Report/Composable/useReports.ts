@@ -89,7 +89,9 @@ export function useReports() {
         try {
             const r = await ReportService.getDelinquency();
             loanDelinquency.value = r.detalleMora;
+            console.log(loanDelinquency.value);
             deliquencyReport.value = r;
+            console.log(deliquencyReport.value);
         }catch (e: any){
             notify.error("Error", e)
         }finally {

@@ -12,7 +12,11 @@ final class DelinquencyReportDTO
         public readonly int $diasPromedioAtraso,
         public readonly float $porcentajeCarteraVencida,
         public readonly int $prestamosEnMora,
-        public readonly array $detalleMora
+        public readonly array $detalleMora,
+        public readonly int $prestamosEnDefault = 0,
+        public readonly int $montoEnDefault = 0,
+        public readonly int $clientesEnDefault = 0,
+        public readonly array $detalleDefault = []
     ) {}
 
     public function toArray(): array
@@ -24,6 +28,10 @@ final class DelinquencyReportDTO
             'porcentaje_cartera_vencida' => round($this->porcentajeCarteraVencida, 2),
             'prestamos_en_mora' => $this->prestamosEnMora,
             'detalle_mora' => $this->detalleMora,
+            'prestamos_en_default' => $this->prestamosEnDefault,
+            'monto_en_default' => $this->montoEnDefault,
+            'clientes_en_default' => $this->clientesEnDefault,
+            'detalle_default' => $this->detalleDefault,
         ];
     }
 }

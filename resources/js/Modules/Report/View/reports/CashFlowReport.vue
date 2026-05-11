@@ -125,12 +125,6 @@ onMounted(async () => {
   font-size: 13px;
 }
 
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #94a3b8;
-}
-
 .report-section {
   margin-bottom: 32px;
 }
@@ -191,17 +185,25 @@ onMounted(async () => {
 .kpi-value.success { color: #10b981; }
 .kpi-value.danger { color: #ef4444; }
 
-@media screen and (max-width: 674px){
+@media screen and (max-width: 1024px){
   .kpi-grid{
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
   }
 }
 
-@media screen and (max-width: 430px){
+@media screen and (max-width: 500px){
   .kpi-grid{
     grid-template-columns: 1fr;
     grid-template-rows: repeat(2, 1fr);
   }
+}
+
+@media screen and (max-width: 490px){
+    .filters{
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(2, 1fr);
+    }
 }
 </style>

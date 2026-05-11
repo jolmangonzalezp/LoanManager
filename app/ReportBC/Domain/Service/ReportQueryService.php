@@ -88,7 +88,7 @@ final class ReportQueryService
 
     public function getProfitabilityReport(): ProfitabilityReportDTO
     {
-        $loans = LoanModel::all();
+        $loans = LoanModel::where('status', '!=', 'paid')->get();
         $loanNumbers = $loans->pluck('loan_number', 'id')->toArray();
 
         $customerIds = $loans->pluck('customer_id')->unique()->toArray();
@@ -104,8 +104,8 @@ final class ReportQueryService
         foreach ($loans as $loan) {
             $diasActivo = (int) Carbon::parse($loan->start_date)->diffInDays(now());
             $mesesActivo = max(1, $diasActivo / 30);
-            $interesMensualEsperado = (int) ($loan->original_capital * ($loan->interest_rate / 100));
-            $roiMensual = $interesMensualEsperado > 0 ? ($loan->paid_interest / $interesMensualEsperado) : 0;
+            $interesTotalEsperado = (int) ($loan->original_capital * ($loan->interest_rate / 100) * $mesesActivo);
+            $roiMensual = $interesTotalEsperado > 0 ? ($loan->paid_interest / $interesTotalEsperado) : 0;
 
             $roiPorPrestamo[] = (new LoanProfitabilityDTO(
                 loanId: $loan->id,
@@ -131,17 +131,22 @@ final class ReportQueryService
     public function getDelinquencyReport(): DelinquencyReportDTO
     {
         $now = Carbon::now();
-        $loans = LoanModel::where('status', '!=', 'paid')->get();
+        $activeLoans = LoanModel::where('status', 'active')->get();
+        $defaultedLoans = LoanModel::where('status', 'defaulted')->get();
 
-        $loanNumbers = $loans->pluck('loan_number', 'id')->toArray();
-        $customerIds = $loans->pluck('customer_id')->unique()->toArray();
+        $allLoanIds = $activeLoans->pluck('id')->merge($defaultedLoans->pluck('id'))->toArray();
+        $loanNumbers = LoanModel::whereIn('id', $allLoanIds)->pluck('loan_number', 'id')->toArray();
+        $customerIds = collect($allLoanIds)->isEmpty()
+            ? []
+            : LoanModel::whereIn('id', $allLoanIds)->pluck('customer_id')->unique()->toArray();
         $customerNames = $this->customerNameProvider->getNamesMap($customerIds);
 
-        $totalCartera = $loans->sum('remaining_debt');
-        $prestamosEnMora = [];
-        $clientesUnicos = [];
+        $totalCartera = $activeLoans->sum('remaining_debt') + $defaultedLoans->sum('remaining_debt');
 
-        foreach ($loans as $loan) {
+        $prestamosEnMora = [];
+        $clientesEnMora = [];
+
+        foreach ($activeLoans as $loan) {
             $nextPayment = Carbon::parse($loan->next_payment_date);
             if ($nextPayment->lt($now)) {
                 $diasAtraso = (int) $nextPayment->diffInDays($now);
@@ -155,8 +160,24 @@ final class ReportQueryService
                     estado: 'mora'
                 ))->toArray();
 
-                $clientesUnicos[$loan->customer_id] = true;
+                $clientesEnMora[$loan->customer_id] = true;
             }
+        }
+
+        $prestamosEnDefault = [];
+        $clientesEnDefault = [];
+
+        foreach ($defaultedLoans as $loan) {
+            $prestamosEnDefault[] = (new LoanDelinquencyDTO(
+                loanId: $loan->id,
+                loanNumber: $loanNumbers[$loan->id] ?? '-',
+                customerName: $customerNames[$loan->customer_id] ?? '-',
+                saldoPendiente: (int) $loan->remaining_debt,
+                diasAtraso: 0,
+                estado: 'defaulted'
+            ))->toArray();
+
+            $clientesEnDefault[$loan->customer_id] = true;
         }
 
         $montoEnMora = array_sum(array_column($prestamosEnMora, 'saldoPendiente'));
@@ -165,13 +186,19 @@ final class ReportQueryService
             : 0;
         $porcentajeCarteraVencida = $totalCartera > 0 ? ($montoEnMora / $totalCartera) * 100 : 0;
 
+        $montoEnDefault = array_sum(array_column($prestamosEnDefault, 'saldoPendiente'));
+
         return new DelinquencyReportDTO(
-            clientesEnMora: count($clientesUnicos),
+            clientesEnMora: count($clientesEnMora),
             montoEnMora: (int) $montoEnMora,
             diasPromedioAtraso: (int) $diasPromedio,
             porcentajeCarteraVencida: (float) $porcentajeCarteraVencida,
             prestamosEnMora: count($prestamosEnMora),
-            detalleMora: $prestamosEnMora
+            detalleMora: $prestamosEnMora,
+            prestamosEnDefault: count($prestamosEnDefault),
+            montoEnDefault: (int) $montoEnDefault,
+            clientesEnDefault: count($clientesEnDefault),
+            detalleDefault: $prestamosEnDefault
         );
     }
 
