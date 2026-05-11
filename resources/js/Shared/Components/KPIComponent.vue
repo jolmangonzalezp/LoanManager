@@ -89,4 +89,10 @@ const isHovered = ref(false)
 .trend.down {
   color: #f87171;
 }
+
+@media screen and (max-width: 345px){
+    .value {
+        font-size: 26px;
+    }
+}
 </style>
