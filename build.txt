@@ -1,0 +1,12 @@
+./public/build
+./node_modules/cliui/build
+./node_modules/lines-and-columns/build
+./node_modules/y18n/build
+./node_modules/yargs/build
+./node_modules/yargs-parser/build
+./node_modules/tailwindcss/lib/oxide/cli/build
+./node_modules/tailwindcss/lib/cli/build
+./node_modules/tailwindcss/src/cli/build
+./node_modules/tailwindcss/src/oxide/cli/build
+./node_modules/d3-geo/build
+./node_modules/d3-voronoi/build
