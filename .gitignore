@@ -21,7 +21,7 @@
 # -----------------------------
 # ❌ NO ignores esto si haces build local
 # 👉 necesitas subirlo para producción estable
-# /public/build   ← NO ignorar
+/public/build 
 
 # -----------------------------
 # Vite / frontend
