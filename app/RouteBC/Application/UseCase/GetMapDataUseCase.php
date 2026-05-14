@@ -41,8 +41,16 @@ final class GetMapDataUseCase
                     ->pluck('zone_id')
                     ->unique()
                     ->toArray();
-                $zonesQuery->whereIn('id', $zoneIds);
-                $customersQuery->whereIn('route_id', $routeIds);
+                $mappedZoneIds = array_filter($zoneIds)
+                    ? ZoneModel::whereIn('id', $zoneIds)
+                        ->whereNotNull('polygon')
+                        ->pluck('id')
+                        ->toArray()
+                    : [];
+                $zonesQuery->whereIn('id', $mappedZoneIds);
+                $customersQuery->whereIn('route_id', $routeIds)
+                    ->whereNotNull('zone_id')
+                    ->whereIn('zone_id', $mappedZoneIds);
             } else {
                 $zonesQuery->whereRaw('1 = 0');
                 $customersQuery->whereRaw('1 = 0');

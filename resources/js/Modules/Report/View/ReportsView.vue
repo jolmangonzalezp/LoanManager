@@ -1,14 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { SummaryReport } from '@/Modules/Report';
-
-const activeComponent = ref(SummaryReport);
-
 </script>
 
 <template>
   <div class="reports-container">
-    <component :is="activeComponent" />
+    <RouterView />
   </div>
 </template>
 

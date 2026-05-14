@@ -13,6 +13,6 @@ export const AuthApi = {
   },
 
   async me(): Promise<UserDTO> {
-    return Http.get<UserDTO>(`${BASE}/me`)
+    return await Http.get<UserDTO>(`${BASE}/me`);
   }
 }

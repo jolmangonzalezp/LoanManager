@@ -45,19 +45,19 @@ Route::middleware(['handle.exceptions'])->group(function () {
     Route::get('/permissions', [PermissionController::class, 'index']);
     Route::post('/permissions', [PermissionController::class, 'store']);
 
-    Route::get('/customers', [CustomerController::class, 'index']);
+    Route::get('/customers', [CustomerController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/customers/summary', [CustomerController::class, 'summary']);
     Route::get('/customers/report', [CustomerController::class, 'report']);
     Route::get('/customers/unassigned', [CustomerController::class, 'unassigned']);
-    Route::get('/customers/{id}', [CustomerController::class, 'show']);
-    Route::get('/customers/{id}/loans', [CustomerController::class, 'loans']);
+    Route::get('/customers/{id}', [CustomerController::class, 'show'])->middleware('auth:sanctum');
+    Route::get('/customers/{id}/loans', [CustomerController::class, 'loans'])->middleware('auth:sanctum');
     Route::post('/customers', [CustomerController::class, 'store']);
     Route::put('/customers/{id}', [CustomerController::class, 'update']);
 
     Route::post('/loans', [LoanController::class, 'store']);
-    Route::get('/loans', [LoanController::class, 'index']);
-    Route::get('/loans/report', [LoanController::class, 'report']);
-    Route::get('/loans/{id}', [LoanController::class, 'show']);
+    Route::get('/loans', [LoanController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/loans/report', [LoanController::class, 'report'])->middleware('auth:sanctum');
+    Route::get('/loans/{id}', [LoanController::class, 'show'])->middleware('auth:sanctum');
     Route::put('/loans/{id}', [LoanController::class, 'update']);
     Route::post('/loans/{id}/payment', [LoanController::class, 'makePayment']);
 

@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\LoanBC\Application\UseCase;
 
 use App\LoanBC\Application\DTO\LoanReportResponse;
+use App\CustomerBC\Infrastructure\Persistence\Model\CustomerModel;
 use App\LoanBC\Domain\Repository\LoanFinderAll;
 use App\LoanBC\Domain\ValueObject\LoanStatus;
+use App\RouteBC\Infrastructure\Persistence\Model\RouteModel;
+use App\RouteBC\Infrastructure\Persistence\Model\ZoneModel;
 
 final class GetLoanReportUseCase
 {
@@ -14,9 +17,11 @@ final class GetLoanReportUseCase
         private readonly LoanFinderAll $finder
     ) {}
 
-    public function execute(): LoanReportResponse
+    public function execute(?string $userId = null, ?string $role = null): LoanReportResponse
     {
-        $loans = $this->finder->findAll();
+        $loans = $userId && $role !== 'admin'
+            ? $this->getFilteredLoans($userId)
+            : $this->finder->findAll();
 
         $totalLoans = count($loans);
         $activeLoans = 0;
@@ -54,5 +59,51 @@ final class GetLoanReportUseCase
             totalPaidCapital: $totalPaidCapital,
             totalPaidInterest: $totalPaidInterest
         );
+    }
+
+    private function getFilteredLoans(string $userId): array
+    {
+        $routeIds = RouteModel::whereHas('users', fn ($q) => $q->where('user_id', $userId))
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($routeIds)) {
+            return [];
+        }
+
+        $zoneIds = RouteModel::whereIn('id', $routeIds)
+            ->pluck('zone_id')
+            ->unique()
+            ->filter()
+            ->toArray();
+
+        if (empty($zoneIds)) {
+            return [];
+        }
+
+        $mappedZoneIds = ZoneModel::whereIn('id', $zoneIds)
+            ->whereNotNull('polygon')
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($mappedZoneIds)) {
+            return [];
+        }
+
+        $customerIds = CustomerModel::whereIn('route_id', $routeIds)
+            ->whereIn('zone_id', $mappedZoneIds)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($customerIds)) {
+            return [];
+        }
+
+        $allLoans = $this->finder->findAll();
+
+        return array_values(array_filter(
+            $allLoans,
+            fn ($l) => in_array($l->getCustomerId()->getValue(), $customerIds)
+        ));
     }
 }

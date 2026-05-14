@@ -13,7 +13,7 @@ export const LoanApi = {
     },
 
     async getReport(): Promise<LoanReportDTO> {
-        return Http.get<LoanReportDTO>(`${BASE}/report`)
+        return  await Http.get<LoanReportDTO>(`${BASE}/report`);
     },
 
     async create(data: LoanFormDTO): Promise<boolean> {

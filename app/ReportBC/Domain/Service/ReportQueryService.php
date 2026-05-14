@@ -8,6 +8,7 @@ use App\LoanBC\Domain\Repository\CustomerNameProvider;
 use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
 use App\CustomerBC\Infrastructure\Persistence\Model\CustomerModel;
 use App\PaymentBC\Infrastructure\Persistence\Model\PaymentModel;
+use App\RouteBC\Infrastructure\Persistence\Model\RouteModel;
 use App\ReportBC\Application\DTO\ActiveLoansReportDTO;
 use App\ReportBC\Application\DTO\AuditEntryDTO;
 use App\ReportBC\Application\DTO\AuditReportDTO;
@@ -32,9 +33,62 @@ final class ReportQueryService
         private readonly CustomerNameProvider $customerNameProvider
     ) {}
 
-    public function getPortfolioReport(): PortfolioReportDTO
+    private ?array $cachedRouteIds = null;
+    private ?string $cachedUserId = null;
+
+    private function getRouteIdsForUser(string $userId): array
     {
-        $loans = LoanModel::all();
+        if ($this->cachedUserId === $userId && $this->cachedRouteIds !== null) {
+            return $this->cachedRouteIds;
+        }
+        $this->cachedUserId = $userId;
+        $this->cachedRouteIds = RouteModel::whereHas('users', fn ($q) => $q->where('user_id', $userId))
+            ->pluck('id')
+            ->toArray();
+        return $this->cachedRouteIds;
+    }
+
+    private function applyLoanRouteFilter($query, ?string $userId, ?string $role): void
+    {
+        if ($userId && $role !== 'admin') {
+            $routeIds = $this->getRouteIdsForUser($userId);
+            if (empty($routeIds)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereHas('customer', fn ($q) => $q->whereIn('route_id', $routeIds));
+            }
+        }
+    }
+
+    private function applyPaymentRouteFilter($query, ?string $userId, ?string $role): void
+    {
+        if ($userId && $role !== 'admin') {
+            $routeIds = $this->getRouteIdsForUser($userId);
+            if (empty($routeIds)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereHas('loan.customer', fn ($q) => $q->whereIn('route_id', $routeIds));
+            }
+        }
+    }
+
+    private function applyCustomerRouteFilter($query, ?string $userId, ?string $role): void
+    {
+        if ($userId && $role !== 'admin') {
+            $routeIds = $this->getRouteIdsForUser($userId);
+            if (empty($routeIds)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereIn('route_id', $routeIds);
+            }
+        }
+    }
+
+    public function getPortfolioReport(?string $userId = null, ?string $role = null): PortfolioReportDTO
+    {
+        $loansQuery = LoanModel::query();
+        $this->applyLoanRouteFilter($loansQuery, $userId, $role);
+        $loans = $loansQuery->get();
 
         $totalPrestado = $loans->sum('original_capital');
         $capitalPendiente = $loans->where('status', '!=', 'paid')->sum('remaining_debt');
@@ -58,16 +112,19 @@ final class ReportQueryService
         );
     }
 
-    public function getCashFlowReport(string $fechaInicio, string $fechaFin): CashFlowReportDTO
+    public function getCashFlowReport(string $fechaInicio, string $fechaFin, ?string $userId = null, ?string $role = null): CashFlowReportDTO
     {
         $startDate = Carbon::parse($fechaInicio)->startOfDay();
         $endDate = Carbon::parse($fechaFin)->endOfDay();
 
-        $payments = PaymentModel::whereBetween('payment_date', [$startDate, $endDate])
-            ->where('status', 'applied')
-            ->get();
+        $paymentsQuery = PaymentModel::whereBetween('payment_date', [$startDate, $endDate])
+            ->where('status', 'applied');
+        $this->applyPaymentRouteFilter($paymentsQuery, $userId, $role);
+        $payments = $paymentsQuery->get();
 
-        $loans = LoanModel::whereBetween('start_date', [$startDate, $endDate])->get();
+        $loansQuery = LoanModel::whereBetween('start_date', [$startDate, $endDate]);
+        $this->applyLoanRouteFilter($loansQuery, $userId, $role);
+        $loans = $loansQuery->get();
 
         $ingresosPorPagos = $payments->sum('amount');
         $totalPagos = $payments->count();
@@ -86,9 +143,11 @@ final class ReportQueryService
         );
     }
 
-    public function getProfitabilityReport(): ProfitabilityReportDTO
+    public function getProfitabilityReport(?string $userId = null, ?string $role = null): ProfitabilityReportDTO
     {
-        $loans = LoanModel::where('status', '!=', 'paid')->get();
+        $loansQuery = LoanModel::where('status', '!=', 'paid');
+        $this->applyLoanRouteFilter($loansQuery, $userId, $role);
+        $loans = $loansQuery->get();
         $loanNumbers = $loans->pluck('loan_number', 'id')->toArray();
 
         $customerIds = $loans->pluck('customer_id')->unique()->toArray();
@@ -128,11 +187,15 @@ final class ReportQueryService
         );
     }
 
-    public function getDelinquencyReport(): DelinquencyReportDTO
+    public function getDelinquencyReport(?string $userId = null, ?string $role = null): DelinquencyReportDTO
     {
         $now = Carbon::now();
-        $activeLoans = LoanModel::where('status', 'active')->get();
-        $defaultedLoans = LoanModel::where('status', 'defaulted')->get();
+        $activeLoansQuery = LoanModel::where('status', 'active');
+        $this->applyLoanRouteFilter($activeLoansQuery, $userId, $role);
+        $activeLoans = $activeLoansQuery->get();
+        $defaultedLoansQuery = LoanModel::where('status', 'defaulted');
+        $this->applyLoanRouteFilter($defaultedLoansQuery, $userId, $role);
+        $defaultedLoans = $defaultedLoansQuery->get();
 
         $allLoanIds = $activeLoans->pluck('id')->merge($defaultedLoans->pluck('id'))->toArray();
         $loanNumbers = LoanModel::whereIn('id', $allLoanIds)->pluck('loan_number', 'id')->toArray();
@@ -202,27 +265,31 @@ final class ReportQueryService
         );
     }
 
-    public function getMonthlyCollectionReport(?int $mes = null, ?int $anio = null): MonthlyCollectionReportDTO
+    public function getMonthlyCollectionReport(?int $mes = null, ?int $anio = null, ?string $userId = null, ?string $role = null): MonthlyCollectionReportDTO
     {
         $month = $mes ?? (int) now()->format('n');
         $year = $anio ?? (int) now()->format('Y');
 
-        $loans = LoanModel::where('status', '!=', 'paid')->get();
-        $payments = PaymentModel::whereMonth('payment_date', $month)
+        $loansQuery = LoanModel::where('status', '!=', 'paid');
+        $this->applyLoanRouteFilter($loansQuery, $userId, $role);
+        $loans = $loansQuery->get();
+
+        $paymentsQuery = PaymentModel::whereMonth('payment_date', $month)
             ->whereYear('payment_date', $year)
-            ->where('status', 'applied')
-            ->get();
+            ->where('status', 'applied');
+        $this->applyPaymentRouteFilter($paymentsQuery, $userId, $role);
+        $payments = $paymentsQuery->get();
 
         $montoEsperado = $loans->sum(fn ($l) => (int) ($l->original_capital * ($l->interest_rate / 100)));
         $montoCobrado = $payments->sum('amount');
 
         $porcentajeCumplimiento = $montoEsperado > 0 ? ($montoCobrado / $montoEsperado) * 100 : 0;
 
-        $numeroCuotasVencidas = PaymentModel::whereMonth('payment_date', $month)
+        $numeroCuotasVencidasQuery = PaymentModel::whereMonth('payment_date', $month)
             ->whereYear('payment_date', $year)
-            ->where('status', 'applied')
-            ->distinct('loan_id')
-            ->count('loan_id');
+            ->where('status', 'applied');
+        $this->applyPaymentRouteFilter($numeroCuotasVencidasQuery, $userId, $role);
+        $numeroCuotasVencidas = $numeroCuotasVencidasQuery->distinct('loan_id')->count('loan_id');
 
         return new MonthlyCollectionReportDTO(
             montoEsperado: (int) $montoEsperado,
@@ -235,10 +302,15 @@ final class ReportQueryService
         );
     }
 
-    public function getKpiReport(): KpiReportDTO
+    public function getKpiReport(?string $userId = null, ?string $role = null): KpiReportDTO
     {
-        $loans = LoanModel::all();
-        $payments = PaymentModel::where('status', 'applied')->get();
+        $loansQuery = LoanModel::query();
+        $this->applyLoanRouteFilter($loansQuery, $userId, $role);
+        $loans = $loansQuery->get();
+
+        $paymentsQuery = PaymentModel::where('status', 'applied');
+        $this->applyPaymentRouteFilter($paymentsQuery, $userId, $role);
+        $payments = $paymentsQuery->get();
 
         $totalPrestamos = $loans->count();
         $totalClientes = $loans->pluck('customer_id')->unique()->count();
@@ -276,10 +348,15 @@ final class ReportQueryService
         );
     }
 
-    public function getCustomerKpiReport(): CustomerKpiReportDTO
+    public function getCustomerKpiReport(?string $userId = null, ?string $role = null): CustomerKpiReportDTO
     {
-        $customers = CustomerModel::all();
-        $loans = LoanModel::all();
+        $customersQuery = CustomerModel::query();
+        $this->applyCustomerRouteFilter($customersQuery, $userId, $role);
+        $customers = $customersQuery->get();
+
+        $loansQuery = LoanModel::query();
+        $this->applyLoanRouteFilter($loansQuery, $userId, $role);
+        $loans = $loansQuery->get();
 
         $totalCustomers = $customers->count();
         $customerIdsWithLoans = $loans->pluck('customer_id')->unique()->toArray();
@@ -303,7 +380,7 @@ final class ReportQueryService
         );
     }
 
-    public function getAuditReport(?string $entidad = null, ?string $fechaInicio = null, ?string $fechaFin = null, int $limit = 100): AuditReportDTO
+    public function getAuditReport(?string $entidad = null, ?string $fechaInicio = null, ?string $fechaFin = null, int $limit = 100, ?string $userId = null, ?string $role = null): AuditReportDTO
     {
         try {
             if (! DB::getSchemaBuilder()->hasTable('audits')) {
@@ -331,6 +408,10 @@ final class ReportQueryService
 
         if ($fechaFin) {
             $query->where('created_at', '<=', $fechaFin);
+        }
+
+        if ($userId && $role !== 'admin') {
+            $query->where('user_id', $userId);
         }
 
         $audits = $query->orderBy('created_at', 'desc')->limit($limit)->get();
@@ -369,9 +450,11 @@ final class ReportQueryService
         );
     }
 
-    public function getActiveLoansReport(): ActiveLoansReportDTO
+    public function getActiveLoansReport(?string $userId = null, ?string $role = null): ActiveLoansReportDTO
     {
-        $loans = LoanModel::where('status', '!=', 'paid')->get();
+        $loansQuery = LoanModel::where('status', '!=', 'paid');
+        $this->applyLoanRouteFilter($loansQuery, $userId, $role);
+        $loans = $loansQuery->get();
 
         $loanNumbers = $loans->pluck('loan_number', 'id')->toArray();
         $customerIds = $loans->pluck('customer_id')->unique()->toArray();
@@ -407,9 +490,10 @@ final class ReportQueryService
         );
     }
 
-    public function getPaymentHistoryReport(?string $loanId = null, ?string $customerId = null): PaymentHistoryReportDTO
+    public function getPaymentHistoryReport(?string $loanId = null, ?string $customerId = null, ?string $userId = null, ?string $role = null): PaymentHistoryReportDTO
     {
         $query = PaymentModel::query();
+        $this->applyPaymentRouteFilter($query, $userId, $role);
 
         if ($loanId) {
             $query->where('loan_id', $loanId);

@@ -6,17 +6,24 @@ namespace App\CustomerBC\Application\UseCase;
 
 use App\CustomerBC\Application\DTO\CustomerResponse;
 use App\CustomerBC\Domain\Repository\CustomerFinderAll;
+use App\CustomerBC\Infrastructure\Mapper\CustomerMapper;
 use App\CustomerBC\Infrastructure\Persistence\Model\CustomerModel;
+use App\RouteBC\Infrastructure\Persistence\Model\RouteModel;
+use App\RouteBC\Infrastructure\Persistence\Model\ZoneModel;
 
 final class GetAllCustomersUseCase
 {
     public function __construct(
         private readonly CustomerFinderAll $finder,
+        private readonly CustomerMapper $mapper,
     ) {}
 
-    public function execute(): array
+    public function execute(?string $userId = null, ?string $role = null): array
     {
-        $customers = $this->finder->findAll();
+        $customers = match (true) {
+            $userId && $role !== 'admin' => $this->getFilteredCustomers($userId),
+            default => $this->finder->findAll(),
+        };
 
         $ids = array_map(fn ($c) => $c->getId()->getValue(), $customers);
         $latLngMap = [];
@@ -35,5 +42,41 @@ final class GetAllCustomersUseCase
             )->toArray(),
             $customers
         );
+    }
+
+    private function getFilteredCustomers(string $userId): array
+    {
+        $routeIds = RouteModel::whereHas('users', fn ($q) => $q->where('user_id', $userId))
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($routeIds)) {
+            return [];
+        }
+
+        $zoneIds = RouteModel::whereIn('id', $routeIds)
+            ->pluck('zone_id')
+            ->unique()
+            ->filter()
+            ->toArray();
+
+        if (empty($zoneIds)) {
+            return [];
+        }
+
+        $mappedZoneIds = ZoneModel::whereIn('id', $zoneIds)
+            ->whereNotNull('polygon')
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($mappedZoneIds)) {
+            return [];
+        }
+
+        return CustomerModel::whereIn('route_id', $routeIds)
+            ->whereIn('zone_id', $mappedZoneIds)
+            ->get()
+            ->map(fn ($model) => $this->mapper->toDomain($model))
+            ->all();
     }
 }

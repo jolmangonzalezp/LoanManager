@@ -7,7 +7,7 @@ const ZONES_BASE = '/zones';
 export const RouteApi = {
 
   async getAll(): Promise<RouteDTO[]> {
-    return Http.get<RouteDTO[]>(BASE);
+    return  await Http.get<RouteDTO[]>(BASE);
   },
 
   async getById(id: string): Promise<RouteDTO> {

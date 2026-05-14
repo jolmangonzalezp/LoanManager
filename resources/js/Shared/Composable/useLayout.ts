@@ -1,4 +1,5 @@
 import {computed, ref, watch} from "vue";
+import { useAuth } from '@/Modules/Auth';
 import {
     faChartBar, faChartLine,
     faChartPie, faExclamationTriangle, faFileAlt, faFileInvoiceDollar,
@@ -27,16 +28,25 @@ export  const useLayout = () => {
         { id: 6, label:'Reportes', icon:faChartPie, to:'/reportes' },
     ];
 
-    const subroutes = [
-        { id:51, label: 'Resumen', icon: faChartBar, to: '/reportes' },
-        { id:52, label: 'Cartera', icon: faChartPie, to: '/reportes/cartera' },
-        { id:53, label: 'Rentabilidad', icon: faChartLine, to: '/reportes/rentabilidad' },
-        { id:54, label: 'Mora', icon: faExclamationTriangle, to: '/reportes/mora' },
-        // { id:55, label: 'Préstamos Activos', icon: faFileAlt, to: '/reportes/prestamos-activos' },
-        { id:56, label: 'Flujo de Caja', icon: faFileInvoiceDollar, to: '/reportes/flujo-caja' },
-        // { id:57, label: 'Historial de Pagos', icon: faHistory, to: '/reportes/historial-pagos' },
-        // { id:58, label: 'Auditoría', icon: faClipboardList, to: '/reportes/auditoria' },
-    ]
+    const { hasRole } = useAuth()
+    const showAllReports = computed(() => hasRole('admin'))
+
+    const subroutes = computed(() => {
+        const items = [
+            { id:51, label: 'Resumen', icon: faChartBar, to: '/reportes' },
+            { id:52, label: 'Cartera', icon: faChartPie, to: '/reportes/cartera' },
+            { id:54, label: 'Mora', icon: faExclamationTriangle, to: '/reportes/mora' },
+        ]
+        if (showAllReports.value) {
+            items.push(
+                { id:53, label: 'Rentabilidad', icon: faChartLine, to: '/reportes/rentabilidad' },
+                { id:56, label: 'Flujo de Caja', icon: faFileInvoiceDollar, to: '/reportes/flujo-caja' },
+                { id:55, label: 'Préstamos Activos', icon: faFileAlt, to: '/reportes/prestamos-activos' },
+                { id:57, label: 'Historial de Pagos', icon: faHistory, to: '/reportes/historial-pagos' },
+            )
+        }
+        return items
+    })
 
     const toggleIconMenu = () => {
         isMenuOpened.value = !isMenuOpened.value;

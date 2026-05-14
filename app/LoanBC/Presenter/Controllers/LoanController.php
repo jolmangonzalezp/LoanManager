@@ -44,16 +44,24 @@ final readonly class LoanController
         return response()->json($response);
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $responses = $this->getAllLoansUseCase->execute();
+        $user = $request->user();
+        $responses = $this->getAllLoansUseCase->execute(
+            userId: $user?->getAuthIdentifier(),
+            role: $user?->roles?->pluck('slug')?->contains('admin') ? 'admin' : 'agent',
+        );
 
         return response()->json($responses);
     }
 
-    public function report(): JsonResponse
+    public function report(Request $request): JsonResponse
     {
-        $response = $this->getLoanReportUseCase->execute();
+        $user = $request->user();
+        $response = $this->getLoanReportUseCase->execute(
+            userId: $user?->getAuthIdentifier(),
+            role: $user?->roles?->pluck('slug')?->contains('admin') ? 'admin' : 'agent',
+        );
 
         return response()->json($response->toArray());
     }

@@ -4,7 +4,7 @@
 use App\ReportBC\Presenter\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('handle.exceptions')->group(function () {
+Route::middleware(['auth:sanctum', 'handle.exceptions'])->group(function () {
     Route::get('/reports/summary', [ReportController::class, 'summary']);
     Route::get('/reports/portfolio', [ReportController::class, 'portfolio']);
     Route::get('/reports/cash-flow', [ReportController::class, 'cashFlow']);

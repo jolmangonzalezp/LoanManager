@@ -104,10 +104,10 @@ final readonly class RouteController
     public function mapData(Request $request): JsonResponse
     {
         $user = $request->user();
-        $role = $user?->roles()->first()?->name ?? '';
+        $role = $user?->roles?->pluck('slug')?->contains('admin') ? 'admin' : 'agent';
 
         $success = $this->getMapDataUseCase->execute(
-            userId: $user?->id,
+            userId: $user?->getAuthIdentifier(),
             role: $role
         );
 

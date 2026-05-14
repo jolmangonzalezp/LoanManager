@@ -23,3 +23,4 @@ export { useMask } from './Composable/useMask';
 export { useModal } from './Composable/useModal';
 export { formatCurrency, formatDate, getStatusColor, getStatusLabel } from './Composable/useUtils.ts';
 export { useNotifier } from './Composable/Notify.ts'
+export { useDataLoader } from './Composable/useDataLoader'

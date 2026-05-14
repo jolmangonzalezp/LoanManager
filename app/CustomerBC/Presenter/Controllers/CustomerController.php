@@ -55,9 +55,13 @@ final class CustomerController
         return response()->json($loans);
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $responses = $this->getAllUseCase->execute();
+        $user = $request->user();
+        $responses = $this->getAllUseCase->execute(
+            userId: $user?->getAuthIdentifier(),
+            role: $user?->roles?->pluck('slug')?->contains('admin') ? 'admin' : 'agent',
+        );
 
         return response()->json($responses);
     }
