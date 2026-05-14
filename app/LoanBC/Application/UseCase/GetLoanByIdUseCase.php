@@ -10,6 +10,7 @@ use App\LoanBC\Domain\Repository\CustomerNameProvider;
 use App\LoanBC\Domain\Repository\LoanFinderById;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
 use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
+use App\LoanBC\Infrastructure\Persistence\Model\LoanTypeModel;
 
 final readonly class GetLoanByIdUseCase
 {
@@ -26,7 +27,12 @@ final readonly class GetLoanByIdUseCase
             throw new CustomerNotFoundException($id);
         }
 
-        $response = LoanResponse::fromEntity($loan);
+        $loanTypeId = $loan->getLoanTypeId()?->getValue();
+        $loanTypeName = $loanTypeId
+            ? LoanTypeModel::where('id', $loanTypeId)->value('name')
+            : null;
+
+        $response = LoanResponse::fromEntity($loan, $loanTypeName);
 
         $loanNumber = LoanModel::where('id', $id)->value('loan_number');
         if ($loanNumber) {

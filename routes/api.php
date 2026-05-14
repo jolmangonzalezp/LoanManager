@@ -2,7 +2,10 @@
 
 use App\CustomerBC\Presenter\Controllers\CustomerController;
 use App\LoanBC\Presenter\Controllers\LoanController;
+use App\LoanBC\Presenter\Controllers\LoanTypeController;
 use App\PaymentBC\Presenter\Controllers\PaymentController;
+use App\RouteBC\Presenter\Controllers\RouteController;
+use App\RouteBC\Presenter\Controllers\ZoneController;
 use App\UserBC\Presentation\Controllers\AuthController;
 use App\UserBC\Presentation\Controllers\PermissionController;
 use App\UserBC\Presentation\Controllers\RoleController;
@@ -45,6 +48,7 @@ Route::middleware(['handle.exceptions'])->group(function () {
     Route::get('/customers', [CustomerController::class, 'index']);
     Route::get('/customers/summary', [CustomerController::class, 'summary']);
     Route::get('/customers/report', [CustomerController::class, 'report']);
+    Route::get('/customers/unassigned', [CustomerController::class, 'unassigned']);
     Route::get('/customers/{id}', [CustomerController::class, 'show']);
     Route::get('/customers/{id}/loans', [CustomerController::class, 'loans']);
     Route::post('/customers', [CustomerController::class, 'store']);
@@ -57,11 +61,29 @@ Route::middleware(['handle.exceptions'])->group(function () {
     Route::put('/loans/{id}', [LoanController::class, 'update']);
     Route::post('/loans/{id}/payment', [LoanController::class, 'makePayment']);
 
+    Route::get('/loan-types', [LoanTypeController::class, 'index']);
+    Route::post('/loan-types', [LoanTypeController::class, 'store']);
+
     Route::post('/payments', [PaymentController::class, 'store']);
     Route::get('/payments', [PaymentController::class, 'index']);
     Route::get('/payments/monthly', [PaymentController::class, 'monthly']);
     Route::get('/payments/{id}', [PaymentController::class, 'show']);
     Route::put('/payments/{id}', [PaymentController::class, 'update']);
+
+    Route::get('/zones', [ZoneController::class, 'index']);
+    Route::get('/zones/{id}', [ZoneController::class, 'show']);
+    Route::post('/zones', [ZoneController::class, 'store']);
+    Route::put('/zones/{id}', [ZoneController::class, 'update']);
+    Route::delete('/zones/{id}', [ZoneController::class, 'destroy']);
+
+    Route::get('/routes', [RouteController::class, 'index']);
+    Route::get('/routes/map-data', [RouteController::class, 'mapData']);
+    Route::get('/routes/{id}', [RouteController::class, 'show']);
+    Route::post('/routes', [RouteController::class, 'store']);
+    Route::put('/routes/{id}', [RouteController::class, 'update']);
+    Route::delete('/routes/{id}', [RouteController::class, 'destroy']);
+    Route::post('/routes/{id}/users', [RouteController::class, 'assignUsers']);
+    Route::delete('/routes/{id}/users/{userId}', [RouteController::class, 'removeUser']);
 });
 
 require __DIR__.'/reports.php';

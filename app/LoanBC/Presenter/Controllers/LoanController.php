@@ -34,7 +34,7 @@ final readonly class LoanController
 
         $success = $this->createLoanUseCase->execute($command);
 
-        return response()->json($success, 201);
+        return response()->json($success ? $this->createLoanUseCase->getResponse() : null, 201);
     }
 
     public function show(string $id): JsonResponse

@@ -51,7 +51,12 @@ const makePayment = () => {
         {{ loan?.loanNumber || getStatusLabel(loan?.status || 'active') }}
       </Badge>
     </section>
+      <GCard class="loan-type-card" v-if="loan?.loanType">
+          <CardTitle>Tipo de Préstamo</CardTitle>
+          <div class="loan-type-value">{{ loan?.loanType }}</div>
+      </GCard>
     <section class="main-grid">
+
       <GCard class="grid-card">
         <CardTitle class="grid-title">Monto</CardTitle>
         <div class="grid-value">{{ formatCurrency(loan?.capital) }}</div>
@@ -132,6 +137,17 @@ const makePayment = () => {
 .grid-value{
   color: #d4af37;
   font-size: 1.5rem;
+}
+
+.loan-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loan-type-value {
+  color: #d4af37;
+  font-size: 1.1rem;
 }
 
 .info-row {

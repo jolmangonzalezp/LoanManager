@@ -5,7 +5,14 @@ export const AuthMapper = {
     return {
       id: dto.id,
       username: dto.username,
-      name: dto.name || '',
+      name: dto.name
+        ? {
+            firstName: dto.name.first_name || '',
+            middleName: dto.name.middle_name || null,
+            lastName: dto.name.last_name || '',
+            secondLastName: dto.name.second_last_name || '',
+          }
+        : null,
       email: dto.email || '',
       phone: dto.phone || '',
       createdAt: dto.created_at,

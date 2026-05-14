@@ -23,6 +23,8 @@ export interface Loan {
   progress?: number
   paidCapital: number
   paidInterest: number
+  loanTypeId?: string
+  loanType?: string
 }
 
 export interface LoanForm {
@@ -30,6 +32,8 @@ export interface LoanForm {
   capital: number
   interestRate: number
   dateStart: string
+  loanTypeId?: string
+  loanTypeName?: string
 }
 
 export interface LoanReport {

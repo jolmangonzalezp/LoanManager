@@ -51,13 +51,22 @@ final class UserController
         $data = $request->validate([
             'username' => 'required|string|min:3',
             'password' => 'required|string|min:6',
-            'name' => 'sometimes|nullable|string',
+            'name' => 'sometimes|nullable|array',
+            'name.first_name' => 'required_with:name|string',
+            'name.middle_name' => 'sometimes|nullable|string',
+            'name.last_name' => 'sometimes|nullable|string',
+            'name.second_last_name' => 'sometimes|nullable|string',
             'email' => 'sometimes|nullable|email',
             'phone' => 'sometimes|nullable|string',
         ]);
 
-        $name = array_key_exists('name', $data)
-            ? ($data['name'] ? NameVO::create($data['name'], '', '') : null)
+        $name = array_key_exists('name', $data) && $data['name']
+            ? NameVO::create(
+                $data['name']['first_name'] ?? '',
+                !empty($data['name']['last_name']) ? $data['name']['last_name'] : 'Unknown',
+                !empty($data['name']['second_last_name']) ? $data['name']['second_last_name'] : 'Unknown',
+                $data['name']['middle_name'] ?? null,
+            )
             : null;
 
         $email = array_key_exists('email', $data)
@@ -85,14 +94,23 @@ final class UserController
     {
         $data = $request->validate([
             'username' => 'required|string|min:3',
-            'name' => 'sometimes|nullable|string',
+            'name' => 'sometimes|nullable|array',
+            'name.first_name' => 'required_with:name|string',
+            'name.middle_name' => 'sometimes|nullable|string',
+            'name.last_name' => 'sometimes|nullable|string',
+            'name.second_last_name' => 'sometimes|nullable|string',
             'email' => 'sometimes|nullable|email',
             'phone' => 'sometimes|nullable|string',
             'enabled' => 'sometimes|boolean',
         ]);
 
-        $name = array_key_exists('name', $data)
-            ? ($data['name'] ? NameVO::create($data['name'], '', '') : null)
+        $name = array_key_exists('name', $data) && $data['name']
+            ? NameVO::create(
+                $data['name']['first_name'] ?? '',
+                !empty($data['name']['last_name']) ? $data['name']['last_name'] : 'Unknown',
+                !empty($data['name']['second_last_name']) ? $data['name']['second_last_name'] : 'Unknown',
+                $data['name']['middle_name'] ?? null,
+            )
             : null;
 
         $email = array_key_exists('email', $data)

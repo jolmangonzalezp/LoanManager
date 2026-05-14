@@ -3,8 +3,9 @@ import {computed} from "vue";
 
 import { useAuth } from '@/Modules/Auth';
 import { CustomerForms, useCustomer } from '@/Modules/Customer';
-import { Ava, Btn, GCard, CardTitle, useModal, formatCurrency, useMask } from '@/Shared';
+import { Ava, Btn, GCard, CardTitle, useModal, formatCurrency } from '@/Shared';
 import { LoanDetail, LoanForms, useLoan } from '@/Modules/Loan';
+import MapboxMap from '@/Modules/Geo/Components/MapboxMap.vue';
 
 const { can } = useAuth()
 
@@ -12,7 +13,10 @@ const { can } = useAuth()
 const { customer, loans, fillCustomer } = useCustomer();
 const { getById } = useLoan();
 const {open, close} = useModal();
-const { maskStart, maskEmail, maskEnd } = useMask();
+
+const hasCoordinates = computed(() =>
+  customer.value?.latitude != null && customer.value?.longitude != null
+)
 
 const initials = computed(() => {
   if (!customer.value) return "??"
@@ -73,13 +77,13 @@ const handleRowClick = async (id: string) => {
       <Ava :initials="initials" :size="52" />
       <div class="info">
         <div class="name">
-          {{ maskStart(customer.name.firstName) }}
-          {{ maskStart(customer.name.middleName) }}
-          {{ maskStart(customer.name.lastName) }}
-          {{ maskStart(customer.name.secondLastName) }}
+          {{ customer.name.firstName }}
+          {{ customer.name.middleName }}
+          {{ customer.name.lastName }}
+          {{ customer.name.secondLastName }}
         </div>
         <div class="meta">
-          {{ customer?.dni?.type }}.: {{ maskEnd(customer?.dni?.number )}} · Registro:
+          {{ customer?.dni?.type }}.: {{ customer?.dni?.number }} · Registro:
           {{ customer?.createdAt || '—' }}
         </div>
       </div>
@@ -89,15 +93,26 @@ const handleRowClick = async (id: string) => {
         <CardTitle>Informacion Personal</CardTitle>
         <div class="info-row">
           <label>Telefono</label>
-          <div>{{ maskEnd(customer?.phone) || '—' }}</div>
+          <div>{{ customer?.phone || '—' }}</div>
         </div>
         <div class="info-row">
           <label>Email</label>
-          <div>{{ maskEmail(customer?.email || "") || '—' }}</div>
+          <div>{{ customer?.email || "" || '—' }}</div>
         </div>
         <div class="info-row">
           <label>Dirección</label>
-          <div>{{ maskStart(customer?.address || '—') }}</div>
+          <div>{{ customer?.address || '—' }}</div>
+        </div>
+      </GCard>
+
+      <GCard v-if="hasCoordinates" class="custumer-details__card">
+        <CardTitle>Ubicación</CardTitle>
+        <div class="custumer-details__map">
+          <MapboxMap
+            :center="[customer.longitude!, customer.latitude!]"
+            :zoom="14"
+            :marker="[customer.longitude!, customer.latitude!]"
+          />
         </div>
       </GCard>
 
@@ -150,9 +165,19 @@ const handleRowClick = async (id: string) => {
   margin-top: 1rem;
 }
 
+.custumer-details__map {
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
 .info-row {
   display: flex;
   justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
   padding: 10px 0;
   border-bottom: 1px solid rgba(255,255,255,0.07);
 }
@@ -163,6 +188,11 @@ const handleRowClick = async (id: string) => {
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 700;
+    width: 100px;
+}
+
+.info-row div {
+    max-width: 300px;
 }
 
 .info-row span:first-child {

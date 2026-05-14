@@ -21,10 +21,12 @@ final class CustomerResponse
         public readonly string $address,
         public readonly ?string $email,
         public readonly string $createdAt,
-        public readonly bool $enabled
+        public readonly bool $enabled,
+        public readonly ?float $latitude = null,
+        public readonly ?float $longitude = null,
     ) {}
 
-    public static function fromEntity(Customer $customer): self
+    public static function fromEntity(Customer $customer, ?float $latitude = null, ?float $longitude = null): self
     {
         $person = $customer->getPersonalData();
         $name = $person->getName();
@@ -43,13 +45,15 @@ final class CustomerResponse
             $person->getAddress()->getValue(),
             $person->getEmail()?->getValue(),
             $customer->getCreatedAt()->getFormatted(),
-            $customer->isEnabled()
+            $customer->isEnabled(),
+            $latitude,
+            $longitude,
         );
     }
 
     public function toArray(): array
     {
-        return [
+        $data = [
             "id" => $this->id,
             'name' => [
                 'first_name' => $this->firstName,
@@ -67,6 +71,13 @@ final class CustomerResponse
             'created_at' => $this->createdAt,
             'enabled' => $this->enabled,
         ];
+
+        if ($this->latitude !== null && $this->longitude !== null) {
+            $data['latitude'] = $this->latitude;
+            $data['longitude'] = $this->longitude;
+        }
+
+        return $data;
     }
 
     private function buildFullName(): string

@@ -28,6 +28,8 @@ export const CustomerMapper = {
         phone: dto.phone,
         address: dto.address,
         email: dto.email || "",
+        latitude: dto.latitude ?? undefined,
+        longitude: dto.longitude ?? undefined,
         createdAt: dto.created_at || "",
         enabled: dto.enabled ?? false,
       }
@@ -48,6 +50,8 @@ export const CustomerMapper = {
       phone: dto.phone,
       address: dto.address,
       email: dto.email || "",
+      latitude: dto.latitude ?? undefined,
+      longitude: dto.longitude ?? undefined,
     }
   },
 
@@ -86,6 +90,8 @@ export const CustomerMapper = {
       phone: domain.phone,
       address: domain.address,
       email: domain.email,
+      latitude: domain.latitude ?? undefined,
+      longitude: domain.longitude ?? undefined,
     }
   },
 

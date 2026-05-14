@@ -16,6 +16,8 @@ export interface Customer {
   phone: string
   address: string
   email?: string
+  latitude?: number
+  longitude?: number
   createdAt: string
   enabled: boolean
 }
@@ -34,6 +36,8 @@ export interface CustomerForm {
   phone: string
   address: string
   email?: string
+  latitude?: number
+  longitude?: number
 }
 
 export interface CustomerName {

@@ -57,7 +57,9 @@ export function useCustomer() {
             },
             phone: "",
             address: "",
-            email: ""
+            email: "",
+            latitude: undefined,
+            longitude: undefined,
         }
     }
 
@@ -76,7 +78,9 @@ export function useCustomer() {
             },
             phone: customer.value.phone,
             address: customer.value.address,
-            email: customer.value.email
+            email: customer.value.email,
+            latitude: customer.value.latitude ?? undefined,
+            longitude: customer.value.longitude ?? undefined,
         }
     }
 
@@ -87,20 +91,7 @@ export function useCustomer() {
     const getAll = async (): Promise<void> => {
         notify.loading("Cargando", "");
         try {
-            const response =  await CustomerService.getAll();
-            response.map(r => {
-                r.name.firstName = mask.maskStart(r.name.firstName)
-                r.name.middleName = mask.maskStart(r.name.middleName)
-                r.name.lastName = mask.maskStart(r.name.lastName)
-                r.name.secondLastName = mask.maskStart(r.name.secondLastName)
-                r.partialName = mask.maskStart(r.partialName)
-                r.email = mask.maskEmail(r.email || "")
-                r.dni.number = mask.maskEnd(r.dni.number)
-                r.fullDni = mask.maskEnd(r.fullDni)
-                r.phone = mask.maskEnd(r.phone)
-                r.address = mask.maskEnd(r.address)
-            });
-            customers.value = response;
+            customers.value =  await CustomerService.getAll();
             notify.closeLoading();
         } catch (e: any) {
             notify.closeLoading();

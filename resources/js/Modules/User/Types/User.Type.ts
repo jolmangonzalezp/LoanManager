@@ -1,7 +1,14 @@
+export interface UserName {
+  firstName: string
+  middleName: string | null
+  lastName: string
+  secondLastName: string
+}
+
 export interface User {
   id: string
   username: string
-  name: string
+  name: UserName | null
   email: string
   phone: string
   createdAt: string
@@ -11,7 +18,12 @@ export interface User {
 export interface UserForm {
   username: string
   password?: string
-  name: string
+  name: {
+    firstName: string
+    middleName: string
+    lastName: string
+    secondLastName: string
+  }
   email: string
   phone: string
 }

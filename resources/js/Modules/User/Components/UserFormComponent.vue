@@ -24,6 +24,17 @@ const save = async () => {
   }
 }
 
+const fullName = (): string => {
+  if (!userForm.value) return ''
+  const parts = [
+    userForm.value.name.firstName,
+    userForm.value.name.middleName,
+    userForm.value.name.lastName,
+    userForm.value.name.secondLastName,
+  ].filter(Boolean)
+  return parts.join(' ') || ''
+}
+
 onMounted(() => {
   if (props.isEditing) {
     fillUser()
@@ -54,9 +65,30 @@ onMounted(() => {
       />
       <Input
         type="text"
-        label="Nombre completo:"
-        placeholder="Ingrese el nombre completo"
-        v-model="userForm.name"
+        label="Nombre:"
+        placeholder="Ingrese el primer nombre"
+        v-model="userForm.name.firstName"
+        class="user-form__input"
+      />
+      <Input
+        type="text"
+        label="Segundo nombre (Opcional):"
+        placeholder="Ingrese el segundo nombre"
+        v-model="userForm.name.middleName"
+        class="user-form__input"
+      />
+      <Input
+        type="text"
+        label="Apellido:"
+        placeholder="Ingrese el apellido"
+        v-model="userForm.name.lastName"
+        class="user-form__input"
+      />
+      <Input
+        type="text"
+        label="Segundo apellido:"
+        placeholder="Ingrese el segundo apellido"
+        v-model="userForm.name.secondLastName"
         class="user-form__input"
       />
       <Input

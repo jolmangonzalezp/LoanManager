@@ -22,9 +22,9 @@ final class UpdateCustomerRequest
         $person = PersonVO::create(
             NameVO::create(
                 $request['name']['first_name'] ?? '',
-                    $request['name']['last_name'] ?? '',
-                    $request['name']['second_last_name'] ?? '',
-                    $request['name']['middle_name'] ?? null
+                $request['name']['last_name'] ?? '',
+                $request['name']['second_last_name'] ?? '',
+                $request['name']['middle_name'] ?? null
             ),
             DniVO::create(
                 $request['dni']['number'] ?? '',
@@ -35,6 +35,9 @@ final class UpdateCustomerRequest
             ! empty($request['email']) ? EmailVO::create($request['email']) : null
         );
 
-        return new UpdateCustomerCommand($id, $person);
+        $latitude = isset($request['latitude']) ? (float) $request['latitude'] : null;
+        $longitude = isset($request['longitude']) ? (float) $request['longitude'] : null;
+
+        return new UpdateCustomerCommand($id, $person, $latitude, $longitude);
     }
 }

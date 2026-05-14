@@ -20,6 +20,8 @@ export interface LoanDTO {
   created_at: string
   paid_capital: number
   paid_interest: number
+  loan_type_id?: string
+  loan_type?: string
 }
 
 export interface LoanFormDTO {
@@ -27,6 +29,8 @@ export interface LoanFormDTO {
   capital: number
   interest_rate: number
   date_start: string
+  loan_type_id?: string
+  loan_type_name?: string
 }
 
 export interface LoanReportDTO {

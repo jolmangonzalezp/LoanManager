@@ -16,6 +16,8 @@ export interface CustomerDTO {
     email?: string;
     phone: string;
     address: string;
+    latitude?: number;
+    longitude?: number;
     enabled?: boolean;
     created_at?: string;
 }
@@ -34,6 +36,8 @@ export interface CustomerFormDTO {
     phone: string
     address: string
     email?: string
+    latitude?: number
+    longitude?: number
 }
 
 export interface CustomerNameDTO {

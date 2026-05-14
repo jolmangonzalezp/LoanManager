@@ -26,6 +26,10 @@ class CustomerModel extends Model
         'address',
         'email',
         'enabled',
+        'latitude',
+        'longitude',
+        'zone_id',
+        'route_id',
         'created_at',
     ];
 
@@ -42,5 +46,7 @@ class CustomerModel extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'enabled' => 'boolean',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 }

@@ -16,8 +16,13 @@ final class UserMapper
 {
     public function toDomain(UserModel $model): User
     {
-        $name = $model->name
-            ? $this->parseName($model->name)
+        $name = $model->first_name
+            ? NameVO::create(
+                $model->first_name,
+                $model->last_name ?? 'Unknown',
+                $model->second_last_name ?? 'Unknown',
+                $model->middle_name
+            )
             : null;
 
         $email = $model->email
@@ -43,42 +48,20 @@ final class UserMapper
 
     public function toPersistence(User $user): array
     {
+        $name = $user->getName();
+
         return [
             'id' => $user->getId()->getValue(),
             'username' => $user->getUsername(),
-            'name' => $user->getName()?->getFullName(),
+            'first_name' => $name?->getFirstName(),
+            'middle_name' => $name?->getMiddleName(),
+            'last_name' => $name?->getLastName(),
+            'second_last_name' => $name?->getSecondLastName(),
             'email' => $user->getEmail()?->getValue(),
             'phone' => $user->getPhone()?->getNumber(),
             'password' => $user->getPassword(),
             'remember_token' => $user->getRememberToken(),
             'enabled' => $user->isEnabled(),
         ];
-    }
-
-    private function parseName(string $fullName): NameVO
-    {
-        $parts = array_filter(explode(' ', trim($fullName)));
-        $parts = array_values($parts);
-        $count = count($parts);
-
-        if ($count === 0) {
-            return NameVO::create('Unknown', 'Unknown', '');
-        }
-        if ($count === 1) {
-            return NameVO::create($parts[0], 'Unknown', '');
-        }
-        if ($count === 2) {
-            return NameVO::create($parts[0], $parts[1], '');
-        }
-        if ($count === 3) {
-            return NameVO::create($parts[0], $parts[1], $parts[2]);
-        }
-
-        return NameVO::create(
-            $parts[0],
-            $parts[$count - 2],
-            $parts[$count - 1],
-            $parts[1],
-        );
     }
 }

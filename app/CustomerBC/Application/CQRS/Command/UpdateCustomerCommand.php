@@ -11,6 +11,8 @@ final class UpdateCustomerCommand
 {
     public function __construct(
         public readonly CustomerIdVO $id,
-        public readonly PersonVO $personalData
+        public readonly PersonVO $personalData,
+        public readonly ?float $latitude = null,
+        public readonly ?float $longitude = null,
     ) {}
 }

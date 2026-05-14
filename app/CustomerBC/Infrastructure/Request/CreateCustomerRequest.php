@@ -32,6 +32,9 @@ final class CreateCustomerRequest
             ! empty($request['email']) ? EmailVO::create($request['email']) : null
         );
 
-        return new CreateCustomerCommand($person);
+        $latitude = isset($request['latitude']) ? (float) $request['latitude'] : null;
+        $longitude = isset($request['longitude']) ? (float) $request['longitude'] : null;
+
+        return new CreateCustomerCommand($person, $latitude, $longitude);
     }
 }

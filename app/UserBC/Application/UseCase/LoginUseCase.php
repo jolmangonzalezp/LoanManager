@@ -47,11 +47,18 @@ final readonly class LoginUseCase
         $userId = $user->getId()->getValue();
         $roles = $this->roleFinder->findRoleSlugs($userId);
 
+        $name = $user->getName();
+
         return [
             'user' => [
                 'id' => $userId,
                 'username' => $user->getUsername(),
-                'name' => $user->getName()?->getFullName(),
+                'name' => $name ? [
+                    'first_name' => $name->getFirstName(),
+                    'middle_name' => $name->getMiddleName(),
+                    'last_name' => $name->getLastName(),
+                    'second_last_name' => $name->getSecondLastName(),
+                ] : null,
                 'email' => $user->getEmail()?->getValue(),
                 'roles' => $roles,
             ],

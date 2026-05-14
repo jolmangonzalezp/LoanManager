@@ -29,6 +29,10 @@ class RolesAndPermissionsSeeder extends Seeder
             ['slug' => 'payments.create', 'name' => 'Create Payments', 'group' => 'payments'],
             ['slug' => 'payments.update', 'name' => 'Update Payments', 'group' => 'payments'],
             ['slug' => 'payments.delete', 'name' => 'Delete Payments', 'group' => 'payments'],
+            ['slug' => 'routes.view', 'name' => 'View Routes', 'group' => 'routes'],
+            ['slug' => 'routes.create', 'name' => 'Create Routes', 'group' => 'routes'],
+            ['slug' => 'routes.update', 'name' => 'Update Routes', 'group' => 'routes'],
+            ['slug' => 'routes.delete', 'name' => 'Delete Routes', 'group' => 'routes'],
             ['slug' => 'reports.view', 'name' => 'View Reports', 'group' => 'reports'],
             ['slug' => 'roles.view', 'name' => 'View Roles', 'group' => 'roles'],
             ['slug' => 'roles.create', 'name' => 'Create Roles', 'group' => 'roles'],
@@ -37,37 +41,45 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         foreach ($permissions as $data) {
-            PermissionModel::create([
-                'id' => Uuid::uuid7()->toString(),
-                'slug' => $data['slug'],
-                'name' => $data['name'],
-                'group' => $data['group'],
-            ]);
+            PermissionModel::firstOrCreate(
+                ['slug' => $data['slug']],
+                [
+                    'id' => Uuid::uuid7()->toString(),
+                    'name' => $data['name'],
+                    'group' => $data['group'],
+                ]
+            );
         }
 
-        $adminRole = RoleModel::create([
-            'id' => Uuid::uuid7()->toString(),
-            'slug' => 'admin',
-            'name' => 'Administrador',
-            'description' => 'Acceso total al sistema',
-            'is_system' => true,
-        ]);
+        $adminRole = RoleModel::firstOrCreate(
+            ['slug' => 'admin'],
+            [
+                'id' => Uuid::uuid7()->toString(),
+                'name' => 'Administrador',
+                'description' => 'Acceso total al sistema',
+                'is_system' => true,
+            ]
+        );
 
-        RoleModel::create([
-            'id' => Uuid::uuid7()->toString(),
-            'slug' => 'agent',
-            'name' => 'Agente',
-            'description' => 'Gestion de clientes, prestamos y pagos',
-            'is_system' => true,
-        ]);
+        RoleModel::firstOrCreate(
+            ['slug' => 'agent'],
+            [
+                'id' => Uuid::uuid7()->toString(),
+                'name' => 'Agente',
+                'description' => 'Gestion de clientes, prestamos y pagos',
+                'is_system' => true,
+            ]
+        );
 
-        RoleModel::create([
-            'id' => Uuid::uuid7()->toString(),
-            'slug' => 'viewer',
-            'name' => 'Consultor',
-            'description' => 'Acceso de solo lectura',
-            'is_system' => true,
-        ]);
+        RoleModel::firstOrCreate(
+            ['slug' => 'viewer'],
+            [
+                'id' => Uuid::uuid7()->toString(),
+                'name' => 'Consultor',
+                'description' => 'Acceso de solo lectura',
+                'is_system' => true,
+            ]
+        );
 
         $allIds = PermissionModel::whereIn('slug', array_column($permissions, 'slug'))->pluck('id', 'slug');
 

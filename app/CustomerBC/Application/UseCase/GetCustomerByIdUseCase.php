@@ -8,6 +8,7 @@ use App\CustomerBC\Application\DTO\CustomerResponse;
 use App\CustomerBC\Application\Exceptions\CustomerNotFoundException;
 use App\CustomerBC\Domain\Repository\CustomerFinderById;
 use App\CustomerBC\Domain\ValueObject\CustomerIdVO;
+use App\CustomerBC\Infrastructure\Persistence\Model\CustomerModel;
 use App\SharedKernel\Domain\Ports\MaskingService;
 
 final class GetCustomerByIdUseCase
@@ -27,6 +28,12 @@ final class GetCustomerByIdUseCase
             throw new CustomerNotFoundException;
         }
 
-        return CustomerResponse::fromEntity($customer)->toArray();
+        $model = CustomerModel::where('id', $customerId->getValue())->first(['latitude', 'longitude']);
+
+        return CustomerResponse::fromEntity(
+            $customer,
+            $model?->latitude,
+            $model?->longitude,
+        )->toArray();
     }
 }

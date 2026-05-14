@@ -29,6 +29,7 @@ final class EloquentLoanUpdater implements LoanUpdater
         $model->due_date = $loan->getDueDate()->getFormatted();
         $model->next_payment_date = $loan->getNextPaymentDate()->getFormatted();
         $model->status = $loan->getStatus()->value;
+        $model->loan_type_id = $loan->getLoanTypeId()?->getValue();
 
         $model->save();
     }

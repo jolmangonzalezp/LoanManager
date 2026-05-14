@@ -5,6 +5,7 @@ import {
     faHandHoldingDollar, faHistory,
     faHome,
     faMoneyBillTransfer,
+    faRoute,
     faUsers
 } from "@fortawesome/free-solid-svg-icons";
 import {useRoute} from "vue-router";
@@ -22,7 +23,8 @@ export  const useLayout = () => {
         { id: 2, label:'Clientes', icon:faUsers, to:'/clientes' },
         { id: 3, label:'Préstamo', icon:faHandHoldingDollar, to:'/prestamos' },
         { id: 4, label:'Pagos', icon:faMoneyBillTransfer, to:'/pagos' },
-        { id: 5, label:'Reportes', icon:faChartPie, to:'/reportes' },
+        { id: 5, label:'Rutas', icon:faRoute, to:'/rutas' },
+        { id: 6, label:'Reportes', icon:faChartPie, to:'/reportes' },
     ];
 
     const subroutes = [

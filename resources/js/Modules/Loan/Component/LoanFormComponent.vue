@@ -13,15 +13,24 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const {customers, loanForm, emptyForm, fillFromCustomer, getCustomers, create, update} = useLoan();
+const {customers, loanForm, loanTypes, emptyForm, fillFromCustomer, getCustomers, getLoanTypes, create, update} = useLoan();
 const {close} = useModal();
 const loading = ref(false);
+const newLoanTypeName = ref('');
 const options = computed(() =>
     customers.value.map(cn => ({
       label: `${cn.name.firstName} ${cn.name.lastName}`,
       value: cn.id,
     }))
 );
+const loanTypeOptions = computed(() => [
+    ...loanTypes.value.map(lt => ({
+      label: lt.name,
+      value: lt.id,
+    })),
+    { label: 'Otro...', value: '__new__' },
+]);
+const isNewLoanType = computed(() => loanForm.value?.loanTypeId === '__new__');
 
 const capitalFormatted = computed({
     get() {
@@ -41,6 +50,9 @@ const capitalFormatted = computed({
 
 const save = async () => {
   if (!loanForm.value) return
+  if (loanForm.value.loanTypeId === '__new__') {
+    loanForm.value.loanTypeName = newLoanTypeName.value || undefined
+  }
   if (props.isEditing) {
       if (!props.id) return
     const response = await update(props.id, loanForm.value)
@@ -63,6 +75,7 @@ onMounted(() => {
     fillFromCustomer(props.customerPreselected);
   }
   getCustomers();
+  getLoanTypes();
 })
 
 </script>
@@ -79,6 +92,23 @@ onMounted(() => {
       v-model="loanForm.customer"
       :disabled="props.disable"
     />
+    <div class="loan-type-group">
+      <Select
+        label="Tipo de Préstamo"
+        :options="loanTypeOptions"
+        placeholder="Seleccione el tipo"
+        class="loan-form__input"
+        v-model="loanForm.loanTypeId"
+      />
+      <Input
+        v-if="isNewLoanType"
+        type="text"
+        label="Nuevo tipo:"
+        placeholder="Ingrese el nombre del nuevo tipo"
+        v-model="newLoanTypeName"
+        class="loan-form__input"
+      />
+    </div>
     <Input
         type="text"
         onlyNumbers
@@ -139,6 +169,13 @@ onMounted(() => {
   max-width: 400px;
 }
 
+.loan-type-group {
+  width: 300px;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 .actions{
   width: 100%;
   display: flex;

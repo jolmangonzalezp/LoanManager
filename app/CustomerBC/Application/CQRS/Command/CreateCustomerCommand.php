@@ -9,8 +9,11 @@ use App\SharedKernel\Domain\ValueObject\PersonVO;
 final class CreateCustomerCommand
 {
     public readonly PersonVO $personalData;
+
     public function __construct(
-        PersonVO $personalData
+        PersonVO $personalData,
+        public readonly ?float $latitude = null,
+        public readonly ?float $longitude = null,
     ) {
         $this->personalData = $personalData;
     }

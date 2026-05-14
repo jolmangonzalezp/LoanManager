@@ -9,6 +9,9 @@ use App\LoanBC\Application\DTO\LoanResponse;
 use App\LoanBC\Domain\Aggregate\Loan;
 use App\LoanBC\Domain\Repository\LoanCreator;
 use App\LoanBC\Domain\Services\LoanNumberGenerator;
+use App\LoanBC\Domain\ValueObject\LoanTypeIdVO;
+use App\LoanBC\Infrastructure\Persistence\Model\LoanTypeModel;
+use Ramsey\Uuid\Uuid;
 
 final class CreateLoanUseCase
 {
@@ -35,8 +38,23 @@ final class CreateLoanUseCase
 
         $dueDate = $command->startDate->addMonths($command->term);
 
+        $loanTypeId = $command->loanTypeId;
+        $resolvedLoanTypeName = null;
+        if ($loanTypeId === null && $command->loanTypeName !== null) {
+            $type = LoanTypeModel::findByName($command->loanTypeName);
+            if ($type === null) {
+                $type = LoanTypeModel::create([
+                    'id' => Uuid::uuid7()->toString(),
+                    'name' => $command->loanTypeName,
+                ]);
+            }
+            $loanTypeId = LoanTypeIdVO::fromString($type->id);
+            $resolvedLoanTypeName = $type->name;
+        }
+
         $loan = Loan::create(
             $command->customerId,
+            $loanTypeId,
             $command->capital,
             $command->interestRate,
             $command->startDate,
@@ -45,7 +63,7 @@ final class CreateLoanUseCase
 
         $this->creator->create($loan);
 
-        $dto = LoanResponse::fromEntity($loan);
+        $dto = LoanResponse::fromEntity($loan, $resolvedLoanTypeName);
         $dto->setLoanNumber($this->loanNumberGenerator->generate());
         $this->response = $dto->toArray($loan->getCustomerId()->getValue());
 

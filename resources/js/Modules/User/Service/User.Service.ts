@@ -13,13 +13,36 @@ export const UserService = {
   },
 
   async create(data: UserForm): Promise<void> {
-    const payload: Record<string, any> = { username: data.username, name: data.name, email: data.email, phone: data.phone };
+    const payload: Record<string, any> = {
+      username: data.username,
+      name: {
+        first_name: data.name.firstName,
+        middle_name: data.name.middleName,
+        last_name: data.name.lastName,
+        second_last_name: data.name.secondLastName,
+      },
+      email: data.email,
+      phone: data.phone,
+    };
     if (data.password) payload.password = data.password;
     await UserApi.create(payload);
   },
 
   async update(id: string, data: Partial<UserForm>): Promise<User> {
-    const response = await UserApi.update(id, data);
+    const payload: Record<string, any> = {
+      username: data.username,
+      email: data.email,
+      phone: data.phone,
+    };
+    if (data.name) {
+      payload.name = {
+        first_name: data.name.firstName,
+        middle_name: data.name.middleName,
+        last_name: data.name.lastName,
+        second_last_name: data.name.secondLastName,
+      };
+    }
+    const response = await UserApi.update(id, payload);
     return UserMapper.toDomain(response);
   },
 

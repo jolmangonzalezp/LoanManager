@@ -8,10 +8,17 @@ export interface AuthResponse {
   user?: any
 }
 
+export interface UserName {
+  firstName: string
+  middleName: string | null
+  lastName: string
+  secondLastName: string
+}
+
 export interface User {
   id: string
   username: string
-  name: string
+  name: UserName | null
   email: string
   phone: string
   createdAt: string

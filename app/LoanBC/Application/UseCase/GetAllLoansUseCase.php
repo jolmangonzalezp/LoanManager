@@ -9,6 +9,7 @@ use App\LoanBC\Application\Exception\LoanNotFoundException;
 use App\LoanBC\Domain\Repository\CustomerNameProvider;
 use App\LoanBC\Domain\Repository\LoanFinderAll;
 use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
+use App\LoanBC\Infrastructure\Persistence\Model\LoanTypeModel;
 use Illuminate\Support\Facades\Log;
 
 final class GetAllLoansUseCase
@@ -33,8 +34,14 @@ final class GetAllLoansUseCase
             ->pluck('loan_number', 'id')
             ->toArray();
 
-        return array_map(function ($loan) use ($namesMap, $loanNumbersMap) {
-            $response = LoanResponse::fromEntity($loan);
+        $loanTypeIds = array_unique(array_map(fn ($l) => $l->getLoanTypeId()?->getValue(), $loans));
+        $loanTypesMap = LoanTypeModel::whereIn('id', array_filter($loanTypeIds))
+            ->pluck('name', 'id')
+            ->toArray();
+
+        return array_map(function ($loan) use ($namesMap, $loanNumbersMap, $loanTypesMap) {
+            $loanTypeName = $loanTypesMap[$loan->getLoanTypeId()?->getValue()] ?? null;
+            $response = LoanResponse::fromEntity($loan, $loanTypeName);
             $cid = $loan->getCustomerId()->getValue();
             $loanId = $loan->getId()->getValue();
 

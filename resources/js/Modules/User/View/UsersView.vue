@@ -45,6 +45,9 @@ onMounted(async () => {
     </div>
 
     <DataTable :columns="columns" :rows="users" @row-click="handleRowClick">
+      <template #cell-name="{ row }">
+        {{ row.name ? [row.name.firstName, row.name.middleName, row.name.lastName, row.name.secondLastName].filter(Boolean).join(' ') : '-' }}
+      </template>
       <template #cell-enabled="{ value }">
         <span :class="value ? 'badge-active' : 'badge-inactive'">
           {{ value ? 'Activo' : 'Inactivo' }}

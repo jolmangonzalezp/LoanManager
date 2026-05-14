@@ -10,6 +10,7 @@ final class LoanResponse
 {
     private string $loanNumber = '';
     private array $customerName = [];
+    private ?string $loanTypeName = null;
 
     public function __construct(
         public readonly string $id,
@@ -25,7 +26,8 @@ final class LoanResponse
         public readonly int $paidInterest = 0,
         public readonly int $paidCapital = 0,
         public readonly int $pendingInterest = 0,
-        public readonly string $interestPeriod = ''
+        public readonly string $interestPeriod = '',
+        public readonly ?string $loanTypeId = null
     ) {
         $this->customerName = [
             'first_name' => '',
@@ -35,9 +37,9 @@ final class LoanResponse
         ];
     }
 
-    public static function fromEntity(Loan $loan): self
+    public static function fromEntity(Loan $loan, ?string $loanTypeName = null): self
     {
-        return new self(
+        $dto = new self(
             id: $loan->getId()->getValue(),
             originalCapital: $loan->getOriginalCapital()->getAmount(),
             remainingDebt: $loan->getRemainingDebt()->getAmount(),
@@ -51,8 +53,13 @@ final class LoanResponse
             paidInterest: $loan->getPaidInterest()->getAmount(),
             paidCapital: $loan->getPaidCapital()->getAmount(),
             pendingInterest: $loan->getPendingInterest()->getAmount(),
-            interestPeriod: $loan->getInterestPeriod()
+            interestPeriod: $loan->getInterestPeriod(),
+            loanTypeId: $loan->getLoanTypeId()?->getValue()
         );
+
+        $dto->loanTypeName = $loanTypeName;
+
+        return $dto;
     }
 
     public function setLoanNumber(string $loanNumber): void
@@ -122,6 +129,8 @@ final class LoanResponse
             'paid_capital' => $this->paidCapital,
             'pending_interest' => $this->pendingInterest,
             'interest_period' => $this->interestPeriod,
+            'loan_type_id' => $this->loanTypeId,
+            'loan_type' => $this->loanTypeName,
         ];
     }
 }

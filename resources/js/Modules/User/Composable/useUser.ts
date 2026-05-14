@@ -36,14 +36,26 @@ export function useUser() {
   }
 
   const emptyUser = () => {
-    userForm.value = { username: '', name: '', email: '', phone: '' }
+    userForm.value = {
+      username: '',
+      name: { firstName: '', middleName: '', lastName: '', secondLastName: '' },
+      email: '',
+      phone: '',
+    }
   }
 
   const fillUser = () => {
     if (!user.value) return
     userForm.value = {
       username: user.value.username,
-      name: user.value.name,
+      name: user.value.name
+        ? {
+            firstName: user.value.name.firstName,
+            middleName: user.value.name.middleName || '',
+            lastName: user.value.name.lastName,
+            secondLastName: user.value.name.secondLastName,
+          }
+        : { firstName: '', middleName: '', lastName: '', secondLastName: '' },
       email: user.value.email,
       phone: user.value.phone,
     }

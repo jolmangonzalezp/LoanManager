@@ -6,7 +6,14 @@ export const UserMapper = {
     return {
       id: dto.id,
       username: dto.username,
-      name: dto.name || '',
+      name: dto.name
+        ? {
+            firstName: dto.name.first_name || '',
+            middleName: dto.name.middle_name || null,
+            lastName: dto.name.last_name || '',
+            secondLastName: dto.name.second_last_name || '',
+          }
+        : null,
       email: dto.email || '',
       phone: dto.phone || '',
       createdAt: dto.created_at,
@@ -21,7 +28,14 @@ export const UserMapper = {
   toForm(user: User): UserForm {
     return {
       username: user.username,
-      name: user.name,
+      name: user.name
+        ? {
+            firstName: user.name.firstName,
+            middleName: user.name.middleName || '',
+            lastName: user.name.lastName,
+            secondLastName: user.name.secondLastName,
+          }
+        : { firstName: '', middleName: '', lastName: '', secondLastName: '' },
       email: user.email,
       phone: user.phone,
     };

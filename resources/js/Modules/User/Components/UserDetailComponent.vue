@@ -18,8 +18,22 @@ const props = defineProps<Props>()
 
 const initials = computed(() => {
   if (!user.value) return '??'
-  const name = user.value.name || user.value.username
-  return name.substring(0, 2).toUpperCase() || '??'
+  const n = user.value.name
+  if (n) {
+    const first = n.firstName?.[0] || ''
+    const last = n.lastName?.[0] || ''
+    return (first + last).toUpperCase() || '??'
+  }
+  return user.value.username.substring(0, 2).toUpperCase() || '??'
+})
+
+const displayName = computed(() => {
+  if (!user.value) return ''
+  const n = user.value.name
+  if (n) {
+    return [n.firstName, n.middleName, n.lastName, n.secondLastName].filter(Boolean).join(' ')
+  }
+  return user.value.username
 })
 
 const updateUser = () => {
@@ -51,7 +65,7 @@ onMounted(async () => {
     <section class="user-details__header">
       <div class="user-details__avatar">{{ initials }}</div>
       <div class="info">
-        <div class="name">{{ user.name || user.username }}</div>
+        <div class="name">{{ displayName }}</div>
         <div class="meta">@{{ user.username }} · {{ user.enabled ? 'Activo' : 'Inactivo' }}</div>
       </div>
     </section>

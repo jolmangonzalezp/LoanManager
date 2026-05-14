@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import {computed, ref} from "vue";
 import {useRoute} from "vue-router";
-import {faUserPlus, faCalendarPlus, faPlus, faUserGear} from "@fortawesome/free-solid-svg-icons";
+import {faUserPlus, faCalendarPlus, faPlus, faUserGear, faRoute} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 import { CustomerForms } from '@/Modules/Customer';
+import { RouteForms } from '@/Modules/Route';
 import { UserForms } from '@/Modules/User';
 import { Btn, useModal } from '@/Shared';
 import { LoanForms } from '@/Modules/Loan';
@@ -13,9 +14,11 @@ import { useAuth } from '@/Modules/Auth';
 const route = useRoute()
 const { can, hasRole } = useAuth()
 const isUserPage = computed(() => route.path === '/usuarios')
+const isRoutePage = computed(() => route.path === '/rutas')
 
 const showCreate = computed(() => {
   if (isUserPage.value) return hasRole('admin')
+  if (isRoutePage.value) return true
   return can('customers.create') || can('loans.create')
 })
 
@@ -52,6 +55,14 @@ const openForm = (form: string) => {
         }
     )
   }
+  if (form === 'route') {
+    open(
+        RouteForms,
+        {
+          size: 'lg',
+        }
+    )
+  }
 }
 
 </script>
@@ -67,6 +78,12 @@ const openForm = (form: string) => {
           <span v-if="hasRole('admin')" class="quick-actions__item-menu" @click="openForm('user')">
             <FontAwesomeIcon :icon="faUserGear"></FontAwesomeIcon>
             Nuevo Usuario
+          </span>
+        </template>
+        <template v-else-if="isRoutePage">
+          <span class="quick-actions__item-menu" @click="openForm('route')">
+            <FontAwesomeIcon :icon="faRoute"></FontAwesomeIcon>
+            Nueva Ruta
           </span>
         </template>
         <template v-else>

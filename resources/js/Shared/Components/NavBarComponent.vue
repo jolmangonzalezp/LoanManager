@@ -14,6 +14,7 @@ const permissionMap: Record<string, string> = {
   'Clientes': 'customers.view',
   'Préstamo': 'loans.view',
   'Pagos': 'payments.view',
+  'Rutas': '',
   'Reportes': 'reports.view',
 }
 
@@ -21,15 +22,25 @@ const visibleRoutes = computed(() =>
   routes.filter(r => !permissionMap[r.label] || can(permissionMap[r.label]))
 )
 
-const initials = computed(() => {
-  if (!user.value) return "??"
-  const name = user.value.name || user.value.username
-  const parts = [
-    name?.[0] || '',
-    name?.split(' ').pop()?.[0] || ''
-  ].filter(Boolean)
-  return parts.slice(0,2).join('').toUpperCase() || '??'
-})
+  const initials = computed(() => {
+    if (!user.value) return "??"
+    const n = user.value.name
+    if (n) {
+      const first = n.firstName?.[0] || ''
+      const last = n.lastName?.[0] || ''
+      return (first + last).toUpperCase() || '??'
+    }
+    return user.value.username.substring(0, 2).toUpperCase() || '??'
+  })
+
+  const userName = computed(() => {
+    if (!user.value) return ''
+    const n = user.value.name
+    if (n) {
+      return [n.firstName, n.middleName, n.lastName, n.secondLastName].filter(Boolean).join(' ')
+    }
+    return user.value.username
+  })
 
 onMounted(async () => {
   await me();
@@ -86,7 +97,7 @@ onMounted(async () => {
       <div class="nav-footer-icon">
         <Ava :initials="initials"></Ava>
       </div>
-      <p class="nav-footer-label">{{ user?.name }}</p>
+      <p class="nav-footer-label">{{ userName }}</p>
     </div>
     <div v-if="hasRole('admin')" class="nav-footer-item">
       <div class="nav-footer-icon">

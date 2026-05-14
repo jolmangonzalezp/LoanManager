@@ -16,6 +16,7 @@ final class LoanModel extends Model
         'id',
         'loan_number',
         'customer_id',
+        'loan_type_id',
         'original_capital',
         'remaining_debt',
         'paid_capital',
@@ -30,6 +31,11 @@ final class LoanModel extends Model
         'created_at',
         'updated_at',
     ];
+
+    public function loanType(): BelongsTo
+    {
+        return $this->belongsTo(LoanTypeModel::class, 'loan_type_id');
+    }
 
     protected $casts = [
         'original_capital' => 'integer',

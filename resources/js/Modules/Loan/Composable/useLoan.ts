@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import { Loan, LoanForm, LoanReport, LoanService } from '@/Modules/Loan';
+import { Loan, LoanForm, LoanReport, LoanService, LoanTypeApi, LoanTypeDTO } from '@/Modules/Loan';
 import { CustomerName, CustomerService } from '@/Modules/Customer';
 import { formatCurrency, useMask, useNotifier } from '@/Shared';
 import { useRouter } from 'vue-router';
@@ -10,6 +10,7 @@ const loan = ref<Loan>()
 const customers = ref<CustomerName[]>([])
 const loanForm = ref<LoanForm>()
 const report = ref<LoanReport>()
+const loanTypes = ref<LoanTypeDTO[]>([])
 
 export function useLoan() {
     const notify =  useNotifier();
@@ -37,7 +38,8 @@ export function useLoan() {
             customer: "",
             capital: 0,
             interestRate: 0,
-            dateStart: hoy
+            dateStart: hoy,
+            loanTypeId: undefined,
         }
     }
 
@@ -47,7 +49,8 @@ export function useLoan() {
             customer: loan.value.customer.id,
             capital: Number(loan.value.capital),
             interestRate: loan.value.interestRate,
-            dateStart: loan.value.startDate
+            dateStart: loan.value.startDate,
+            loanTypeId: loan.value.loanTypeId,
         }
     }
 
@@ -57,7 +60,8 @@ export function useLoan() {
             customer: customerId,
             capital: 0,
             interestRate: 0,
-            dateStart: hoy
+            dateStart: hoy,
+            loanTypeId: undefined,
         }
     }
 
@@ -67,7 +71,6 @@ export function useLoan() {
         try {
             const response = await LoanService.getAll()
             response.map(r => {
-                r.partialName = useMask().maskStart(r.partialName)
                 r.progress = r.progress ? Number(r.progress.toFixed(2)) : 0
                 r.capital = r.capital ? formatCurrency(r.capital) : formatCurrency(0)
             })
@@ -83,7 +86,6 @@ export function useLoan() {
         notify.loading("Cargando", "");
         try {
             loan.value = await LoanService.getById(id);
-            loan.value.partialName = useMask().maskStart(loan.value.partialName)
             loan.value.progress = loan.value.progress ? Number(loan.value.progress.toFixed(2)) : 0
             notify.closeLoading();
         } catch (e: any) {
@@ -111,6 +113,14 @@ export function useLoan() {
         } catch (e: any) {
             notify.closeLoading();
             notify.error("Error", e.message);
+        }
+    }
+
+    const getLoanTypes = async () => {
+        try {
+            loanTypes.value = await LoanTypeApi.getAll()
+        } catch {
+            loanTypes.value = []
         }
     }
 
@@ -178,12 +188,14 @@ export function useLoan() {
         loanForm,
         report,
         customers,
+        loanTypes,
         columns,
         totalCartera,
         getAll,
         getById,
         getReport,
         getCustomers,
+        getLoanTypes,
         create,
         update,
         processPayment,

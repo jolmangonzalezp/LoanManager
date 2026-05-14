@@ -69,6 +69,16 @@ final class CustomerController
         return response()->json($responses);
     }
 
+    public function unassigned(): JsonResponse
+    {
+        $customers = \App\CustomerBC\Infrastructure\Persistence\Model\CustomerModel::whereNull('zone_id')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get(['id', 'first_name', 'last_name', 'latitude', 'longitude']);
+
+        return response()->json($customers);
+    }
+
     public function report(): JsonResponse
     {
         $responses = $this->getAllUseCase->execute();

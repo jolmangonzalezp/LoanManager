@@ -9,6 +9,7 @@ use App\LoanBC\Domain\Aggregate\Loan;
 use App\LoanBC\Domain\ValueObject\InterestRateVO;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
 use App\LoanBC\Domain\ValueObject\LoanStatus;
+use App\LoanBC\Domain\ValueObject\LoanTypeIdVO;
 use App\LoanBC\Infrastructure\Persistence\Model\LoanModel;
 use App\SharedKernel\Domain\ValueObject\DateVO;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
@@ -32,10 +33,12 @@ final class LoanMapper
         $paidCapital = (int) ($model->paid_capital ?? 0);
         $pendingInterest = (int) ($model->pending_interest ?? 0);
         $interestPeriod = $model->interest_period ?? '';
+        $loanTypeId = $model->loan_type_id ? LoanTypeIdVO::fromString($model->loan_type_id) : null;
 
         return Loan::reconstitute(
             LoanIdVO::fromString($model->id),
             CustomerIdVO::fromString($model->customer_id),
+            $loanTypeId,
             $originalCapital > 0 ? MoneyVO::create($originalCapital) : MoneyVO::zero(),
             InterestRateVO::createMonthly((float) $model->interest_rate),
             DateVO::fromDateTime($model->start_date),
@@ -57,6 +60,7 @@ final class LoanMapper
             'id' => $loan->getId()->getValue(),
             'loan_number' => $this->currentLoanNumber,
             'customer_id' => $loan->getCustomerId()->getValue(),
+            'loan_type_id' => $loan->getLoanTypeId()?->getValue(),
             'original_capital' => $loan->getOriginalCapital()->getAmount(),
             'remaining_debt' => $loan->getRemainingDebt()->getAmount(),
             'paid_capital' => $loan->getPaidCapital()->getAmount(),

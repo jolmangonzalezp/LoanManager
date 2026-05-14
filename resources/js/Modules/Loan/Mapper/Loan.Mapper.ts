@@ -26,7 +26,9 @@ export const LoanMapper = {
       createdAt: dto.created_at,
       progress: ((dto.capital - dto.remaining_debt) / dto.capital) * 100,
       paidCapital: dto.paid_capital,
-      paidInterest: dto.paid_interest
+      paidInterest: dto.paid_interest,
+      loanTypeId: dto.loan_type_id,
+      loanType: dto.loan_type,
     }
   },
 
@@ -35,7 +37,9 @@ export const LoanMapper = {
       customer: form.customer,
       capital: form.capital,
       interest_rate: form.interestRate,
-      date_start: form.dateStart
+      date_start: form.dateStart,
+      loan_type_id: form.loanTypeId === '__new__' ? undefined : form.loanTypeId,
+      loan_type_name: form.loanTypeId === '__new__' ? form.loanTypeName : undefined,
     }
   },
 

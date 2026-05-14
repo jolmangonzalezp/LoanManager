@@ -10,6 +10,7 @@ use App\LoanBC\Domain\InactiveLoanException;
 use App\LoanBC\Domain\ValueObject\InterestRateVO;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
 use App\LoanBC\Domain\ValueObject\LoanStatus;
+use App\LoanBC\Domain\ValueObject\LoanTypeIdVO;
 use App\SharedKernel\Domain\ValueObject\DateVO;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
 
@@ -18,6 +19,7 @@ final readonly class Loan
     private function __construct(
         private LoanIdVO $id,
         private CustomerIdVO $customerId,
+        private ?LoanTypeIdVO $loanTypeId,
         private MoneyVO $originalCapital,
         private InterestRateVO $interestRate,
         private DateVO $startDate,
@@ -34,6 +36,7 @@ final readonly class Loan
 
     public static function create(
         CustomerIdVO $customerId,
+        ?LoanTypeIdVO $loanTypeId,
         MoneyVO $capital,
         InterestRateVO $interestRate,
         DateVO $startDate,
@@ -47,6 +50,7 @@ final readonly class Loan
         return new self(
             LoanIdVO::generate(),
             $customerId,
+            $loanTypeId,
             $capital,
             $interestRate,
             $startDateVO,
@@ -65,6 +69,7 @@ final readonly class Loan
     public static function reconstitute(
         LoanIdVO $id,
         CustomerIdVO $customerId,
+        ?LoanTypeIdVO $loanTypeId,
         MoneyVO $originalCapital,
         InterestRateVO $interestRate,
         DateVO $startDate,
@@ -81,6 +86,7 @@ final readonly class Loan
         return new self(
             $id,
             $customerId,
+            $loanTypeId,
             $originalCapital,
             $interestRate,
             $startDate,
@@ -101,7 +107,8 @@ final readonly class Loan
         InterestRateVO $interestRate,
         DateVO $startDate,
         DateVO $dueDate,
-        ?LoanStatus $status = null
+        ?LoanStatus $status = null,
+        ?LoanTypeIdVO $loanTypeId = null
     ): self {
         $newRemainingDebt = $originalCapital->subtract($this->paidCapital);
         $newStatus = $status ?? $this->status;
@@ -126,6 +133,7 @@ final readonly class Loan
         return new self(
             $this->id,
             $this->customerId,
+            $loanTypeId ?? $this->loanTypeId,
             $originalCapital,
             $interestRate,
             $startDate,
@@ -150,6 +158,7 @@ final readonly class Loan
         return new self(
             $this->id,
             $this->customerId,
+            $this->loanTypeId,
             $this->originalCapital,
             $this->interestRate,
             $this->startDate,
@@ -175,6 +184,7 @@ final readonly class Loan
         return new self(
             $this->id,
             $this->customerId,
+            $this->loanTypeId,
             $this->originalCapital,
             $this->interestRate,
             $this->startDate,
@@ -232,6 +242,7 @@ final readonly class Loan
         $updatedLoan = new self(
             $this->id,
             $this->customerId,
+            $this->loanTypeId,
             $this->originalCapital,
             $this->interestRate,
             $this->startDate,
@@ -257,6 +268,11 @@ final readonly class Loan
     public function getCustomerId(): CustomerIdVO
     {
         return $this->customerId;
+    }
+
+    public function getLoanTypeId(): ?LoanTypeIdVO
+    {
+        return $this->loanTypeId;
     }
 
     public function getOriginalCapital(): MoneyVO

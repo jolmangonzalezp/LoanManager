@@ -19,7 +19,10 @@ final class UserModel extends Authenticatable
     protected $fillable = [
         'id',
         'username',
-        'name',
+        'first_name',
+        'middle_name',
+        'last_name',
+        'second_last_name',
         'email',
         'phone',
         'password',

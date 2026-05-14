@@ -5,6 +5,7 @@ import { CustomerPage } from '@/Modules/Customer';
 import { LoanPage } from '@/Modules/Loan';
 import { PaymentPage } from '@/Modules/Payment';
 import { UserPage } from '@/Modules/User';
+import { RoutePage } from '@/Modules/Route';
 import { CashFlow, DelinquencyReport, PortfolioReport, ProfitbilityReport, ReportPage } from '@/Modules/Report';
 
 
@@ -15,6 +16,7 @@ const routes = [
     { path: '/prestamos', name: 'prestamos', component: LoanPage },
     { path: '/pagos', name: 'pagos', component: PaymentPage },
     { path: '/usuarios', name: 'usuarios', component: UserPage },
+    { path: '/rutas', name: 'rutas', component: RoutePage },
     { path: '/reportes', name: 'reportes', component: ReportPage },
     { path: '/reportes/cartera', name: 'reportes-cartera', component: PortfolioReport },
     { path: '/reportes/rentabilidad', name: 'reportes-rentabilidad', component: ProfitbilityReport },
@@ -23,6 +25,7 @@ const routes = [
     { path: '/reportes/flujo-caja', name: 'reportes-flujo-caja', component: CashFlow },
     // { path: '/reportes/historial-pagos', name: 'reportes-historial-pagos', component: () => import('@/Modules/Report/View/reports/PaymentHistoryReport.vue') },
     // { path: '/reportes/auditoria', name: 'reportes-auditoria', component: () => import('@/Modules/Report/View/reports/AuditReport.vue') },
+    { path: '/geo-test', name: 'geo-test', component: () => import('@/Modules/Geo/View/GeoTestView.vue') },
 ]
 
 const router = createRouter({

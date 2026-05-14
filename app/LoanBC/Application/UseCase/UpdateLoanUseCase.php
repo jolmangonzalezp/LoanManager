@@ -12,8 +12,11 @@ use App\LoanBC\Domain\Repository\LoanUpdater;
 use App\LoanBC\Domain\ValueObject\InterestRateVO;
 use App\LoanBC\Domain\ValueObject\LoanIdVO;
 use App\LoanBC\Domain\ValueObject\LoanStatus;
+use App\LoanBC\Domain\ValueObject\LoanTypeIdVO;
+use App\LoanBC\Infrastructure\Persistence\Model\LoanTypeModel;
 use App\SharedKernel\Domain\ValueObject\DateVO;
 use App\SharedKernel\Domain\ValueObject\MoneyVO;
+use Ramsey\Uuid\Uuid;
 
 final class UpdateLoanUseCase
 {
@@ -58,17 +61,38 @@ final class UpdateLoanUseCase
             ? LoanStatus::from($data['status'])
             : null;
 
+        $loanTypeId = isset($data['loan_type_id'])
+            ? LoanTypeIdVO::fromString($data['loan_type_id'])
+            : null;
+
+        if ($loanTypeId === null && isset($data['loan_type_name']) && $data['loan_type_name'] !== '') {
+            $type = LoanTypeModel::findByName($data['loan_type_name']);
+            if ($type === null) {
+                $type = LoanTypeModel::create([
+                    'id' => Uuid::uuid7()->toString(),
+                    'name' => $data['loan_type_name'],
+                ]);
+            }
+            $loanTypeId = LoanTypeIdVO::fromString($type->id);
+        }
+
         $updatedLoan = $loan->update(
             $originalCapital,
             $interestRate,
             $startDate,
             $dueDate,
-            $status
+            $status,
+            $loanTypeId
         );
 
         $this->updater->update($updatedLoan);
 
-        $dto = LoanResponse::fromEntity($updatedLoan);
+        $loanTypeIdValue = $updatedLoan->getLoanTypeId()?->getValue();
+        $loanTypeName = $loanTypeIdValue
+            ? LoanTypeModel::where('id', $loanTypeIdValue)->value('name')
+            : null;
+
+        $dto = LoanResponse::fromEntity($updatedLoan, $loanTypeName);
 
         $namesMap = $this->customerNameProvider->getNamesMap([$loan->getCustomerId()->getValue()]);
         if (isset($namesMap[$loan->getCustomerId()->getValue()])) {
