@@ -8,6 +8,7 @@ This directory contains the comprehensive documentation for the LoanManager proj
 Detailed architectural and technical information for developers and system administrators.
 - Architecture (DDD/Hexagonal)
 - Bounded Contexts
+- [Business Rules](./technical/BUSINESS_RULES.md)
 - Database Schema
 - API Endpoints
 - Business Logic (Interest & Payments)
