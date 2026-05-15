@@ -18,9 +18,7 @@ export const ReportApi = {
     },
 
     async getDelinquency(): Promise<ReportDeliquencyDTO> {
-        const response = await Http.get<ReportDeliquencyDTO>(`${BASE}/delinquency`)
-        console.log(response);
-        return response;
+        return await Http.get<ReportDeliquencyDTO>(`${BASE}/delinquency`)
     },
 
     async getKpis(): Promise<any> {
