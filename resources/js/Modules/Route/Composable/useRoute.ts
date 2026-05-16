@@ -129,6 +129,7 @@ export function useRoute() {
     notify.loading('Cargando', '')
     try {
       await RouteService.deleteZone(id)
+      await getAll()
       await getAllZones()
       notify.closeLoading()
       notify.success('Éxito', 'Zona eliminada exitosamente')

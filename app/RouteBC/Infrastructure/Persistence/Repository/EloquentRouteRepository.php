@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\RouteBC\Infrastructure\Persistence\Repository;
 
+use App\CustomerBC\Infrastructure\Persistence\Model\CustomerModel;
 use App\RouteBC\Domain\Aggregate\Route;
 use App\RouteBC\Domain\Repository\RouteRepositoryInterface;
 use App\RouteBC\Domain\ValueObject\RouteIdVO;
@@ -60,6 +61,8 @@ final class EloquentRouteRepository implements RouteRepositoryInterface
 
     public function delete(RouteIdVO $id): void
     {
+        DB::table('route_user')->where('route_id', $id->getValue())->delete();
+        CustomerModel::where('route_id', $id->getValue())->update(['route_id' => null]);
         RouteModel::where('id', $id->getValue())->delete();
     }
 
