@@ -19,6 +19,7 @@ export interface CustomerDTO {
     latitude?: number;
     longitude?: number;
     enabled?: boolean;
+    documents_complete?: boolean;
     created_at?: string;
 }
 

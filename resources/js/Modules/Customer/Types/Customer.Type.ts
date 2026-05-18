@@ -20,6 +20,7 @@ export interface Customer {
   longitude?: number
   createdAt: string
   enabled: boolean
+  documentsComplete?: boolean
 }
 
 export interface CustomerForm {

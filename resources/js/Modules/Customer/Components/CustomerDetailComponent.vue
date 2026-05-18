@@ -2,7 +2,7 @@
 import {computed} from "vue";
 
 import { useAuth } from '@/Modules/Auth';
-import { CustomerForms, useCustomer } from '@/Modules/Customer';
+import { CustomerForms, CustomerDocuments, useCustomer } from '@/Modules/Customer';
 import { Ava, Btn, GCard, CardTitle, useModal, formatCurrency } from '@/Shared';
 import { LoanDetail, LoanForms, useLoan } from '@/Modules/Loan';
 import MapboxMap from '@/Modules/Geo/Components/MapboxMap.vue';
@@ -125,6 +125,8 @@ const handleRowClick = async (id: string) => {
           </div>
         </div>
       </GCard>
+
+      <CustomerDocuments :customer-id="customer.id" />
     </section>
     <div class="btns">
       <Btn v-if="can('customers.update')" variant="secondary" @click="updateCustomer">Actualizar</Btn>

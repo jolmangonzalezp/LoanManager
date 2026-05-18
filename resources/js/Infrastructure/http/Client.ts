@@ -10,7 +10,6 @@ class HttpClient {
       baseURL: BASE_URL,
       timeout: 30000,
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
     })

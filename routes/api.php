@@ -1,6 +1,7 @@
 <?php
 
 use App\CustomerBC\Presenter\Controllers\CustomerController;
+use App\CustomerBC\Presenter\Controllers\CustomerDocumentController;
 use App\LoanBC\Presenter\Controllers\LoanController;
 use App\LoanBC\Presenter\Controllers\LoanTypeController;
 use App\PaymentBC\Presenter\Controllers\PaymentController;
@@ -49,6 +50,9 @@ Route::middleware(['handle.exceptions'])->group(function () {
     Route::get('/customers/summary', [CustomerController::class, 'summary']);
     Route::get('/customers/report', [CustomerController::class, 'report']);
     Route::get('/customers/unassigned', [CustomerController::class, 'unassigned']);
+    Route::get('/customers/{id}/documents', [CustomerDocumentController::class, 'index'])->middleware('auth:sanctum');
+    Route::post('/customers/{id}/documents', [CustomerDocumentController::class, 'store'])->middleware('auth:sanctum');
+    Route::delete('/customers/{id}/documents/{documentId}', [CustomerDocumentController::class, 'destroy'])->middleware('auth:sanctum');
     Route::get('/customers/{id}', [CustomerController::class, 'show'])->middleware('auth:sanctum');
     Route::get('/customers/{id}/loans', [CustomerController::class, 'loans'])->middleware('auth:sanctum');
     Route::post('/customers', [CustomerController::class, 'store']);

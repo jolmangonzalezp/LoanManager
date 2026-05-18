@@ -9,7 +9,11 @@ export type {
 } from './Types/Customer.Type';
 export type { CustomerDTO, CustomerFormDTO, CustomerNameDTO, CustomerSummaryDTO, LoansByCustomerDTO } from './Types/CustomerDTO.Type';
 
+// Types
+export type { CustomerDocumentDTO } from './Types/CustomerDocumentDTO';
+
 // Components
 export { default as CustomerDetail } from './Components/CustomerDetailComponent.vue';
 export { default as CustomerForms } from './Components/CustomerFormComponent.vue';
 export { default as CustomerPage } from './View/CustomersView.vue';
+export { default as CustomerDocuments } from './Components/CustomerDocuments.vue';
